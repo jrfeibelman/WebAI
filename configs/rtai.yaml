@@ -1,0 +1,19 @@
+%YAML 1.2
+---
+Logger:
+  Level: DEBUG
+  LogDirectory: ${WEBAI_HOME}/logs/
+  LogName: rtai
+  PipeToStdout: True
+  UseCalleeStack: True
+StoryEngine:
+  UseGui: False # Changing this is not reccomended
+  WorkerThreadTimerMs: 1000
+  AgentThoughtTimerSec: 2
+  AgentActionTimerSec: 6
+  NarrationTimerSec: 12
+  # DebugTimerSec: 30
+Narrator:
+Agents:
+  NumAgents: 4
+...
