@@ -62,7 +62,7 @@ class StoryEngine:
 
         if not self.agent_mgr.initialize():
             error("Unable to initialize agent manager. Exiting.")
-            exit(1) 
+            exit(1)
 
         # Set up threaded timers
         self.timer_mgr: TimerManager = TimerManager()
@@ -186,7 +186,7 @@ class StoryEngine:
     def process_event(self, event: Event):
         if event.get_event_type() == EventType.NarrationEvent:
             self.dispatch_narration(event)
-        elif event.get_event_type() == EventType.ReverieEvent or event.get_event_type == EventType.ActionEvent:
+        elif event.get_event_type() == EventType.ReverieEvent or event.get_event_type() == EventType.ActionEvent:
             self.agent_mgr.dispatch(event)
         else:
             warn("Unknown event type: %s. Ignoring" % event.get_event_type())

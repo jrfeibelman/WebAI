@@ -35,6 +35,7 @@ class AgentManager:
 
     def dispatch(self, event: Event) -> None:
         # TODO: how to dispatch event from one agent to another, or to public story engine memory?
+        # TODO how to route event to specific agents
         pass
 
     def dispatch_narration(self, event: Event) -> None:

@@ -21,7 +21,7 @@ class Persona:
     # action_location: str
 
     def get_name(self) -> str:
-        return "%s [%s]" % (self.name, self.occupation)
+        return self.name
 
     @classmethod
     def generate(cls):

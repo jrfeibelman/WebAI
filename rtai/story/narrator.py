@@ -39,6 +39,9 @@ class Narrator(AbstractAgent):
         return event
 
     def manual_narration(self, narration: str) -> Event:
+        """
+            TODO : If manual narration triggered, restart generate_narration timer thread
+        """
         event = Event.create_narration_event(self, narration)
         self.queue.put(event)
         self.narration.append(event)
