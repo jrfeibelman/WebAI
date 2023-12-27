@@ -1,5 +1,3 @@
-from tkinter import Tk, Label, Text, Scrollbar, Entry, Button, Frame
-from tkinter import END, TOP
 from queue import Queue
 from threading import Thread
 from typing import List
@@ -87,6 +85,8 @@ class StoryEngine:
         info("Initialized Story Engine")
 
     def init_gui(self):
+        from tkinter import Tk, Label, Text, Scrollbar, Entry, Button
+        from tkinter import END, TOP
         info("Initializing GUI")
         self.root = Tk()
         self.root.title("Real Time AI")
@@ -158,7 +158,8 @@ class StoryEngine:
     def manual_narration_change(self, text: str = ""):
         event: Event
 
-        if text == "":
+        if text == "" and self.use_gui:
+            from tkinter import END
             send = "Narration (manual): " + self.entry.get()
             self.txt.insert(END, "\n" + send)
             event = Event.create_narration_event(self.narrator, self.entry.get())
@@ -178,6 +179,7 @@ class StoryEngine:
             self.process_event(event)
 
             if self.use_gui:
+                from tkinter import END
                 self.txt.insert(END, "\n" + "%s" % event)
                 # self.root.after(100, self.process_event_queue) # TODO this line needed for gui?
 
