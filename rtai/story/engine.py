@@ -20,6 +20,8 @@ TODO:
 - Agent Personalities
 - Hooking up to LLM
 
+ToThink:
+- Thought -> Action -> Reverie -> Reflection ?
 """
 AGENTS_CONFIG = 'Agents'
 USE_GUI_CONFIG = 'UseGui'
@@ -50,9 +52,10 @@ class StoryEngine:
         self.cfg: Config = cfg.expand(STORY_CONFIG)
         self.queue: Queue = Queue()
         self.public_mem: List[Event] = []
-        self.use_gui = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
-        self.debug_mode = debug_mode
+        self.use_gui: bool = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
+        self.debug_mode: bool = debug_mode
         
+        # Set up Agents
         self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG))
         self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG))
         if not self.agent_mgr.register(self.narrator):
@@ -63,17 +66,20 @@ class StoryEngine:
             error("Unable to initialize agent manager. Exiting.")
             exit(1) 
 
+        # Set up threaded timers
         self.timer_mgr: TimerManager = TimerManager()
         self.timer_mgr.add_timer(AGENT_THOUGHT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_THOUGHT_TIMER_CONFIG, AGENT_THOUGHT_TIMER_DEFAULT)), self.agent_mgr.generate_reveries)
         self.timer_mgr.add_timer(AGENT_ACTION_THREAD_NAME, uint16(self.cfg.get_value(AGENT_ACTION_TIMER_CONFIG, AGENT_ACTION_TIMER_DEFAULT)), self.agent_mgr.generate_actions)
         self.timer_mgr.add_timer(NARRATION_THREAD_NAME, uint16(self.cfg.get_value(NARRATION_TIMER_CONFIG, NARRATION_TIMER_DEFAULT)), self.narrator.generate_narration)
         self.timer_mgr.add_timer(WORKER_THREAD_NAME, uint16(self.cfg.get_value(WORKER_THREAD_TIMER_CONFIG, WORKER_TIMER_DEFAULT)), self.poll_event_queue, milliseconds=True)
         
+        # Debug printing
         debug_timer_sec = uint16(self.cfg.get_value(DEBUG_TIMER_CONFIG, DEBUG_TIMER_CONFIG_DEFAULT))
         if self.debug_mode and debug_timer_sec > 0:
             debug("Debug mode enabled. Adding debug timer")
             self.timer_mgr.add_timer(DEBUG_THREAD_NAME, debug_timer_sec, self.debug_timer)
 
+        # Generate first narration
         narration: Event = self.narrator.generate_narration("")
         self.public_mem.append(narration)
         self.agent_mgr.dispatch_narration(narration)
