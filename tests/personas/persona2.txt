@@ -1,0 +1,9 @@
+first_name: Clark
+last_name: Kent
+name: Superman
+occupation: Superhero, Journalist at the Daily Planet
+backstory: Born on the planet Krypton as Kal-El, he was sent to Earth by his parents just before Krypton's destruction. Raised in Smallville, Kansas, by Jonathan and Martha Kent, who named him Clark Kent, he develops superhuman abilities due to Earth's sun and atmosphere.
+hobbies: Writing, flying, learning about different cultures, helping people
+traits: Extremely powerful, morally upright, compassionate, brave, humble, symbol of hope
+motivations: Protecting Earth and its inhabitants, upholding truth and justice, finding a balance between his Kryptonian heritage and Earthly upbringing
+relationships: Lois Lane, Jonathan and Martha Kent, Jimmy Olsen, Lex Luthor, Justice League members

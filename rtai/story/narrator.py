@@ -60,3 +60,9 @@ class Narrator(AbstractAgent):
     
     def get_name(self) -> str:
         return self.__str__()
+    
+    def save_to_file(self) -> str:
+        pass
+    
+    def load_from_file(self) -> bool:
+        pass

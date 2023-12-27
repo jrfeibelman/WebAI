@@ -5,6 +5,7 @@ from typing import List
 from rtai.story.abstract_agent import AbstractAgent
 from rtai.core.event import Event
 from rtai.utils.logging import info, debug
+from rtai.persona.persona import Persona
 
 class Agent(AbstractAgent):
     """
@@ -20,6 +21,7 @@ class Agent(AbstractAgent):
     
     
     """
+    counter = 0
 
     def __init__(self, agent_mgr: AbstractAgent, event_queue: Queue):
         super().__init__()
@@ -28,13 +30,12 @@ class Agent(AbstractAgent):
         self.queue: Queue = event_queue
 
         self.memory: List[Event] = []
+        self.conversations: List[Event] = []
 
-        # Agent Specific Persona
-        self.name: str = None
-        self.first_name: str = None
-        self.last_name: str = None
-        self.age: str = None
-
+        Agent.counter += 1
+        self.id = Agent.counter
+        self.persona = Persona.generate_from_file('tests/personas/persona%s.txt' % self.id) # TODO
+        # print(self.persona)
         info("Created Agent [%s]" % self.get_name())
 
     def generate_reverie(self) -> Event:
@@ -81,7 +82,14 @@ class Agent(AbstractAgent):
         debug("[DEBUG_TIMER - %s] Private Memory(len=%s):\n%s" % (self.get_name(), len(self.memory), self.memory))
 
     def __str__(self) -> str:
-        return self.name
+        return self.persona.get_name()
     
     def get_name(self) -> str:
         return self.__str__()
+    
+    def save_to_file(self) -> str:
+        # TODO - should be 2 saves : 1 for state and other for base persona ??
+        pass
+    
+    def load_from_file(self) -> bool:
+        pass

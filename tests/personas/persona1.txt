@@ -1,0 +1,9 @@
+first_name: Bruce
+last_name: Wayne
+name: Batman
+occupation: Vigilante, Businessman (CEO of Wayne Enterprises)
+backstory: After witnessing the murder of his parents as a child, Bruce Wayne trains himself both physically and intellectually and crafts a bat-inspired persona to fight crime.
+hobbies: Martial arts, detective work, high-tech gadgetry, philanthropy
+traits: Intelligent, resourceful, determined, skilled fighter, strategic, haunted by past
+motivations: Desire to prevent others from suffering the same kind of tragedy he experienced as a child, commitment to justice
+relationships: Alfred Pennyworth, Commissioner Gordon, Robin, Catwoman (Selina Kyle), Joker
