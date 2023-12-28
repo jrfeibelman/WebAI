@@ -2,7 +2,7 @@ from queue import Queue
 from threading import Thread
 from typing import List
 from sys import exit
-from numpy import uint16
+from numpy import uint16, uint32
 
 from rtai.utils.config import Config
 from rtai.story.narrator import Narrator
@@ -43,6 +43,7 @@ AGENT_THOUGHT_THREAD_NAME = 'AgentThoughtThread'
 AGENT_ACTION_THREAD_NAME = 'AgentActionThread'
 NARRATION_THREAD_NAME = 'NarrationThread'
 DEBUG_THREAD_NAME = 'DebugThread'
+MAX_CYCLES = 'StopAfterCycles'
 
 class StoryEngine:
 
@@ -52,6 +53,11 @@ class StoryEngine:
         self.public_mem: List[Event] = []
         self.use_gui: bool = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
         self.debug_mode: bool = debug_mode
+
+        self.max_cycles: uint32 = uint32(self.cfg.get_value(MAX_CYCLES, "0"))
+        self.stop_after_cycles: bool = self.max_cycles > 0
+        self.force_stop: bool = False
+        self.cycle_count: uint32 = uint32(0)
         
         # Set up Agents
         self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG))
@@ -131,10 +137,11 @@ class StoryEngine:
             self.poll_input()
 
     def stop(self):
+        self.force_stop = True
         self.timer_mgr.stop_timers()
 
     def poll_input(self):
-        while True:
+        while not self.force_stop:
             x = input(">>> ")
             if x == "exit":
                 self.stop()
@@ -182,6 +189,14 @@ class StoryEngine:
                 from tkinter import END
                 self.txt.insert(END, "\n" + "%s" % event)
                 # self.root.after(100, self.process_event_queue) # TODO this line needed for gui?
+            
+        self.cycle_count += 1
+        if self.stop_after_cycles and self.cycle_count >= self.max_cycles:
+            info("Stopping after %d cycles" % self.max_cycles)
+            self.stop()
+            info("Shutdown complete. Press enter to exit")
+            exit(1)
+
 
     def process_event(self, event: Event):
         if event.get_event_type() == EventType.NarrationEvent:

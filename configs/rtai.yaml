@@ -13,6 +13,7 @@ StoryEngine:
   AgentActionTimerSec: 6
   NarrationTimerSec: 12
   # DebugTimerSec: 30
+  StopAfterCycles: 5
 Narrator:
 Agents:
   NumAgents: 4

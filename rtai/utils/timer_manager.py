@@ -35,6 +35,7 @@ class TimerManager:
         if not hasattr(cls, '_instance'):
             cls._instance = super().__new__(cls)
             cls._instance.timers: Dict[uint16, TimerWrapper] = dict()
+            cls._instance.terminated: bool = False
         return cls._instance
 
     def start_timers(self) -> None:
@@ -42,6 +43,7 @@ class TimerManager:
         info("All Timers Started")
 
     def stop_timers(self) -> None:
+        self.terminated = True
         info("Joining Timers.........")
         [t.cancel() for t in self.timers.values()]
         info("All Timers Joined.........")
@@ -51,7 +53,7 @@ class TimerManager:
         self.timers[thread_id] = TimerWrapper(thread_id, seconds, callback_func, Thread_Timer(seconds, callback_func, [thread_id]))
     
     def reset_timer(self, thread_id: str) -> bool:
-        if thread_id in self.timers:
+        if not self.terminated and thread_id in self.timers:
             self.timers[thread_id].reset()
             return True
         return False
