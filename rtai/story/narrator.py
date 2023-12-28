@@ -7,6 +7,7 @@ from rtai.utils.config import Config
 from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug
+from openai import OpenAI
 
 class Narrator(AbstractAgent):
     def __init__(self, event_queue: Queue, cfg: Config):
@@ -15,7 +16,7 @@ class Narrator(AbstractAgent):
         self.cfg: Config = cfg
         self.narration: List[Event] = []
         self._counter: int = 0 # TODO eventually delete ?
-
+        self.client = OpenAI(base_url="http://localhost:1234/v1", api_key="not-needed")
         info("Initialized narrator")
 
     @TimerManager.timer_callback
@@ -24,7 +25,21 @@ class Narrator(AbstractAgent):
         start_time = perf_counter()
 
         # TODO - call LLM to generate narration
+        completion = self.client.chat.completions.create(
+            model="local-model", # this field is currently unused
+            messages=[
+                {"role": "system", "content": "You are a storyteller. Generate short descriptions of the following characters"},
+                {"role": "user", "content": "Introduce yourself as batman."}
+            ],
+            temperature=0.7,
+        )
+        print(completion.choices[0].message)
         new_narration = "Narration %s" % self._counter
+
+        try:
+            new_narration += "\n" + str(completion.choices[0].message).strip()
+        except:
+            new_narration += "\n" + "Failed to generate narration for some reason"
 
         elapsed_time = perf_counter() - start_time
 
