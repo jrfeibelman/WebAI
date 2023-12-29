@@ -17,4 +17,8 @@ StoryEngine:
 Narrator:
 Agents:
   NumAgents: 4
+LLMClient: # This is the client that connects to the LLM
+  model_name: "mistral"
+  base_url: "http://localhost:1234/v1"
+  api_key: "not-needed"
 ...
