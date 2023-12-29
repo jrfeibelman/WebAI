@@ -27,6 +27,7 @@ def reverie_prompt(persona) -> str:
 # Given only the information above, what are 3 most salient high-level questions we can answer about the subjects in the statements?
 
 # ### Response:
+
 # {{#geneach 'items' num_iterations=3}}{{gen 'this' top_k=30 top_p=0.18 repetition_penalty=1.15 temperature=1.99 stop='\n'}}
 # {{/geneach}}"""
 
