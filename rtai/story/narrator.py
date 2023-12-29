@@ -27,11 +27,10 @@ class Narrator(AbstractAgent):
 
         # TODO - call LLM to generate narration
         prompt = "Joker"
-        completion = self.llm_client.generate_from_prompt(prompt)
+        completion = self.llm_client.generate_from_prompt(system_prompt="You are a narrator", user_prompt=prompt)
 
         new_narration = "Narration %s" % self._counter
 
-        # TODO: move error handling to the LLM Client? or LLMServer
         try:
             new_narration += "\n" + completion
         except:
