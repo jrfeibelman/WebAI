@@ -38,6 +38,9 @@ class Agent(AbstractAgent):
     l_mem : LongTermMemory
     conversations: List[Event]
     persona: Persona
+    # String representation of persona for LLM calls
+    common_set: str
+
 
     def __init__(self, agent_mgr: AgentManager, event_queue: Queue, client: LLMClient, file_path: str=""):
         """
@@ -57,7 +60,10 @@ class Agent(AbstractAgent):
 
         Agent.counter += 1
         self.id = Agent.counter
-        self.persona = Persona.generate_from_file('tests/samples/personas/persona%s.txt' % self.id) # TODO use file_path, use LLM to generate personality???
+        if len(file_path) == 0:
+            self.persona = Persona.generate_from_file('tests/samples/personas/persona%s.txt' % self.id) # TODO use file_path, use LLM to generate personality???
+        else:
+            self.persona = Persona.generate_from_file(file_path)
 
         self.s_mem = ShortTermMemory(self.persona)
         self.l_mem = LongTermMemory()
@@ -390,3 +396,17 @@ class Agent(AbstractAgent):
     
     def load_from_file(self) -> bool:
         pass
+
+    def get_common_set_str(self):
+        # TODO just store this as a string
+        commonset = ""
+        commonset += f"Name: {self.persona.name}\n"
+        commonset += f"Age: {self.persona.age}\n"
+        commonset += f"Backstory: {self.persona.backstory}\n"
+        commonset += f"Occupation: {self.persona.occupation}\n"
+        commonset += f"Innate traits: {self.persona.traits}\n"
+        commonset += f"Motivations: {self.persona.motivations}\n"
+        commonset += f"Relationships: {self.persona.relationships}\n"
+        commonset += f"Daily plan requirement: {self.s_mem.daily_plan}\n"
+        # commonset += f"Current Date: {self.curr_time.strftime('%A %B %d')}\n"
+        return commonset

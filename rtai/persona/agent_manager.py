@@ -60,6 +60,8 @@ class AgentManager:
             error("Unable to register agent [%s] with Agent Manager. Name likely already taken" % name)
             return False
         
+
+        
         self.registry.add(name)
         info("Registered agent [%s] with Agent Manager" % name)
         return True
@@ -70,7 +72,8 @@ class AgentManager:
         # First update the state of all the agents
         wait([self.tp.submit(a.update) for a in self.agents])
 
-        # Then generate actions (Thoughts, Actions, Chats) sequentially for all the agents
+        # TODO - have agents communicate with one another and actions inform other agents action in a reactive manner 
+        #Then generate actions (Thoughts, Actions, Chats) sequentially for all the agents
         # I guess this can be in parallel if all agents have perceived/updated already
         [a.act(first_day, new_day) for a in self.agents]
             

@@ -1,6 +1,6 @@
 from typing import List
 from dataclasses import dataclass, fields
-
+from numpy import uint8
 @dataclass
 class Persona:
     first_name: str
@@ -12,6 +12,7 @@ class Persona:
     traits: str
     motivations: str
     relationships: List[str]
+    age: uint8
 
     # location: str
     # action: str

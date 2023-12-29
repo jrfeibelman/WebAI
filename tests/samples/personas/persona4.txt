@@ -1,6 +1,7 @@
 first_name: Unknown
 last_name: Unknown
 name: The Joker
+age: 30
 occupation: Professional Criminal, Supervillain
 backstory: The Joker's origin is shrouded in mystery and often varies. Commonly depicted as falling into a vat of chemicals which bleaches his skin white, turns his hair green, and his lips bright red, transforming him into the psychotic and anarchistic criminal mastermind known as the Joker.
 hobbies: Creating chaos, devising complex criminal plots, taunting Batman

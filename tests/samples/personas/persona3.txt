@@ -1,6 +1,7 @@
 first_name: James
 last_name: Gordon
 name: Commissioner Gordon
+age: 58
 occupation: Police Commissioner of Gotham City
 backstory: A dedicated and honest police officer, James Gordon rises through the ranks of the Gotham City Police Department. Known for his integrity and determination in a city rife with corruption and crime, he becomes a key ally of Batman, sharing a mutual goal of eradicating crime in Gotham City.
 hobbies: Chess, reading, spending time with family
