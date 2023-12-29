@@ -13,5 +13,8 @@
 
 3) `python3 rtai/main.py`
 
+### Architecture Notes
+
+
 ### TODOs
 cap the 

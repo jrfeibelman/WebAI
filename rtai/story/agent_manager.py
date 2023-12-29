@@ -7,6 +7,7 @@ from rtai.story.abstract_agent import AbstractAgent
 from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error
+from rtai.llm.llm_client import LLMClient
 
 DEFAULT_NUM_AGENTS = 4
 NUM_AGENTS_CONFIG = "NumAgents"
@@ -19,16 +20,17 @@ class AgentManager:
     
     """
 
-    def __init__(self, event_queue: Queue, cfg: Config):
+    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient):
         self.queue = event_queue
         self.cfg: Config = cfg
         self.agents: List[Agent] = []
         self.registry: Set[str] = set()
         self.last_narration: Event = Event.create_empty_event()
+        self.client = client
 
     def initialize(self) -> bool:
         num_agents = int(self.cfg.get_value(NUM_AGENTS_CONFIG, DEFAULT_NUM_AGENTS))
-        self.agents = [Agent(self, self.queue) for _ in range(num_agents)]
+        self.agents = [Agent(self, self.queue, self.client) for _ in range(num_agents)]
 
         info("Initialized Agent Manager with [%d] agents" % len(self.agents))
         return True

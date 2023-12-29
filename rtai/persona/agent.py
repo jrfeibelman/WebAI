@@ -6,6 +6,7 @@ from rtai.story.abstract_agent import AbstractAgent
 from rtai.core.event import Event
 from rtai.utils.logging import info, debug
 from rtai.persona.persona import Persona
+from rtai.llm.llm_client import LLMClient
 
 class Agent(AbstractAgent):
     """
@@ -23,12 +24,12 @@ class Agent(AbstractAgent):
     """
     counter = 0
 
-    def __init__(self, agent_mgr: AbstractAgent, event_queue: Queue):
+    def __init__(self, agent_mgr: AbstractAgent, event_queue: Queue, client: LLMClient):
         super().__init__()
 
         self.agent_mgr: AbstractAgent = agent_mgr
         self.queue: Queue = event_queue
-
+        self.llm_client = client
         self.memory: List[Event] = []
         self.conversations: List[Event] = []
 
@@ -45,7 +46,15 @@ class Agent(AbstractAgent):
         start_time = perf_counter()
 
         # TODO - call LLM to generate reverie
+        prompt = "Generate a thought that Joker would have"
+        completion = self.llm_client.generate_from_prompt(prompt)
         msg = "Test Reverie (%s)" % self.get_name()
+
+        # TODO: move error handling to the LLM Client? or LLMServer
+        try:
+            msg += "\n" + completion
+        except:
+            msg += "\n" + "Failed to generate reverie for some reason"
 
         elapsed_time = perf_counter() - start_time
         info("Agent [%s] took [%s] ms for generate_reverie()" % (self.get_name(), elapsed_time * 1000))
