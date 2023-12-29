@@ -328,13 +328,13 @@ class Agent(AbstractAgent):
 
         elif new_day:
             # Update the agent's identity based on events that occurred and reveries its developed
-            self.update_identity() # Uses LLM!
+            # self.update_identity() # Uses LLM! Later...
 
             # Create new daily plan
-            self.s_mem.generate_daily_plan() # USES LLM!
+            self.s_mem.generate_daily_plan() # USES LLM! TODO ASAP
 
         # Create hourly schedule for the persona - list of todo items where each has a duration that adds up to a full day
-        self.generate_hourly_schedule(wake_up_hour) # Uses LLM!
+        self.generate_hourly_schedule(wake_up_hour) # Uses LLM! TODO ASAP
         self.s_mem.f_daily_schedule_hourly_org = self.s_mem.f_daily_schedule[:] # ?
 
         # TODO -- adding plan to the memory. From simularca
