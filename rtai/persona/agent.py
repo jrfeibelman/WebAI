@@ -13,6 +13,8 @@ from rtai.utils.logging import info, debug
 from rtai.persona.persona import Persona
 from rtai.persona.memory.short_memory import ShortTermMemory
 from rtai.persona.memory.long_memory import LongTermMemory
+from rtai.llm.llm_client import LLMClient
+from rtai.llm.prompt import reverie_prompt
 
 class Agent(AbstractAgent):
     """
@@ -24,7 +26,7 @@ class Agent(AbstractAgent):
             - Is this too simplistic? Should reveries = thoughts or should reveries be multiple thoughts / skills / plans that lead to a given action?
 
         Implementation
-            - 
+            - add retriever to trigger generating reverie
     
     
     """
@@ -37,7 +39,7 @@ class Agent(AbstractAgent):
     conversations: List[Event]
     persona: Persona
 
-    def __init__(self, agent_mgr: AgentManager, event_queue: Queue, file_path: str=""):
+    def __init__(self, agent_mgr: AgentManager, event_queue: Queue, client: LLMClient, file_path: str=""):
         """
         Constructor to create a new agent
         INPUT
@@ -49,12 +51,13 @@ class Agent(AbstractAgent):
 
         self.agent_mgr: AgentManager = agent_mgr
         self.queue: Queue = event_queue
+        self.llm_client = client
 
         self.conversations: List[Event] = []
 
         Agent.counter += 1
         self.id = Agent.counter
-        self.persona = Persona.generate_from_file('tests/samples/personas/persona%s.txt' % self.id) # TODO use file_path
+        self.persona = Persona.generate_from_file('tests/samples/personas/persona%s.txt' % self.id) # TODO use file_path, use LLM to generate personality???
 
         self.s_mem = ShortTermMemory(self.persona)
         self.l_mem = LongTermMemory()
@@ -145,6 +148,20 @@ class Agent(AbstractAgent):
             self._determine_action() # TODO this function needs to generate a new ACTION
 
         # TODO - if perceived event that needs to be responded to (such as chat), generate action or chat
+            
+
+        # TODO NEIL - call LLM to generate reverie
+        # move error handling to the LLM Client? or LLMServer
+        prompt = reverie_prompt(self.persona)
+        response = self.llm_client.generate_from_prompt(system_prompt="You are a story teller.", user_prompt=prompt)
+        msg = "Test Reverie (%s)" % self.get_name()
+
+        try:
+            msg += "\n" + response
+        except:
+            msg += "\n" + "Failed to generate reverie for some reason"
+
+        debug(msg)
 
         elapsed_time = perf_counter() - start_time
         debug("Agent [%s] took [%s] ms for act()" % (self.get_name(), elapsed_time * 1000))

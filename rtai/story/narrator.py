@@ -7,20 +7,23 @@ from rtai.utils.config import Config
 from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug
+from rtai.llm.llm_client import LLMClient
+
 
 class Narrator(AbstractAgent):
     queue: Queue
     cfg: Config
     narration: List[Event]
     _counter: int
+    llm_client: LLMClient
 
-    def __init__(self, event_queue: Queue, cfg: Config):
+    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient):
         super().__init__()
         self.queue: Queue = event_queue
+        self.llm_client = client
         self.cfg: Config = cfg
         self.narration: List[Event] = []
-        self._counter: int = 0 # TODO eventually delete ?
-
+        self._counter: int = 0 # TODO eventually delete ? add termination to config
         info("Initialized narrator")
 
     @TimerManager.timer_callback
@@ -29,7 +32,15 @@ class Narrator(AbstractAgent):
         start_time = perf_counter()
 
         # TODO - call LLM to generate narration
+        prompt = "Joker"
+        completion = self.llm_client.generate_from_prompt(system_prompt="You are a narrator", user_prompt=prompt)
+
         new_narration = "Narration %s" % self._counter
+
+        try:
+            new_narration += "\n" + completion
+        except:
+            new_narration += "\n" + "Failed to generate narration for some reason"
 
         elapsed_time = perf_counter() - start_time
 
