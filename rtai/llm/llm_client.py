@@ -19,5 +19,5 @@ class LLMClient:
             ],
             temperature=0.7,
         )
-        return str(completion.choices[0].message).strip()
+        return str(completion.choices[0].message).strip()  # todo: more cleaning of the string response
 

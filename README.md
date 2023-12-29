@@ -11,10 +11,19 @@
 2) Add rtai dir to python path:
     export PYTHONPATH="${PYTHONPATH}:./rtai"
 
-3) `python3 rtai/main.py`
+4) Then, spin up the LMStudio inference server. Make sure to enable Metal acceleration and to allow Request Queuing.
+
+5) `python3 rtai/main.py`
 
 ### Architecture Notes
 
+### llm
+For llm, there is an `LLMClient` that interfaces with the local llm model, hosted on a server. Currently, we use LM Studio which spins up a server for inference. 
+
+The prompt logic is in `llm/prompt.py`. Currently, there is a reverie_prompt for creating a reverie based off the persona of the agent.
+
+One thing to think about is what is assosciated with the agent and what is assosciated with the LLMClient.
 
 ### TODOs
-cap the 
+* clarify when a thought should be done 
+    * in the paper, this is done with <- can this be done without the environment? probably...
