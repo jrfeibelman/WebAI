@@ -63,36 +63,18 @@ class AgentManager:
         return True
     
     @TimerManager.timer_callback
-    def update(self) -> None:
+    def update(self, first_day: bool=False, new_day: bool=False) -> None:
         debug("Updating Agents")
         # First update the state of all the agents
-        # with self.tp as executor:
-        # wait(self.tp.map(lambda a: a.update(), self.agents))
         wait([self.tp.submit(a.update) for a in self.agents])
 
         # Then generate actions (Thoughts, Actions, Chats) sequentially for all the agents
         # I guess this can be in parallel if all agents have perceived/updated already
-        [a.act() for a in self.agents]
+        [a.act(first_day, new_day) for a in self.agents]
             
         # Then generate reflections / reveries for all the agents
         wait([self.tp.submit(a.reflect) for a in self.agents])
 
-        # with self.tp as executor:
-        # wait(self.tp.map(lambda a: a.reflect(), self.agents))
-    
-    # @TimerManager.timer_callback
-    # def generate_reveries(self) -> None:
-    #     debug("Generating Reveries")
-    #     # TODO call in a threadpool
-    #     # [a.generate_reverie() for a in self.agents]
-    #     pass
-
-    # @TimerManager.timer_callback
-    # def generate_actions(self) -> None:
-    #     debug("Generating Actions")
-    #     # TODO call in a threadpool
-    #     # [a.generate_action() for a in self.agents]
-    #     pass
     
     def get_last_narration(self) -> Event:
         return self.last_narration

@@ -1,6 +1,8 @@
 from numpy import uint8, uint16, float32
+from numpy.random import normal
 from datetime import datetime
 from typing import Dict, List
+from random import choice
 
 from rtai.persona.persona import Persona
 
@@ -10,7 +12,7 @@ class ShortTermMemory:
     # Perceived world time
     curr_time: datetime
     # Perceived world daily requirement. 
-    daily_plan_req: str
+    daily_plan: str
     # Persona - core identity of agent
     persona: Persona
 
@@ -117,7 +119,7 @@ class ShortTermMemory:
     def __init__(self, persona: Persona):
         self.retention = 5
         self.curr_time = None
-        self.daily_plan_req = None
+        self.daily_plan = None
         self.persona = persona
 
         self.concept_forget = 100
@@ -185,7 +187,7 @@ class ShortTermMemory:
         commonset += f"Learned traits: {self.learned}\n"
         commonset += f"Currently: {self.currently}\n"
         commonset += f"Lifestyle: {self.lifestyle}\n"
-        commonset += f"Daily plan requirement: {self.daily_plan_req}\n"
+        commonset += f"Daily plan requirement: {self.daily_plan}\n"
         commonset += f"Current Date: {self.curr_time.strftime('%A %B %d')}\n"
         return commonset
 
@@ -219,14 +221,14 @@ class ShortTermMemory:
         self.act_obj_pronunciatio = act_obj_pronunciatio
         self.act_obj_event = act_obj_event
         
-        self.act_start_time = self.curr_time
+        self.act_start_time = self.curr_time # KEEP
         
         self.act_path_set = False
 
     def get_act_time_str(self) -> str: 
         return self.act_start_time.strftime("%H:%M %p")
 
-    def act_check_finished(self): 
+    def has_action_completed(self) -> bool: 
         """
         Checks whether the self.Action instance has finished.  
 
@@ -237,7 +239,7 @@ class ShortTermMemory:
         Boolean [True]: Action has finished.
         Boolean [False]: Action has not finished and is still ongoing.
         """
-        if not self.act_address: 
+        if not self.act_address:
             return True
         
         if self.chatting_with: 
@@ -252,7 +254,32 @@ class ShortTermMemory:
         if end_time.strftime("%H:%M:%S") == self.curr_time.strftime("%H:%M:%S"): 
             return True
         return False
+    
+    def generate_daily_plan(self):
+        pass
 
+    def generate_first_daily_plan(self, wake_up_hour):
+        """ * Uses LLM
+        TODO Generate daily plan fir the first day
+        """
+        pass
+
+    def generate_wake_up_hour(self) -> str:
+        """
+        Generate a time to wake up for the day --> average around 8:00 am
+        Hour will be 5-11 and minutes will be 0 or 30
+        Chooses time using normal distribution centered around 8 and a random choice to make it half past
+        """
+        generated_number = normal(8, 1)
+
+        hours = [i for i in range(5,12)]
+        hour = min(hours, key=lambda x: abs(x - generated_number))
+        half_past_bool = choice([True, False])
+
+        hour_str = "0%s" if hour < 10 else "%s"
+
+        return "%s:%s AM" % (hour_str, "30" if half_past_bool else "00")
+    
     def get_action_summary_dict(self) -> Dict[str, str]:
         """
         Summarize the current action as a dictionary. 

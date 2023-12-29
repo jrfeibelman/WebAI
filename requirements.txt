@@ -3,5 +3,6 @@ pandas
 python-dotenv
 PyYAML
 asyncio
+openai
 mypy
 tk

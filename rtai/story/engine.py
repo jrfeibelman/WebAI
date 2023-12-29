@@ -96,6 +96,9 @@ class StoryEngine:
         self.public_mem.append(narration)
         self.agent_mgr.dispatch_narration(narration)
 
+        # Set initial state of agents
+        self.agent_mgr.update(first_day=True)
+
         info("Initialized Story Engine")
 
     def init_gui(self):

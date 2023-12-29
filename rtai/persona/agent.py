@@ -37,7 +37,14 @@ class Agent(AbstractAgent):
     conversations: List[Event]
     persona: Persona
 
-    def __init__(self, agent_mgr: AbstractAgent, event_queue: Queue):
+    def __init__(self, agent_mgr: AgentManager, event_queue: Queue, file_path: str=""):
+        """
+        Constructor to create a new agent
+        INPUT
+            agent_mgr: an Agent Manager reference
+            queue: a reference to the worker queue to push events to
+            file_path: (optional) file to load personality from
+        """
         super().__init__()
 
         self.agent_mgr: AgentManager = agent_mgr
@@ -47,46 +54,46 @@ class Agent(AbstractAgent):
 
         Agent.counter += 1
         self.id = Agent.counter
-        self.persona = Persona.generate_from_file('tests/personas/persona%s.txt' % self.id) # TODO
+        self.persona = Persona.generate_from_file('tests/samples/personas/persona%s.txt' % self.id) # TODO use file_path
 
         self.s_mem = ShortTermMemory(self.persona)
         self.l_mem = LongTermMemory()
 
         info("Created Agent [%s]" % self.get_name())
 
-    def generate_reverie(self) -> Event:
-        """
-        Function to leverage LLMs to generate a given thought based on their environment, which influences the actions they take
-        """
-        start_time = perf_counter()
+    # def generate_reverie(self) -> Event:
+    #     """
+    #     Function to leverage LLMs to generate a given thought based on their environment, which influences the actions they take
+    #     """
+    #     start_time = perf_counter()
 
-        # TODO - call LLM to generate reverie
-        msg = "Test Reverie (%s)" % self.get_name()
+    #     # TODO - call LLM to generate reverie
+    #     msg = "Test Reverie (%s)" % self.get_name()
 
-        elapsed_time = perf_counter() - start_time
-        info("Agent [%s] took [%s] ms for generate_reverie()" % (self.get_name(), elapsed_time * 1000))
+    #     elapsed_time = perf_counter() - start_time
+    #     info("Agent [%s] took [%s] ms for generate_reverie()" % (self.get_name(), elapsed_time * 1000))
 
-        event = Event.create_reverie_event(self, msg)
-        self.queue.put(event)
-        # self.memory.append(event)
-        return event
+    #     event = Event.create_reverie_event(self, msg)
+    #     self.queue.put(event)
+    #     # self.memory.append(event)
+    #     return event
 
-    def generate_action(self) -> Event:
-        """
-        Function to leverage LLMs to generate a given action based on their environment and reveries
-        """
-        start_time = perf_counter()
+    # def generate_action(self) -> Event:
+    #     """
+    #     Function to leverage LLMs to generate a given action based on their environment and reveries
+    #     """
+    #     start_time = perf_counter()
+    #     # TODO - add logic to determine if action or chat, annd chatting functionality
+    #     # TODO - call LLM to generate action
+    #     msg = "Test Action (%s)" % self.get_name()
 
-        # TODO - call LLM to generate action
-        msg = "Test Action (%s)" % self.get_name()
+    #     elapsed_time = perf_counter() - start_time
+    #     info("Agent [%s] took [%s] ms for generate_action()" % (self.get_name(), elapsed_time * 1000))
 
-        elapsed_time = perf_counter() - start_time
-        info("Agent [%s] took [%s] ms for generate_action()" % (self.get_name(), elapsed_time * 1000))
-
-        event = Event.create_action_event(self, msg)
-        self.queue.put(event)
-        # self.memory.append(event)
-        return event
+    #     event = Event.create_action_event(self, msg)
+    #     self.queue.put(event)
+    #     # self.memory.append(event)
+    #     return event
     
     def update(self) -> None:
         self.retrieve(self.perceive())
@@ -120,7 +127,7 @@ class Agent(AbstractAgent):
         
         pass # TODO
 
-    def act(self) -> None:
+    def act(self, new_day: bool, first_day: bool=False) -> None:
         """
         Plan --> Create actions????????? or thoughts that lead to actions
             1) If start of day, perform daily agenda creation
@@ -130,7 +137,14 @@ class Agent(AbstractAgent):
         """
         start_time = perf_counter()
 
-        # TODO
+        if new_day or first_day:
+            self._create_day_plan(first_day, new_day)
+
+        # if action expired, create new agenda/plan
+        if self.s_mem.has_action_completed():
+            self._determine_action() # TODO this function needs to generate a new ACTION
+
+        # TODO - if perceived event that needs to be responded to (such as chat), generate action or chat
 
         elapsed_time = perf_counter() - start_time
         debug("Agent [%s] took [%s] ms for act()" % (self.get_name(), elapsed_time * 1000))
@@ -145,6 +159,197 @@ class Agent(AbstractAgent):
 
         elapsed_time = perf_counter() - start_time
         debug("Agent [%s] took [%s] ms for reflect()" % (self.get_name(), elapsed_time * 1000))
+
+    def _determine_action(self) -> Event:
+        """ TODO --> need to generate an action here
+        Creates the next action sequence for the persona. 
+        The main goal of this function is to run "add_new_action" on the persona's 
+        scratch space, which sets up all the action related variables for the next 
+        action. 
+        As a part of this, the persona may need to decompose its hourly schedule as 
+        needed.   
+        """
+        return Event.create_empty_event()
+        # def determine_decomp(act_desp, act_dura):
+        #     """
+        #     Given an action description and its duration, we determine whether we need
+        #     to decompose it. If the action is about the agent sleeping, we generally
+        #     do not want to decompose it, so that's what we catch here. 
+
+        #     INPUT: 
+        #     act_desp: the description of the action (e.g., "sleeping")
+        #     act_dura: the duration of the action in minutes. 
+        #     OUTPUT: 
+        #     a boolean. True if we need to decompose, False otherwise. 
+        #     """
+        #     if "sleep" not in act_desp and "bed" not in act_desp: 
+        #         return True
+        #     elif "sleeping" in act_desp or "asleep" in act_desp or "in bed" in act_desp:
+        #         return False
+        #     elif "sleep" in act_desp or "bed" in act_desp: 
+        #         if act_dura > 60: 
+        #             return False
+        #     return True
+
+
+        # # The goal of this function is to get us the action associated with 
+        # # <curr_index>. As a part of this, we may need to decompose some large 
+        # # chunk actions. 
+        # # Importantly, we try to decompose at least two hours worth of schedule at
+        # # any given point. 
+        # curr_index = persona.scratch.get_f_daily_schedule_index()
+        # curr_index_60 = persona.scratch.get_f_daily_schedule_index(advance=60)
+
+        # # * Decompose * 
+        # # During the first hour of the day, we need to decompose two hours 
+        # # sequence. We do that here. 
+        # if curr_index == 0:
+        #     # This portion is invoked if it is the first hour of the day. 
+        #     act_desp, act_dura = persona.scratch.f_daily_schedule[curr_index]
+        #     if act_dura >= 60: 
+        #     # We decompose if the next action is longer than an hour, and fits the
+        #     # criteria described in determine_decomp.
+        #     if determine_decomp(act_desp, act_dura): 
+        #         persona.scratch.f_daily_schedule[curr_index:curr_index+1] = (
+        #                             generate_task_decomp(persona, act_desp, act_dura))
+        #     if curr_index_60 + 1 < len(persona.scratch.f_daily_schedule):
+        #     act_desp, act_dura = persona.scratch.f_daily_schedule[curr_index_60+1]
+        #     if act_dura >= 60: 
+        #         if determine_decomp(act_desp, act_dura): 
+        #         persona.scratch.f_daily_schedule[curr_index_60+1:curr_index_60+2] = (
+        #                             generate_task_decomp(persona, act_desp, act_dura))
+
+        # if curr_index_60 < len(persona.scratch.f_daily_schedule):
+        #     # If it is not the first hour of the day, this is always invoked (it is
+        #     # also invoked during the first hour of the day -- to double up so we can
+        #     # decompose two hours in one go). Of course, we need to have something to
+        #     # decompose as well, so we check for that too. 
+        #     if persona.scratch.curr_time.hour < 23:
+        #     # And we don't want to decompose after 11 pm. 
+        #     act_desp, act_dura = persona.scratch.f_daily_schedule[curr_index_60]
+        #     if act_dura >= 60: 
+        #         if determine_decomp(act_desp, act_dura): 
+        #         persona.scratch.f_daily_schedule[curr_index_60:curr_index_60+1] = (
+        #                             generate_task_decomp(persona, act_desp, act_dura))
+        # # * End of Decompose * 
+
+        # # Generate an <Action> instance from the action description and duration. By
+        # # this point, we assume that all the relevant actions are decomposed and 
+        # # ready in f_daily_schedule. 
+        # print ("DEBUG LJSDLFSKJF")
+        # for i in persona.scratch.f_daily_schedule: print (i)
+        # print (curr_index)
+        # print (len(persona.scratch.f_daily_schedule))
+        # print (persona.scratch.name)
+        # print ("------")
+
+        # # 1440
+        # x_emergency = 0
+        # for i in persona.scratch.f_daily_schedule: 
+        #     x_emergency += i[1]
+        # # print ("x_emergency", x_emergency)
+
+        # if 1440 - x_emergency > 0: 
+        #     print ("x_emergency__AAA", x_emergency)
+        # persona.scratch.f_daily_schedule += [["sleeping", 1440 - x_emergency]]
+        
+
+
+
+        # act_desp, act_dura = persona.scratch.f_daily_schedule[curr_index] 
+
+
+
+        # # Finding the target location of the action and creating action-related
+        # # variables.
+        # act_world = maze.access_tile(persona.scratch.curr_tile)["world"]
+        # # act_sector = maze.access_tile(persona.scratch.curr_tile)["sector"]
+        # act_sector = generate_action_sector(act_desp, persona, maze)
+        # act_arena = generate_action_arena(act_desp, persona, maze, act_world, act_sector)
+        # act_address = f"{act_world}:{act_sector}:{act_arena}"
+        # act_game_object = generate_action_game_object(act_desp, act_address,
+        #                                                 persona, maze)
+        # new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
+        # act_pron = generate_action_pronunciatio(act_desp, persona)
+        # act_event = generate_action_event_triple(act_desp, persona)
+        # # Persona's actions also influence the object states. We set those up here. 
+        # act_obj_desp = generate_act_obj_desc(act_game_object, act_desp, persona)
+        # act_obj_pron = generate_action_pronunciatio(act_obj_desp, persona)
+        # act_obj_event = generate_act_obj_event_triple(act_game_object, 
+        #                                                 act_obj_desp, persona)
+
+        # # Adding the action to persona's queue. 
+        # persona.scratch.add_new_action(new_address, 
+        #                                 int(act_dura), 
+        #                                 act_desp, 
+        #                                 act_pron, 
+        #                                 act_event,
+        #                                 None,
+        #                                 None,
+        #                                 None,
+        #                                 None,
+        #                                 act_obj_desp, 
+        #                                 act_obj_pron, 
+        #                                 act_obj_event)
+
+
+    def _create_day_plan(self, new_day: bool, first_day: bool) -> None:
+        """
+        Function to create a plan for the day
+        """
+        wake_up_hour = self.s_mem.generate_wake_up_hour() # TODO use LLM?
+
+        if first_day:
+            # Generate the very first daily plan
+            self.s_mem.generate_first_daily_plan(wake_up_hour) # TODO Uses LLM!
+
+        elif new_day:
+            # Update the agent's identity based on events that occurred and reveries its developed
+            self.update_identity() # Uses LLM!
+
+            # Create new daily plan
+            self.s_mem.generate_daily_plan() # USES LLM!
+
+        # Create hourly schedule for the persona - list of todo items where each has a duration that adds up to a full day
+        self.generate_hourly_schedule(wake_up_hour) # Uses LLM!
+        self.s_mem.f_daily_schedule_hourly_org = self.s_mem.f_daily_schedule[:] # ?
+
+        # TODO -- adding plan to the memory. From simularca
+        # thought = f"This is {persona.scratch.name}'s plan for {persona.scratch.curr_time.strftime('%A %B %d')}:"
+        # for i in persona.scratch.daily_req: 
+        #     thought += f" {i},"
+        # thought = thought[:-1] + "."
+        # created = persona.scratch.curr_time
+        # expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
+        # s, p, o = (persona.scratch.name, "plan", persona.scratch.curr_time.strftime('%A %B %d'))
+        # keywords = set(["plan"])
+        # thought_poignancy = 5
+        # thought_embedding_pair = (thought, get_embedding(thought))
+        # persona.a_mem.add_thought(created, expiration, s, p, o, 
+        #                             thought, keywords, thought_poignancy, 
+        #                             thought_embedding_pair, None)
+
+    def generate_hourly_schedule(self, wake_up_hour) -> None:
+        """ * Uses LLM
+        TODO
+        Implement function to generate an hourly schedule for the day using LLMs
+        Try and moving to a memory class
+        """
+        hour_str = ["00:00 AM", "01:00 AM", "02:00 AM", "03:00 AM", "04:00 AM", 
+                    "05:00 AM", "06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", 
+                    "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", 
+                    "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM", "07:00 PM",
+                    "08:00 PM", "09:00 PM", "10:00 PM", "11:00 PM"]
+
+
+    def update_identity(self) -> None:
+        """ * Uses LLM
+        TODO
+        Implement function to update an agent's identity based on new events that occurred and reveries its developed
+        Will be called at start of every day
+        Try and moving to a memory class
+        """
+        pass
 
     def dispatch_narration(self, event: Event) -> None:
         """

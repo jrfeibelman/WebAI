@@ -62,8 +62,8 @@ class TimerManager:
         """
         A decorator for callback functions from timers 
         """
-        def wrapper(self, thread_id: str):
-            func(self)
+        def wrapper(self, thread_id: str="", *args, **kwargs):
+            func(self, *args, **kwargs)
             if len(thread_id) > 0:
                 TimerManager().reset_timer(thread_id)
         return wrapper
