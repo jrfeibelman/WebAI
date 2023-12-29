@@ -2,14 +2,16 @@ from enum import Enum
 from numpy import uint16
 
 from rtai.utils.time import now
-from rtai.story.abstract_agent import AbstractAgent
+from rtai.persona.abstract_agent import AbstractAgent
 
 class EventType(Enum):
     InvalidEvent=uint16(0)
-    ReverieEvent=uint16(1)
-    ActionEvent=uint16(2)
-    NarrationEvent=uint16(3)
-    EventTypeLength=uint16(4)
+    ThoughtEvent=uint16(1)
+    ReverieEvent=uint16(2)
+    ActionEvent=uint16(3)
+    ChatEvent=uint16(4)
+    NarrationEvent=uint16(5)
+    EventTypeLength=uint16(6)
 
 class Event:   
     # TODO make this an abstract class, and subtype Event for each EventType implementing abstract methods dispatch(), releaseMeToPool()
@@ -24,31 +26,33 @@ class Event:
         raise RuntimeError('Use Factory Methods Instead')
     
     @classmethod
-    def create_reverie_event(cls, sender: AbstractAgent, msg: str):
+    def _create_event(cls, event_type: EventType, sender: AbstractAgent, msg: str):
         e =  cls.__new__(cls)
         e.timestamp = now()
-        e.event_type = EventType.ReverieEvent
+        e.event_type = event_type
         e.sender = sender.get_name()
         e.msg = msg
         return e
+    
+    @classmethod
+    def create_thought_event(cls, sender: AbstractAgent, msg: str):
+        return cls._create_event(EventType.ThoughtEvent, sender, msg)
+    
+    @classmethod
+    def create_reverie_event(cls, sender: AbstractAgent, msg: str):
+        return cls._create_event(EventType.ReverieEvent, sender, msg)
     
     @classmethod
     def create_action_event(cls, sender: AbstractAgent, msg: str):
-        e =  cls.__new__(cls)
-        e.timestamp = now()
-        e.event_type = EventType.ActionEvent
-        e.sender = sender.get_name()
-        e.msg = msg
-        return e
+        return cls._create_event(EventType.ActionEvent, sender, msg)
+    
+    @classmethod
+    def create_chat_event(cls, sender: AbstractAgent, msg: str):
+        return cls._create_event(EventType.ChatEvent, sender, msg)
     
     @classmethod
     def create_narration_event(cls, sender: AbstractAgent, msg: str):
-        e =  cls.__new__(cls)
-        e.timestamp = now()
-        e.event_type = EventType.NarrationEvent
-        e.sender = sender.get_name()
-        e.msg = msg
-        return e
+        return cls._create_event(EventType.NarrationEvent, sender, msg)
     
     @classmethod
     def create_empty_event(cls):

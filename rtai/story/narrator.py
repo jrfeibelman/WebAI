@@ -2,13 +2,18 @@ from time import perf_counter
 from typing import List
 from queue import Queue
 
-from rtai.story.abstract_agent import AbstractAgent
+from rtai.persona.abstract_agent import AbstractAgent
 from rtai.utils.config import Config
 from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug
 
 class Narrator(AbstractAgent):
+    queue: Queue
+    cfg: Config
+    narration: List[Event]
+    _counter: int
+
     def __init__(self, event_queue: Queue, cfg: Config):
         super().__init__()
         self.queue: Queue = event_queue

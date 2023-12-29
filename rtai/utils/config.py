@@ -6,6 +6,9 @@ from rtai.utils.cache import Cache
 from rtai.utils.logging import error
 
 class Config(Cache):
+    _idx: int
+    _dict: dict
+    _curSection: str
 
     __slots__='_dict','_curSection'
 

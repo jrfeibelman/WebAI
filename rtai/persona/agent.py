@@ -1,11 +1,18 @@
+from __future__ import annotations
 from time import perf_counter
 from queue import Queue
-from typing import List
+from typing import List, TYPE_CHECKING
 
-from rtai.story.abstract_agent import AbstractAgent
+if TYPE_CHECKING:
+    from rtai.persona.agent_manager import AgentManager
+
+from rtai.persona.abstract_agent import AbstractAgent
+
 from rtai.core.event import Event
 from rtai.utils.logging import info, debug
 from rtai.persona.persona import Persona
+from rtai.persona.memory.short_memory import ShortTermMemory
+from rtai.persona.memory.long_memory import LongTermMemory
 
 class Agent(AbstractAgent):
     """
@@ -21,21 +28,30 @@ class Agent(AbstractAgent):
     
     
     """
-    counter = 0
+    counter: int = 0
+    id: int
+    agent_mgr: AbstractAgent
+    queue: Queue
+    s_mem: ShortTermMemory
+    l_mem : LongTermMemory
+    conversations: List[Event]
+    persona: Persona
 
     def __init__(self, agent_mgr: AbstractAgent, event_queue: Queue):
         super().__init__()
 
-        self.agent_mgr: AbstractAgent = agent_mgr
+        self.agent_mgr: AgentManager = agent_mgr
         self.queue: Queue = event_queue
 
-        self.memory: List[Event] = []
         self.conversations: List[Event] = []
 
         Agent.counter += 1
         self.id = Agent.counter
         self.persona = Persona.generate_from_file('tests/personas/persona%s.txt' % self.id) # TODO
-        # print(self.persona)
+
+        self.s_mem = ShortTermMemory(self.persona)
+        self.l_mem = LongTermMemory()
+
         info("Created Agent [%s]" % self.get_name())
 
     def generate_reverie(self) -> Event:
@@ -52,7 +68,7 @@ class Agent(AbstractAgent):
 
         event = Event.create_reverie_event(self, msg)
         self.queue.put(event)
-        self.memory.append(event)
+        # self.memory.append(event)
         return event
 
     def generate_action(self) -> Event:
@@ -69,14 +85,73 @@ class Agent(AbstractAgent):
 
         event = Event.create_action_event(self, msg)
         self.queue.put(event)
-        self.memory.append(event)
+        # self.memory.append(event)
         return event
+    
+    def update(self) -> None:
+        self.retrieve(self.perceive())
+        debug("Agent [%s] finished update()" % (self.get_name()))
+
+    def perceive(self) -> List:
+        """ 
+        Create Thoughts (SKIP FOR NOW)
+            - Analyze surroundings: perceives events around the persona and saves events to the memory ?
+        """
+        return [] # TODO
+
+    def retrieve(self, perceived: List) -> None:
+        """
+        2) Retreive
+            From simularca:
+                This function takes the events that are perceived by the persona as input
+                and returns a set of related events and thoughts that the persona would 
+                need to consider as context when planning. 
+
+                INPUT: 
+                    perceived: a list of event <ConceptNode>s that represent any of the events
+                    `         that are happening around the persona. What is included in here
+                            are controlled by the att_bandwidth and retention 
+                            hyper-parameters.
+                OUTPUT: 
+                    retrieved: a dictionary of dictionary. The first layer specifies an event, 
+                            while the latter layer specifies the "curr_event", "events", 
+                            and "thoughts" that are relevant.
+        """
+        
+        pass # TODO
+
+    def act(self) -> None:
+        """
+        Plan --> Create actions????????? or thoughts that lead to actions
+            1) If start of day, perform daily agenda creation
+            2) If current action expired, create new plan 
+            3) If you perceived an event that needs to be responded to, generate action or chat (TODO later)
+            4) 
+        """
+        start_time = perf_counter()
+
+        # TODO
+
+        elapsed_time = perf_counter() - start_time
+        debug("Agent [%s] took [%s] ms for act()" % (self.get_name(), elapsed_time * 1000))
+
+    def reflect(self) -> None:
+        """
+        Reflect --> Create Reveries
+        """
+        start_time = perf_counter()
+
+        # TODO
+
+        elapsed_time = perf_counter() - start_time
+        debug("Agent [%s] took [%s] ms for reflect()" % (self.get_name(), elapsed_time * 1000))
 
     def dispatch_narration(self, event: Event) -> None:
         """
         Function to receive narration change events from the Narrator
         """
-        self.memory.append(event)
+        # self.memory.append(event)
+        pass
 
     def debug_timer(self):
         debug("[DEBUG_TIMER - %s] Private Memory(len=%s):\n%s" % (self.get_name(), len(self.memory), self.memory))

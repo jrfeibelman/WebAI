@@ -9,11 +9,10 @@ Logger:
 StoryEngine:
   UseGui: False # Changing this is not reccomended
   WorkerThreadTimerMs: 1000
-  AgentThoughtTimerSec: 2
-  AgentActionTimerSec: 6
+  AgentTimerSec: 5
   NarrationTimerSec: 12
   # DebugTimerSec: 30
-  StopAfterCycles: 5
+  # StopAfterCycles: 5 # Exits the program after X cycles
 Narrator:
 Agents:
   NumAgents: 4

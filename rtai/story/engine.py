@@ -6,7 +6,7 @@ from numpy import uint16, uint32
 
 from rtai.utils.config import Config
 from rtai.story.narrator import Narrator
-from rtai.story.agent_manager import AgentManager
+from rtai.persona.agent_manager import AgentManager
 from rtai.core.event import Event, EventType
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
@@ -27,25 +27,34 @@ STORY_CONFIG = 'StoryEngine'
 NARRATOR_CONFIG = 'Narrator'
 
 WORKER_THREAD_TIMER_CONFIG = 'WorkerThreadTimerMs'
-AGENT_THOUGHT_TIMER_CONFIG = 'AgentThoughtTimerSec'
-AGENT_ACTION_TIMER_CONFIG = 'AgentActionTimerSec'
+AGENT_TIMER_CONFIG = 'AgentTimerSec'
 NARRATION_TIMER_CONFIG = 'NarrationTimerSec'
 DEBUG_TIMER_CONFIG = 'DebugTimerSec'
 
 WORKER_TIMER_DEFAULT = 100 # MilliSec
-AGENT_THOUGHT_TIMER_DEFAULT = 5 # Sec
-AGENT_ACTION_TIMER_DEFAULT = 15 # Sec
+AGENT_TIMER_DEFAULT = 5 # Sec
 NARRATION_TIMER_DEFAULT = 120 # Sec
 DEBUG_TIMER_CONFIG_DEFAULT = 0 # Sec
 
 WORKER_THREAD_NAME = 'WorkerThread'
-AGENT_THOUGHT_THREAD_NAME = 'AgentThoughtThread'
-AGENT_ACTION_THREAD_NAME = 'AgentActionThread'
+AGENT_THREAD_NAME = 'AgentThread'
 NARRATION_THREAD_NAME = 'NarrationThread'
 DEBUG_THREAD_NAME = 'DebugThread'
 MAX_CYCLES = 'StopAfterCycles'
 
 class StoryEngine:
+    cfg: Config
+    queue: Queue
+    public_mem: List[Event]
+    use_gui: bool
+    debug_mode: bool
+    max_cycles: uint32
+    stop_after_cycles: bool
+    force_stop: bool
+    cycle_count: uint32
+    narrator: Narrator
+    agent_mgr: AgentManager
+    timer_mgr: TimerManager
 
     def __init__(self, cfg: Config, debug_mode: bool=False):
         self.cfg: Config = cfg.expand(STORY_CONFIG)
@@ -72,8 +81,7 @@ class StoryEngine:
 
         # Set up threaded timers
         self.timer_mgr: TimerManager = TimerManager()
-        self.timer_mgr.add_timer(AGENT_THOUGHT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_THOUGHT_TIMER_CONFIG, AGENT_THOUGHT_TIMER_DEFAULT)), self.agent_mgr.generate_reveries)
-        self.timer_mgr.add_timer(AGENT_ACTION_THREAD_NAME, uint16(self.cfg.get_value(AGENT_ACTION_TIMER_CONFIG, AGENT_ACTION_TIMER_DEFAULT)), self.agent_mgr.generate_actions)
+        self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update)
         self.timer_mgr.add_timer(NARRATION_THREAD_NAME, uint16(self.cfg.get_value(NARRATION_TIMER_CONFIG, NARRATION_TIMER_DEFAULT)), self.narrator.generate_narration)
         self.timer_mgr.add_timer(WORKER_THREAD_NAME, uint16(self.cfg.get_value(WORKER_THREAD_TIMER_CONFIG, WORKER_TIMER_DEFAULT)), self.poll_event_queue, milliseconds=True)
         
@@ -121,7 +129,7 @@ class StoryEngine:
         send.pack(side=TOP)
 
         info("Starting GUI")
-        Thread().start()
+        Thread().start() # ????????? wtf is this
         self.root.after(100, self.process_event_queue)
         
         self.root.mainloop()

@@ -1,8 +1,10 @@
 from abc import abstractmethod, ABCMeta
-
-from rtai.utils.logging import error
+from typing import Dict
+from rtai.utils.logging import warn
 
 class Cache(metaclass=ABCMeta):
+    _dict: dict
+    _idx: int
 
     def __init__(self, cache_dict=dict(), lock=None):
         self._dict = cache_dict
@@ -40,7 +42,7 @@ class Cache(metaclass=ABCMeta):
             return self._dict[key]
         else:
             errStr = "Key [%s] not found in %s@[%s]." % (key, self.__class__, hex(id(self)))
-            error(errStr)
+            warn(errStr)
             raise KeyError(errStr)
 
     def __setitem__(self, key, value):
