@@ -10,3 +10,8 @@
 
 2) Add rtai dir to python path:
     export PYTHONPATH="${PYTHONPATH}:./rtai"
+
+3) `python3 rtai/main.py`
+
+### TODOs
+cap the 

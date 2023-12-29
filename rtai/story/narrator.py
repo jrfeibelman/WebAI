@@ -7,16 +7,17 @@ from rtai.utils.config import Config
 from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug
-from openai import OpenAI
+from rtai.llm.llm_client import LLMClient
+
 
 class Narrator(AbstractAgent):
-    def __init__(self, event_queue: Queue, cfg: Config):
+    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient):
         super().__init__()
         self.queue: Queue = event_queue
+        self.llm_client = client
         self.cfg: Config = cfg
         self.narration: List[Event] = []
-        self._counter: int = 0 # TODO eventually delete ?
-        self.client = OpenAI(base_url="http://localhost:1234/v1", api_key="not-needed")
+        self._counter: int = 0 # TODO eventually delete ? add termination to config
         info("Initialized narrator")
 
     @TimerManager.timer_callback
@@ -25,19 +26,14 @@ class Narrator(AbstractAgent):
         start_time = perf_counter()
 
         # TODO - call LLM to generate narration
-        completion = self.client.chat.completions.create(
-            model="local-model", # this field is currently unused
-            messages=[
-                {"role": "system", "content": "You are a storyteller. Generate short descriptions of the following characters"},
-                {"role": "user", "content": "Introduce yourself as batman."}
-            ],
-            temperature=0.7,
-        )
-        print(completion.choices[0].message)
+        prompt = "Joker"
+        completion = self.llm_client.generate_from_prompt(prompt)
+
         new_narration = "Narration %s" % self._counter
 
+        # TODO: move error handling to the LLM Client? or LLMServer
         try:
-            new_narration += "\n" + str(completion.choices[0].message).strip()
+            new_narration += "\n" + completion
         except:
             new_narration += "\n" + "Failed to generate narration for some reason"
 

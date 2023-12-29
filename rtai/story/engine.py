@@ -10,13 +10,14 @@ from rtai.story.agent_manager import AgentManager
 from rtai.core.event import Event, EventType
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
-
+from rtai.llm.llm_client import LLMClient
 """
 TODO:
 - Memory Profile
 - In debugging print out narration change
 - Agent Personalities
 - Hooking up to LLM
+- Limit iterations to max steps
 
 ToThink:
 - Thought -> Action -> Reverie -> Reflection ?
@@ -51,10 +52,15 @@ class StoryEngine:
         self.queue: Queue = Queue()
         self.public_mem: List[Event] = []
         self.use_gui: bool = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
+
         self.debug_mode: bool = debug_mode
         
+        # add llm client here? <-- TODO: add llm interface here
+        # Setup LLM Client
+        self.llm_client: LLMClient = LLMClient(cfg.expand("LLMClient"))
+        
         # Set up Agents
-        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG))
+        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
         self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG))
         if not self.agent_mgr.register(self.narrator):
             error("Unable to register narrator with agent manager. Exiting.")
@@ -64,7 +70,7 @@ class StoryEngine:
             error("Unable to initialize agent manager. Exiting.")
             exit(1)
 
-        # Set up threaded timers
+        # Set up threaded timers (i.e. create a thought every x seconds)
         self.timer_mgr: TimerManager = TimerManager()
         self.timer_mgr.add_timer(AGENT_THOUGHT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_THOUGHT_TIMER_CONFIG, AGENT_THOUGHT_TIMER_DEFAULT)), self.agent_mgr.generate_reveries)
         self.timer_mgr.add_timer(AGENT_ACTION_THREAD_NAME, uint16(self.cfg.get_value(AGENT_ACTION_TIMER_CONFIG, AGENT_ACTION_TIMER_DEFAULT)), self.agent_mgr.generate_actions)
