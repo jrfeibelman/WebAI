@@ -24,6 +24,8 @@ The prompt logic is in `llm/prompt.py`. Currently, there is a reverie_prompt for
 
 One thing to think about is what is assosciated with the agent and what is assosciated with the LLMClient.
 
+Need to move away from LMStudio server so can have more control...but might need to be OpenAI API compliant to use any libraries
+
 ### TODOs
 * clarify when a thought should be done 
     * in the paper, this is done with <- can this be done without the environment? probably...
