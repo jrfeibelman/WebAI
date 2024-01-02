@@ -2,13 +2,13 @@ from time import perf_counter
 from typing import List
 from queue import Queue
 
-from rtai.persona.abstract_agent import AbstractAgent
+from rtai.agent.abstract_agent import AbstractAgent
 from rtai.utils.config import Config
 from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
-from rtai.utils.logging import info, debug
+from rtai.utils.logging import info, debug, log_transcript
 from rtai.llm.llm_client import LLMClient
-
+from rtai.world.clock import WorldClock
 
 class Narrator(AbstractAgent):
     queue: Queue
@@ -16,13 +16,15 @@ class Narrator(AbstractAgent):
     narration: List[Event]
     _counter: int
     llm_client: LLMClient
+    world_clock: WorldClock
 
-    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient):
+    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient, world_clock: WorldClock):
         super().__init__()
         self.queue: Queue = event_queue
         self.llm_client = client
         self.cfg: Config = cfg
         self.narration: List[Event] = []
+        self.world_clock = world_clock
         self._counter: int = 0 # TODO eventually delete ? add termination to config
         info("Initialized narrator")
 
@@ -35,16 +37,11 @@ class Narrator(AbstractAgent):
         prompt = "Joker"
         completion = self.llm_client.generate_from_prompt(system_prompt="You are a narrator", user_prompt=prompt)
 
-        new_narration = "Narration %s" % self._counter
-
-        try:
-            new_narration += "\n" + completion
-        except:
-            new_narration += "\n" + "Failed to generate narration for some reason"
+        log_transcript('Narrator', self.world_clock.get_time_str(), 'Auto', completion)
 
         elapsed_time = perf_counter() - start_time
 
-        event = Event.create_narration_event(self, new_narration)
+        event = Event.create_narration_event(self, completion)
 
         info("Narrator [%s] took [%s] ms for generate_narration()" % (self.get_name(), elapsed_time * 1000))
         

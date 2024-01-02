@@ -2,15 +2,18 @@ from queue import Queue
 from threading import Thread
 from typing import List
 from sys import exit
-from numpy import uint16, uint32
+from numpy import uint16, uint64
 
 from rtai.utils.config import Config
 from rtai.story.narrator import Narrator
-from rtai.persona.agent_manager import AgentManager
+from rtai.agent.agent_manager import AgentManager
 from rtai.core.event import Event, EventType
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
 from rtai.llm.llm_client import LLMClient
+from rtai.world.clock import WorldClock
+from tests.mock.llm.llm_client_mock import LLMTestClient
+
 """
 TODO:
 - Memory Profile
@@ -31,17 +34,22 @@ WORKER_THREAD_TIMER_CONFIG = 'WorkerThreadTimerMs'
 AGENT_TIMER_CONFIG = 'AgentTimerSec'
 NARRATION_TIMER_CONFIG = 'NarrationTimerSec'
 DEBUG_TIMER_CONFIG = 'DebugTimerSec'
+WORLD_CLOCK_TIMER_CONFIG = 'WorldClockScaleMs'
 
 WORKER_TIMER_DEFAULT = 100 # MilliSec
 AGENT_TIMER_DEFAULT = 5 # Sec
 NARRATION_TIMER_DEFAULT = 120 # Sec
 DEBUG_TIMER_CONFIG_DEFAULT = 0 # Sec
+WORLD_CLOCK_TIMER_DEFAULT = 500 # MilliSec
 
 WORKER_THREAD_NAME = 'WorkerThread'
 AGENT_THREAD_NAME = 'AgentThread'
 NARRATION_THREAD_NAME = 'NarrationThread'
 DEBUG_THREAD_NAME = 'DebugThread'
+WORLD_CLOCK_THREAD_NAME = 'WorldClockThread'
+
 MAX_CYCLES = 'StopAfterCycles'
+MAX_DAYS = 'StopAfterDays'
 
 class StoryEngine:
     cfg: Config
@@ -49,34 +57,40 @@ class StoryEngine:
     public_mem: List[Event]
     use_gui: bool
     debug_mode: bool
-    max_cycles: uint32
-    stop_after_cycles: bool
     force_stop: bool
-    cycle_count: uint32
     narrator: Narrator
     agent_mgr: AgentManager
     timer_mgr: TimerManager
+    max_cycles: uint64
+    max_days: uint16
+    world_clock: uint16
 
-    def __init__(self, cfg: Config, debug_mode: bool=False):
+    def __init__(self, cfg: Config, debug_mode: bool=False, test_mode: bool=False):
         self.cfg: Config = cfg.expand(STORY_CONFIG)
         self.queue: Queue = Queue()
         self.public_mem: List[Event] = []
         self.use_gui: bool = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
+        self.max_cycles: uint64 = uint64(self.cfg.get_value(MAX_CYCLES, "0"))
+        self.max_days: uint16 = uint16(self.cfg.get_value(MAX_DAYS, "0"))
 
         self.debug_mode: bool = debug_mode
+        self.test_mode: bool = test_mode
 
-        self.max_cycles: uint32 = uint32(self.cfg.get_value(MAX_CYCLES, "0"))
-        self.stop_after_cycles: bool = self.max_cycles > 0
         self.force_stop: bool = False
-        self.cycle_count: uint32 = uint32(0)
+
+        # Setup World Clock
+        self.world_clock = WorldClock()
         
-        # add llm client here? <-- TODO: add llm interface here
         # Setup LLM Client
-        self.llm_client: LLMClient = LLMClient(cfg.expand("LLMClient"))
+        if test_mode:
+            self.llm_client: LLMClient = LLMTestClient(cfg.expand("LLMClient"))
+            warn("Test mode enabled. LLMClient will leverage test data for responses")
+        else:
+            self.llm_client: LLMClient = LLMClient(cfg.expand("LLMClient"))
         
         # Set up Agents
-        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
-        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client)
+        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client, world_clock=self.world_clock)
+        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world_clock=self.world_clock)
         if not self.agent_mgr.register(self.narrator):
             error("Unable to register narrator with agent manager. Exiting.")
             exit(1)
@@ -90,6 +104,7 @@ class StoryEngine:
         self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update)
         self.timer_mgr.add_timer(NARRATION_THREAD_NAME, uint16(self.cfg.get_value(NARRATION_TIMER_CONFIG, NARRATION_TIMER_DEFAULT)), self.narrator.generate_narration)
         self.timer_mgr.add_timer(WORKER_THREAD_NAME, uint16(self.cfg.get_value(WORKER_THREAD_TIMER_CONFIG, WORKER_TIMER_DEFAULT)), self.poll_event_queue, milliseconds=True)
+        self.timer_mgr.add_timer(WORLD_CLOCK_THREAD_NAME, uint16(self.cfg.get_value(WORLD_CLOCK_TIMER_CONFIG, WORLD_CLOCK_TIMER_DEFAULT)), self.world_clock.tick, milliseconds=True)
         
         # Debug printing
         debug_timer_sec = uint16(self.cfg.get_value(DEBUG_TIMER_CONFIG, DEBUG_TIMER_CONFIG_DEFAULT))
@@ -153,9 +168,11 @@ class StoryEngine:
         else:
             self.poll_input()
 
-    def stop(self):
+    def stop(self, status=0):
         self.force_stop = True
         self.timer_mgr.stop_timers()
+        info("Shutdown complete")
+        exit(status)
 
     def poll_input(self):
         while not self.force_stop:
@@ -206,14 +223,14 @@ class StoryEngine:
                 from tkinter import END
                 self.txt.insert(END, "\n" + "%s" % event)
                 # self.root.after(100, self.process_event_queue) # TODO this line needed for gui?
-            
-        self.cycle_count += 1
-        if self.stop_after_cycles and self.cycle_count >= self.max_cycles:
-            info("Stopping after %d cycles" % self.max_cycles)
-            self.stop()
-            info("Shutdown complete. Press enter to exit")
-            exit(1)
 
+        # Is this the right place to do this?
+        if self.max_cycles > 0 and self.agent_mgr.get_cycle_count() >= self.max_cycles:
+            info("Stopping after %d cycles" % self.agent_mgr.get_cycle_count())
+            self.stop()
+        if self.max_days > 0 and self.world_clock.get_day_count() >= self.max_days:
+            info("Stopping after %d days" % self.world_clock.get_day_count())
+            self.stop()
 
     def process_event(self, event: Event):
         if event.get_event_type() == EventType.NarrationEvent:

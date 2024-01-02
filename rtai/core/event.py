@@ -2,7 +2,7 @@ from enum import Enum
 from numpy import uint16
 
 from rtai.utils.time import now
-from rtai.persona.abstract_agent import AbstractAgent
+from rtai.agent.abstract_agent import AbstractAgent
 
 class EventType(Enum):
     InvalidEvent=uint16(0)

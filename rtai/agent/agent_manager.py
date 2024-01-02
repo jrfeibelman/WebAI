@@ -1,14 +1,16 @@
 from typing import List, Set
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
+from numpy import uint64
 
 from rtai.utils.config import Config
-from rtai.persona.agent import Agent
-from rtai.persona.abstract_agent import AbstractAgent
+from rtai.agent.agent import Agent
+from rtai.agent.abstract_agent import AbstractAgent
 from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error
 from rtai.llm.llm_client import LLMClient
+from rtai.world.clock import WorldClock
 
 DEFAULT_NUM_AGENTS = 4
 NUM_AGENTS_CONFIG = "NumAgents"
@@ -26,8 +28,11 @@ class AgentManager:
     registry: Set[str]
     last_narration: Event
     thread_pool: ThreadPoolExecutor
+    cycle_count: uint64
+    client: LLMClient
+    world_clock: WorldClock
 
-    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient):
+    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient, world_clock: WorldClock):
         self.queue = event_queue
         self.cfg: Config = cfg
         self.agents: List[Agent] = []
@@ -35,10 +40,19 @@ class AgentManager:
         self.last_narration: Event = Event.create_empty_event()
         self.tp: ThreadPoolExecutor = None
         self.client = client
+        self.cycle_count = uint64(0)
+        self.world_clock = world_clock
 
     def initialize(self) -> bool:
         num_agents = int(self.cfg.get_value(NUM_AGENTS_CONFIG, DEFAULT_NUM_AGENTS))
-        self.agents = [Agent(self, self.queue, self.client) for _ in range(num_agents)]
+
+        for _ in range(num_agents):
+            a = Agent(self, self.queue, self.client)
+            if self.register(a):
+                self.agents.append(a)
+        
+        if len(self.agents) != num_agents:
+            error("There was an error initializing some agents.")
 
         info("Initialized Agent Manager with [%d] agents" % len(self.agents))
         self.tp = ThreadPoolExecutor(len(self.agents))
@@ -60,8 +74,6 @@ class AgentManager:
             error("Unable to register agent [%s] with Agent Manager. Name likely already taken" % name)
             return False
         
-
-        
         self.registry.add(name)
         info("Registered agent [%s] with Agent Manager" % name)
         return True
@@ -80,9 +92,14 @@ class AgentManager:
         # Then generate reflections / reveries for all the agents
         wait([self.tp.submit(a.reflect) for a in self.agents])
 
+        self.cycle_count += 1
+
     
     def get_last_narration(self) -> Event:
         return self.last_narration
     
     def debug_timer(self):
         [a.debug_timer() for a in self.agents]
+
+    def get_cycle_count(self) -> uint64:
+        return self.cycle_count

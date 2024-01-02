@@ -14,13 +14,13 @@ StoryEngine:
   NarrationTimerSec: 12
   # DebugTimerSec: 30
   # StopAfterCycles: 5 # Exits the program after X cycles
-  # StopAfterDays: 2 # Exits the program after X days
+  StopAfterDays: 1 # Exits the program after X days
   WorldClockScaleMs: 500 # Minutes to milliseconds
 Narrator:
 Agents:
-  NumAgents: 2
+  NumAgents: 1
 LLMClient: # This is the client that connects to the LLM
   model_name: "mistral"
-  base_url: "http://localhost:1234/v1"
+  base_url: "http://192.168.1.70:1234/v1"
   api_key: "not-needed"
 ...
