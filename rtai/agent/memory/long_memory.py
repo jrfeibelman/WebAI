@@ -1,7 +1,7 @@
 from typing import Tuple, Set, Dict, List
 from numpy import uint64, uint32
-from datetime import datetime, date
 
+from rtai.utils.datetime import datetime
 from rtai.core.event import EventType
 
 class ConceptNode:
@@ -10,9 +10,9 @@ class ConceptNode:
     type_count: uint64
     event_type: EventType
 
-    created: date
-    expiration: date
-    last_accessed: date # Might want to make this datetime
+    created: datetime
+    expiration: datetime
+    last_accessed: datetime # Might want to make this datetime
 
     subject: str
     predicate: str
@@ -21,8 +21,8 @@ class ConceptNode:
     description: str
     keywords: Set[str]
 
-    def __init__(self, node_id: str, node_count: uint64, type_count: uint64, event_type: EventType, created: date, 
-                 expiration: date, subject: str, predicate: str, obj: str, description: str, keywords: Set[str]): 
+    def __init__(self, node_id: str, node_count: uint64, type_count: uint64, event_type: EventType, created: datetime, 
+                 expiration: datetime, subject: str, predicate: str, obj: str, description: str, keywords: Set[str]): 
         
         self.node_id = node_id
         self.node_count = node_count
@@ -64,7 +64,7 @@ class LongTermMemory:
         self.kw_to_thought = dict()
         self.kw_to_chat = dict()
 
-    def add_thought(self, created: date, expiration : date, subject: str, predicate: str, 
+    def add_thought(self, created: datetime, expiration : datetime, subject: str, predicate: str, 
                     obj: str, thought: str, keywords: Set[str]) -> ConceptNode:
         # Setting up the node ID and counts
         node_count = len(self.id_to_node.keys()) + 1

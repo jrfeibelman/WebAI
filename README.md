@@ -27,3 +27,16 @@ One thing to think about is what is assosciated with the agent and what is assos
 ### TODOs
 * clarify when a thought should be done 
     * in the paper, this is done with <- can this be done without the environment? probably...
+
+-----
+Jason TODO
+1) Chat functionality **** add chat to 2 agents daily schedule
+    - don't add new fu
+    - What does it look like when agents interact?
+2) Simulated world
+    - if agents are not in the same room, they cannot interact
+    - DAG map of locations, each with a name and description
+---------------------
+2) Reflection functionality
+4) Creating thoughts
+

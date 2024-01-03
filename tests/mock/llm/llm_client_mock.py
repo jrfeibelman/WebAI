@@ -1,8 +1,9 @@
 from pytest import fixture
-from typing import List
+from typing import List, Tuple
 
 from rtai.llm.llm_client import LLMClient
 from rtai.utils.config import Config
+from rtai.agent.persona import Persona
 
 @fixture(scope="session")
 def mock_llm_client(mock_config_base: Config):
@@ -33,28 +34,19 @@ class LLMTestClient(LLMClient):
     def generate_daily_req(self) -> str:
         return 'Get more groceries, attend work at Goliath National Bank, have dinner with Dolores, pick up daughter from school, patrol the streets of New York City for crime'
     
-    def generate_daily_schedule(self, wake_up_hour: str) -> List[str]:
+    def generate_daily_schedule(self, persona: Persona, wake_up_hour: str) -> List[Tuple[str]]:
+        """(start_time, duration, text)
+        """
         return [
-            "6:30 AM: Wake up and get washed up",
-            "7:00 AM: Cook and eat breakfast",
-            "7:30 AM: Attend work",
-            "9:00 AM: Attend work",
-            "10:00 AM: Attend work",
-            "11:00 AM: Attend work",
-            "12:00 PM: Get lunch at work",
-            "01:00 PM: Attend work",
-            "02:00 PM: Attend work",
-            "03:00 PM: Attend work",
-            "04:00 PM: Attend work",
-            "05:00 PM: Pick up daughter from school",
-            "05:30 PM: Get more groceries",
-            "06:00 PM: Go home and cook dinner",
-            "07:00 PM: Have dinner with Dolores",
-            "08:00 PM: Patrol the streets of New York City for crime",
-            "09:00 PM: Patrol the streets of New York City for crime",
-            "10:00 PM: Patrol the streets of New York City for crime",
-            "11:00 PM: Patrol the streets of New York City for crime",
-            "12:00 AM: Go home and to bed",
+            ("6:30 AM", "0.5", "Wake up and get washed up"),
+            ("7:00 AM", "0.5", "Cook and eat breakfast"),
+            ("7:30 AM", "8.5", "Attend work"),
+            ("04:00 PM", "0.5", "Pick up daughter from school"),
+            ("04:30 PM", "0.5", "Get more groceries"),
+            ("05:00 PM", "1.0", "Go home and cook dinner"),
+            ("06:00 PM", "1.0", "Have dinner with Dolores"),
+            ("07:00 PM", "5.0", "Patrol the streets of New York City for crime"),
+            ("12:00 AM", "0.0", "Go home and to bed"),
         ]
 
     def generate_from_prompt(self, system_prompt: str = "", user_prompt: str = "") -> str:

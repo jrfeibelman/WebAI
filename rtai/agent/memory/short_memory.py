@@ -1,7 +1,7 @@
 from numpy import uint8, uint16, float32
 from numpy.random import normal
-from datetime import datetime, timedelta
-from typing import Dict, List
+from datetime import timedelta
+from typing import Dict, List, Tuple
 from random import choice
 
 from rtai.utils.logging import log_transcript, log_debug
@@ -10,6 +10,7 @@ from rtai.llm.llm_client import LLMClient
 from rtai.agent.agent_event.action import Action
 from rtai.agent.agent_event.chat import Chat
 from rtai.world.clock import WorldClock
+from rtai.utils.datetime import datetime
 
 class ShortTermMemory:
     # Factor to determine temporal order of events so agents don't perceive same events at each timestep
@@ -81,7 +82,7 @@ class ShortTermMemory:
             - There is a lot of common tasks that might be done across different agents, create interface for hooks/callbacks from different actions
             over maybe some channel over API, then hook up front end to it?
     """
-    daily_schedule: List[str]
+    daily_schedule: List[Tuple[str]]
     daily_completed: List[str]
 
     # Current action or chatting fields
@@ -114,12 +115,8 @@ class ShortTermMemory:
                         action_address: str, 
                         action_start_time: datetime,
                         action_duration : timedelta,
-                        action_description: str,
-                        action_event: str): 
-        self.act_description = action_description
-        self.act_event = action_event
-        self.act_start_time = self.world_clock.get_time_raw()
-        self.current_action.reset_with(address=action_address, start_time=action_start_time, duration=action_duration)
+                        action_description: str): 
+        self.current_action.reset_with(address=action_address, start_time=action_start_time, duration=action_duration, description=action_description)
 
 
     def get_act_time_str(self) -> str: 
@@ -140,8 +137,8 @@ class ShortTermMemory:
             return True
         
         end_time = self.current_chat.end_time if self.chatting_with else self.current_action.end_time
-
-        if end_time.strftime('%H:%M:%S %p') == self.world_clock.get_time_str(): 
+        print("JASON COMPARE END [%s] <= WORLD [%s]" % (end_time, self.world_clock.snapshot()))
+        if end_time <= self.world_clock.snapshot(): 
             return True
         return False
     
@@ -157,8 +154,8 @@ class ShortTermMemory:
         self.daily_req = self.llm_client.generate_daily_req()
         log_debug("Agent [%s] generated daily requirements: [%s]" % (self.persona.name, self.daily_req))
 
-    def generate_hourly_schedule(self, wake_up_hour) -> None:
-        self.daily_schedule = self.llm_client.generate_daily_schedule(wake_up_hour)
+    def generate_hourly_schedule(self, persona: Persona, wake_up_hour) -> None:
+        self.daily_schedule = self.llm_client.generate_daily_schedule(persona, wake_up_hour)
         log_debug("Agent [%s] generated hourly schedule: [%s]" % (self.persona.name, self.daily_schedule))
 
     def generate_wake_up_hour(self) -> str:

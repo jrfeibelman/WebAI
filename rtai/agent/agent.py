@@ -1,7 +1,7 @@
 from __future__ import annotations
 from time import perf_counter
 from queue import Queue
-from datetime import timedelta, time, datetime
+from datetime import timedelta
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -14,6 +14,7 @@ from rtai.utils.logging import info, debug, log_transcript
 from rtai.agent.persona import Persona
 from rtai.agent.memory.short_memory import ShortTermMemory
 from rtai.agent.memory.long_memory import LongTermMemory, ConceptNode
+from rtai.utils.datetime import datetime
 from rtai.llm.llm_client import LLMClient
 from rtai.llm.prompt import reverie_prompt
 
@@ -179,94 +180,54 @@ class Agent(AbstractAgent):
         debug("Agent [%s] took [%s] ms for reflect()" % (self.get_name(), elapsed_time * 1000))
 
     def _determine_action(self) -> Event:
-        """ TODO --> need to generate an action here
-        Creates the next action sequence for the persona. 
-        The main goal of this function is to run "add_new_action" on the persona's 
-        scratch space, which sets up all the action related variables for the next 
-        action. 
-        As a part of this, the persona may need to decompose its hourly schedule as 
-        needed.   
+        """ Generate next action sequence here for agent --> call add_new_action
+        
+        TODO - As a part of this, persona may need to decompose hourly schedule into smaller tasks for long duration events   
+        TODO - There might be core events, such as meals and bed time, which are tasks that must be accomplished on a given day
+        TODO - There might be fixed events such as work and events shared with other agents, which are tasked that have non-negotiable start times
 
-
-        Get last completed action
-        Get current index into daily schedule
-        Get next action from daily schedule
-        Set next action as current action
-
-        TODO THIS WE NEED:
-
-        - 
-
+        Example Hourly Sched:
+            ("6:30 AM", "0.5", "Wake up and get washed up"),
+            ("7:00 AM", "0.5", "Cook and eat breakfast"),
+            ("7:30 AM", "8.5", "Attend work"),
+            ("04:00 PM", "0.5", "Pick up daughter from school"),
+            ("04:30 PM", "0.5", "Get more groceries"),
+            ("05:00 PM", "1.0", "Go home and cook dinner"),
+            ("06:00 PM", "1.0", "Have dinner with Dolores"),
+            ("07:00 PM", "5.0", "Patrol the streets of New York City for crime"),
+            ("12:00 AM", "0.0", "Go home and go to sleep"),
         """
-        # Get last completed action
-        last_action_completed = self.s_mem.current_action
+        action_start: datetime = self.agent_mgr.world_clock.snapshot()
+
         # Get current index into daily schedule
         if self.s_mem.daily_schedule_idx == 0:
-            # DO first of day items
-            pass
-
-        current_action = self.s_mem.daily_schedule[self.s_mem.daily_schedule_idx]
-        next_action_str = None
-
-        # Find index of next unique action in schedule
-        while self.s_mem.daily_schedule_idx < len(self.s_mem.daily_schedule):
-            next_action_str = self.s_mem.daily_schedule[self.s_mem.daily_schedule_idx]
-            if next_action_str != current_action:
-                break
-            self.s_mem.daily_schedule_idx += 1
+            # Schedule sleep --> Wakeup event
+            action_desc = "Sleep"
+            wake_up_hour_str = self.s_mem.daily_schedule[0][0] # TODO wakeup hour by LLM or by other func?
+            action_dur = action_start.get_timedelta_from_time_str(wake_up_hour_str)
+        else:
+            _, tmp_dur, action_desc = self.s_mem.daily_schedule[self.s_mem.daily_schedule_idx] # TODO use action_start
+            action_dur = timedelta(minutes=int(float(tmp_dur) * 60))
 
         if self.s_mem.daily_schedule_idx >= len(self.s_mem.daily_schedule):
             # TODO end of day - schedule completed
             pass
 
-        # Find duration of next action and end time
-        # TODO - get rid of string operations and use datetime objects
-        next_duration = timedelta
-        i = self.s_mem.daily_schedule_idx
-        while i < len(self.s_mem.daily_schedule):
-            temp_action_str = self.s_mem.daily_schedule[i]
-            if next_action_str != temp_action_str or i == len(self.s_mem.daily_schedule) - 1:
-                time0 = next_action_str.split(': ')[0]
-                time1 = temp_action_str.split(': ')[0]
-                h0, tmp0 = time0.split(':')[0:2]
-                h1, tmp1 = time1.split(':')[0:2]
-                m0, md0 = tmp0.split(' ')[0:2]
-                m1, md1 = tmp1.split(' ')[0:2]
-                h0, h1, m0, m1 = int(h0), int(h1), int(m0), int(m1)
-                if md0 == 'PM':
-                    h0 += 12
-                if md1 == 'PM':
-                    h1 += 12
-
-                next_duration = timedelta(hours=h1-h0, minutes=m1-m0)
-                break
-
-            i += 1
-
-
-
-        """ Set create action fron next action string
-        
-            Need to:
-            1) Get action address
-            2) Get action start time
-            3) Get action duration
-            4) Get action description
-
-        """
         action_address = 'Test Address' # TODO add locations of actions
-        action_start: datetime = self.agent_mgr.world_clock.get_datetime_raw()
-        action_start_str = self.agent_mgr.world_clock.get_time_str()
+        action_start_str = action_start.get_time_str()
         self.s_mem.add_new_action(action_address=action_address,
                                   action_start_time=action_start,
-                                  action_duration=next_duration,
-                                  action_description=next_action_str,
-                                  action_event='action')
+                                  action_duration=action_dur,
+                                  action_description=action_desc)
         
-        log_transcript(self.get_name(), action_start_str, 'Action', next_action_str)
-        # Dispatch action
+        log_transcript(self.get_name(), action_start_str, 'Action', action_desc)
+        
+        # TODO Dispatch action
 
-        return Event.create_action_event(self, next_action_str)
+        # Increment index to next action
+        self.s_mem.daily_schedule_idx += 1
+
+        return Event.create_action_event(self, action_desc)
 
 
     def _create_day_plan(self, new_day: bool, first_day: bool) -> None:
@@ -294,7 +255,7 @@ class Agent(AbstractAgent):
         log_transcript(self.get_name(), self.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Requirements: %s' % self.s_mem.daily_req)
 
         # Create hourly schedule for the persona - list of todo items where each has a duration that adds up to a full day
-        self.s_mem.generate_hourly_schedule(wake_up_hour)
+        self.s_mem.generate_hourly_schedule(self.persona, wake_up_hour)
 
         log_transcript(self.get_name(), self.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Schedule: %s' % self.s_mem.daily_schedule)
 
@@ -304,7 +265,7 @@ class Agent(AbstractAgent):
         for i in self.s_mem.daily_plan:
             thought += f" {i},"
         thought = thought[:-1] + "."
-        created = self.agent_mgr.world_clock.get_date_raw()
+        created = self.agent_mgr.world_clock.snapshot()
         expiration = created + timedelta(days=30)
 
         s, p, o = (self.persona.name, "plan", date_str)

@@ -10,12 +10,12 @@ Logger:
 StoryEngine:
   UseGui: False # Changing this is not reccomended
   WorkerThreadTimerMs: 1000
-  AgentTimerSec: 5
-  NarrationTimerSec: 12
+  AgentTimerSec: 5 # TODO replace with being determined by cycles instead of seconds
+  NarrationTimerSec: 120 # TODO replace with being determined by cycles instead of seconds
   # DebugTimerSec: 30
   # StopAfterCycles: 5 # Exits the program after X cycles
   StopAfterDays: 1 # Exits the program after X days
-  WorldClockScaleMs: 500 # Minutes to milliseconds
+  WorldClockScaleMs: 100 # Minutes to milliseconds
 Narrator:
 Agents:
   NumAgents: 1
