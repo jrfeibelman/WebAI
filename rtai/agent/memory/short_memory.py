@@ -96,6 +96,8 @@ class ShortTermMemory:
         self.daily_schedule_idx = 0
         self.daily_completed = []
 
+        # TODO need functionality to pause an action and possibly resume it later
+        # Some actions are core actions and others are fixed time actions
         self.current_action = Action(None, None, None, None)
         self.chatting_with = None # TODO
         self.current_chat = Chat(None, None, None, None)
@@ -105,9 +107,10 @@ class ShortTermMemory:
                         action_start_time: datetime,
                         action_duration : timedelta,
                         action_description: str):
-        a = self.current_action
-        self.current_action = Action(description=action_description, address=action_address, start_time=action_start_time, duration=action_duration)
-        return a
+        """
+        Function to add a new
+        """
+        return Action(description=action_description, address=action_address, start_time=action_start_time, duration=action_duration)
 
     def get_act_time_str(self) -> str: 
         return self.act_start_time.strftime("%H:%M %p")

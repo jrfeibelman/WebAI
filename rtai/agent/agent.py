@@ -17,6 +17,7 @@ from rtai.utils.datetime import datetime
 from rtai.llm.llm_client import LLMClient
 from rtai.agent.cognition.agent_concept import AgentConcept
 from rtai.agent.cognition.action import Action
+from rtai.agent.cognition.cognition import Cognition
 
 class Agent(AbstractAgent):
     """
@@ -39,6 +40,7 @@ class Agent(AbstractAgent):
     l_mem : LongTermMemory
     conversations: List[Event]
     persona: Persona
+    cognition: Cognition
     # String representation of persona for LLM calls
     common_set: str
 
@@ -66,6 +68,7 @@ class Agent(AbstractAgent):
 
         self.s_mem = ShortTermMemory(self.persona, self.llm_client, self.agent_mgr.world_clock)
         self.l_mem = LongTermMemory()
+        self.cognition = Cognition(self)
 
         info("Created Agent [%s]" % self.get_name())
 
@@ -214,10 +217,12 @@ class Agent(AbstractAgent):
 
         action_address = 'Test Address' # TODO add locations of actions
         action_start_str = action_start.get_time_str()
+        completed_action = self.s_mem.current_action
         new_action: Action = self.s_mem.add_new_action(action_address=action_address,
                                   action_start_time=action_start,
                                   action_duration=action_dur,
                                   action_description=action_desc)
+        # TODO should we only add action to long memory once it completes or add it here?
         # self.l_mem.add_action(new_action) # TODO
         
 

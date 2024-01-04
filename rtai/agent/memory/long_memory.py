@@ -15,9 +15,9 @@ class LongTermMemory:
     id_to_node: Dict[str, AgentConcept]
     seq_action: List[AgentConcept]
     seq_thought: List[AgentConcept]
-    kw_to_event: Dict[str, AgentConcept]
-    kw_to_thought: Dict[str, AgentConcept]
-    kw_to_chat: Dict[str, AgentConcept]
+    kw_to_event: Dict[str, List[AgentConcept]]
+    kw_to_thought: Dict[str, List[AgentConcept]]
+    kw_to_chat: Dict[str, List[AgentConcept]]
 
     def __init__(self):
         self.id_to_node = dict()

@@ -6,4 +6,3 @@ asyncio
 openai
 pytest
 mypy
-tk

@@ -1,5 +1,4 @@
 from queue import Queue
-from threading import Thread
 from typing import List
 from sys import exit
 from numpy import uint16, uint64
@@ -131,51 +130,12 @@ class StoryEngine:
 
         info("Initialized Story Engine")
 
-    def init_gui(self):
-        from tkinter import Tk, Label, Text, Scrollbar, Entry, Button
-        from tkinter import END, TOP
-        info("Initializing GUI")
-        self.root = Tk()
-        self.root.title("Real Time AI")
-        self.root.geometry("1000x750")
-        
-        BG_GRAY = "#ABB2B9"
-        BG_COLOR = "#17202A"
-        TEXT_COLOR = "#EAECEE"
-        
-        FONT = "Helvetica 14"
-        FONT_BOLD = "Helvetica 13 bold"
-
-        label1 = Label(self.root, bg=BG_COLOR, fg=TEXT_COLOR, text="RTAI", font=FONT_BOLD)
-        label1.pack(pady=10, padx=20, side=TOP)
-        
-        self.txt = Text(self.root, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=120, height=30)
-        self.txt.pack(side=TOP)
-        
-        scrollbar = Scrollbar(self.txt)
-        scrollbar.place(relheight=1, relx=0.974)
-        
-        self.entry = Entry(self.root, bg="#2C3E50", fg=TEXT_COLOR, font=FONT, width=55)
-        self.entry.pack(side=TOP)
-
-        send = Button(self.root, text="Manual Narration", font=FONT_BOLD, bg=BG_GRAY, command=self.manual_narration_change)
-        send.pack(side=TOP)
-
-        info("Starting GUI")
-        Thread().start() # ????????? wtf is this
-        self.root.after(100, self.process_event_queue)
-        
-        self.root.mainloop()
-
     def start(self):
         self.timer_mgr.start_timers()
 
         info("Started story engine")
 
-        if self.use_gui:
-            self.init_gui()
-        else:
-            self.poll_input()
+        self.poll_input()
 
     def stop(self, status=0):
         self.force_stop = True
@@ -206,16 +166,7 @@ class StoryEngine:
         self.agent_mgr.dispatch_narration(event)
 
     def manual_narration_change(self, text: str = ""):
-        event: Event
-
-        if text == "" and self.use_gui:
-            from tkinter import END
-            send = "Narration (manual): " + self.entry.get()
-            self.txt.insert(END, "\n" + send)
-            event = Event.create_narration_event(self.narrator, self.entry.get())
-        else:
-            event = Event.create_narration_event(self.narrator, text)
-
+        event = Event.create_narration_event(self.narrator, text)
         self.dispatch_narration(event, True)
 
     @TimerManager.timer_callback
@@ -227,11 +178,6 @@ class StoryEngine:
                 
             debug("Received event:\n\t%s" % event)
             self.process_event(event)
-
-            if self.use_gui:
-                from tkinter import END
-                self.txt.insert(END, "\n" + "%s" % event)
-                # self.root.after(100, self.process_event_queue) # TODO this line needed for gui?
 
         # Is this the right place to do this?
         if self.max_cycles > 0 and self.agent_mgr.get_cycle_count() >= self.max_cycles:

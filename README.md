@@ -53,7 +53,7 @@ One thing to think about is what is assosciated with the agent and what is assos
     - Not feasible if LLM calls can take in the magnitude of seconds
   - Maybe all LLM calls for an agent are wrapped in a function, which is called in a separate thread to not block agent update! 
     - What could it be blocking?
-        - Changing actions and starting a new one when current one ends
+        - Changing actions and starting a new one when current one ends 
         - Receving chat requests from other agents
 - *** There must be a max speed enforced on world clock based on WorldClockScaleMs and AgentTimerSec.
     - Maybe add config to synchronize world clock with agent updating to speed up running simulation for test purposes
