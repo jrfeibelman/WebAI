@@ -1,6 +1,5 @@
 from __future__ import annotations
 from time import perf_counter
-from queue import Queue
 from datetime import timedelta
 from typing import List, TYPE_CHECKING
 
@@ -13,10 +12,11 @@ from rtai.core.event import Event
 from rtai.utils.logging import info, debug, log_transcript
 from rtai.agent.persona import Persona
 from rtai.agent.memory.short_memory import ShortTermMemory
-from rtai.agent.memory.long_memory import LongTermMemory, ConceptNode
+from rtai.agent.memory.long_memory import LongTermMemory
 from rtai.utils.datetime import datetime
 from rtai.llm.llm_client import LLMClient
-from rtai.llm.prompt import reverie_prompt
+from rtai.agent.cognition.agent_concept import AgentConcept
+from rtai.agent.cognition.action import Action
 
 class Agent(AbstractAgent):
     """
@@ -35,7 +35,6 @@ class Agent(AbstractAgent):
     counter: int = 0
     id: int
     agent_mgr: AbstractAgent
-    queue: Queue
     s_mem: ShortTermMemory
     l_mem : LongTermMemory
     conversations: List[Event]
@@ -44,18 +43,16 @@ class Agent(AbstractAgent):
     common_set: str
 
 
-    def __init__(self, agent_mgr: AgentManager, event_queue: Queue, client: LLMClient, file_path: str=""):
+    def __init__(self, agent_mgr: AgentManager, client: LLMClient, file_path: str=""):
         """
         Constructor to create a new agent
         INPUT
             agent_mgr: an Agent Manager reference
-            queue: a reference to the worker queue to push events to
             file_path: (optional) file to load personality from
         """
         super().__init__()
 
         self.agent_mgr: AgentManager = agent_mgr
-        self.queue: Queue = event_queue
         self.llm_client = client
 
         self.conversations: List[Event] = []
@@ -152,8 +149,10 @@ class Agent(AbstractAgent):
             self._create_day_plan(first_day, new_day) # Creates Planning Thought
 
         # if action expired, create new agenda/plan
+        print("[%s] Checking action completion" % self.agent_mgr.world_clock.get_time_str())
         if self.s_mem.has_action_completed():
-            print("JASON: ACTION COMPLETED @ [%s]" % self.agent_mgr.world_clock.get_time_str())
+            print("[%s] Completed action" % self.agent_mgr.world_clock.get_time_str())
+            debug("Action [%s] completed at [%s]" % (self.s_mem.current_action.description, self.agent_mgr.world_clock.get_time_str()))
             self._determine_action() # TODO this function needs to generate a new ACTION
 
         # TODO later - if perceived event that needs to be responded to (such as chat), generate action or chat
@@ -194,7 +193,8 @@ class Agent(AbstractAgent):
             ("04:30 PM", "0.5", "Get more groceries"),
             ("05:00 PM", "1.0", "Go home and cook dinner"),
             ("06:00 PM", "1.0", "Have dinner with Dolores"),
-            ("07:00 PM", "5.0", "Patrol the streets of New York City for crime"),
+            ("07:00 PM", "4.5", "Patrol the streets of New York City for crime"),
+            ("11:30 PM", "0.5", "Have conversation with Batman about Joker's latest crime"),
             ("12:00 AM", "0.0", "Go home and go to sleep"),
         """
         action_start: datetime = self.agent_mgr.world_clock.snapshot()
@@ -205,29 +205,32 @@ class Agent(AbstractAgent):
             action_desc = "Sleep"
             wake_up_hour_str = self.s_mem.daily_schedule[0][0] # TODO wakeup hour by LLM or by other func?
             action_dur = action_start.get_timedelta_from_time_str(wake_up_hour_str)
+        elif self.s_mem.daily_schedule_idx >= len(self.s_mem.daily_schedule):
+            # TODO end of schedule, do nothing
+            return
         else:
             _, tmp_dur, action_desc = self.s_mem.daily_schedule[self.s_mem.daily_schedule_idx] # TODO use action_start
             action_dur = timedelta(minutes=int(float(tmp_dur) * 60))
 
-        if self.s_mem.daily_schedule_idx >= len(self.s_mem.daily_schedule):
-            # TODO end of day - schedule completed
-            pass
-
         action_address = 'Test Address' # TODO add locations of actions
         action_start_str = action_start.get_time_str()
-        self.s_mem.add_new_action(action_address=action_address,
+        new_action: Action = self.s_mem.add_new_action(action_address=action_address,
                                   action_start_time=action_start,
                                   action_duration=action_dur,
                                   action_description=action_desc)
+        # self.l_mem.add_action(new_action) # TODO
         
+
         log_transcript(self.get_name(), action_start_str, 'Action', action_desc)
         
-        # TODO Dispatch action
-
         # Increment index to next action
         self.s_mem.daily_schedule_idx += 1
+        e = Event.create_action_event(self, new_action)
 
-        return Event.create_action_event(self, action_desc)
+        # Dispatch event to worker queue
+        self.agent_mgr.dispatch_to_queue(e)
+
+        return e
 
 
     def _create_day_plan(self, new_day: bool, first_day: bool) -> None:
@@ -271,7 +274,7 @@ class Agent(AbstractAgent):
         s, p, o = (self.persona.name, "plan", date_str)
         keywords = set(["plan"])
 
-        node: ConceptNode = self.l_mem.add_thought(created, expiration, s, p, o, thought, keywords)
+        node: AgentConcept = self.l_mem.add_thought(created, expiration, s, p, o, thought, keywords)
         log_transcript(self.get_name(), self.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', f"{node.summary()} --> {node.description}")
 
     def update_identity(self) -> None:
@@ -283,11 +286,17 @@ class Agent(AbstractAgent):
         """
         pass
 
-    def dispatch_narration(self, event: Event) -> None:
+    def narration_event_trigger(self, event: Event) -> None:
         """
         Function to receive narration change events from the Narrator
         """
         # self.memory.append(event)
+        pass
+
+    def agent_event_trigger(self, event: Event) -> None:
+        """
+        Function to receive agent events for other agents such as chat requests from agent manager
+        """
         pass
 
     def debug_timer(self):

@@ -4,11 +4,11 @@ from datetime import timedelta
 from typing import Dict, List, Tuple
 from random import choice
 
-from rtai.utils.logging import log_transcript, log_debug
+from rtai.utils.logging import log_transcript, debug
 from rtai.agent.persona import Persona
 from rtai.llm.llm_client import LLMClient
-from rtai.agent.agent_event.action import Action
-from rtai.agent.agent_event.chat import Chat
+from rtai.agent.cognition.action import Action
+from rtai.agent.cognition.chat import Chat
 from rtai.world.clock import WorldClock
 from rtai.utils.datetime import datetime
 
@@ -56,26 +56,15 @@ class ShortTermMemory:
         - Is this even necessary? Maybe have heirarchy of event importance, snapping most important events to times and scheduling less important events in between them?
             Example:
             [
-                "6:30 AM: Wake up and get washed up",
-                "7:00 AM: Cook and eat breakfast",
-                "7:30 AM: Attend work",
-                "9:00 AM: Attend work",
-                "10:00 AM: Attend work",
-                "11:00 AM: Attend work",
-                "12:00 PM: Get lunch at work",
-                "01:00 PM: Attend work",
-                "02:00 PM: Attend work",
-                "03:00 PM: Attend work",
-                "04:00 PM: Attend work",
-                "05:00 PM: Pick up daughter from school",
-                "05:30 PM: Get more groceries
-                "06:00 PM: Go home and cook dinner",
-                "07:00 PM: Have dinner with Dolores",
-                "08:00 PM: Patrol the streets of New York City for crime",
-                "09:00 PM: Patrol the streets of New York City for crime",
-                "10:00 PM: Patrol the streets of New York City for crime",
-                "11:00 PM: Patrol the streets of New York City for crime",
-                "12:00 AM: Go home and to bed",
+                ("6:30 AM", "0.5", "Wake up and get washed up"),
+                ("7:00 AM", "0.5", "Cook and eat breakfast"),
+                ("7:30 AM", "8.5", "Attend work"),
+                ("04:00 PM", "0.5", "Pick up daughter from school"),
+                ("04:30 PM", "0.5", "Get more groceries"),
+                ("05:00 PM", "1.0", "Go home and cook dinner"),
+                ("06:00 PM", "1.0", "Have dinner with Dolores"),
+                ("07:00 PM", "5.0", "Patrol the streets of New York City for crime"),
+                ("12:00 AM", "0.0", "Go home and to bed"),
             ]
     TODO:
         - should some DSL be leveraged if we are going to map text based plans to actions in immersive sim (ie Wake Up, Wash Up, Cook Breakfast, etc)
@@ -107,17 +96,18 @@ class ShortTermMemory:
         self.daily_schedule_idx = 0
         self.daily_completed = []
 
-        self.current_action = Action.new_empty_action()
+        self.current_action = Action(None, None, None, None)
         self.chatting_with = None # TODO
-        self.current_chat = Action.new_empty_action() # TODO
+        self.current_chat = Chat(None, None, None, None)
 
     def add_new_action(self, 
                         action_address: str, 
                         action_start_time: datetime,
                         action_duration : timedelta,
-                        action_description: str): 
-        self.current_action.reset_with(address=action_address, start_time=action_start_time, duration=action_duration, description=action_description)
-
+                        action_description: str):
+        a = self.current_action
+        self.current_action = Action(description=action_description, address=action_address, start_time=action_start_time, duration=action_duration)
+        return a
 
     def get_act_time_str(self) -> str: 
         return self.act_start_time.strftime("%H:%M %p")
@@ -137,26 +127,28 @@ class ShortTermMemory:
             return True
         
         end_time = self.current_chat.end_time if self.chatting_with else self.current_action.end_time
-        print("JASON COMPARE END [%s] <= WORLD [%s]" % (end_time, self.world_clock.snapshot()))
-        if end_time <= self.world_clock.snapshot(): 
+        if end_time <= self.world_clock.snapshot():
+            debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.current_action.description, end_time, self.world_clock.snapshot()))
             return True
         return False
     
     def generate_daily_plan(self) -> None:
         self.daily_plan = self.llm_client.generate_daily_plan()
-        log_debug("Agent [%s] generated daily plan: [%s]" % (self.persona.name, self.daily_plan))
+        self.daily_schedule_idx = 0
+        debug("Agent [%s] generated daily plan: [%s]" % (self.persona.name, self.daily_plan))
     
     def generate_first_daily_plan(self, wake_up_hour) -> None:
         self.daily_plan = self.llm_client.generate_first_daily_plan(wake_up_hour)
-        log_debug("Agent [%s] generated first daily plan: [%s]" % (self.persona.name, self.daily_plan))
+        self.daily_schedule_idx = 0
+        debug("Agent [%s] generated first daily plan: [%s]" % (self.persona.name, self.daily_plan))
 
     def generate_daily_req(self) -> None:
         self.daily_req = self.llm_client.generate_daily_req()
-        log_debug("Agent [%s] generated daily requirements: [%s]" % (self.persona.name, self.daily_req))
+        debug("Agent [%s] generated daily requirements: [%s]" % (self.persona.name, self.daily_req))
 
     def generate_hourly_schedule(self, persona: Persona, wake_up_hour) -> None:
         self.daily_schedule = self.llm_client.generate_daily_schedule(persona, wake_up_hour)
-        log_debug("Agent [%s] generated hourly schedule: [%s]" % (self.persona.name, self.daily_schedule))
+        debug("Agent [%s] generated hourly schedule: [%s]" % (self.persona.name, self.daily_schedule))
 
     def generate_wake_up_hour(self) -> str:
         """

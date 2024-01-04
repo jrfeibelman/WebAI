@@ -15,7 +15,7 @@ StoryEngine:
   # DebugTimerSec: 30
   # StopAfterCycles: 5 # Exits the program after X cycles
   # StopAfterDays: 2 # Exits the program after X days
-  WorldClockScaleMs: 500 # Minutes to milliseconds
+  WorldClockScaleMs: 1000 # Minutes to milliseconds
 Narrator:
 Agents:
   NumAgents: 2

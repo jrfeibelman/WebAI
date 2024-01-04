@@ -12,6 +12,7 @@ from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
 from rtai.llm.llm_client import LLMClient
 from rtai.world.clock import WorldClock
+from rtai.world.world import World
 from tests.mock.llm.llm_client_mock import LLMTestClient
 
 """
@@ -64,19 +65,27 @@ class StoryEngine:
     max_cycles: uint64
     max_days: uint16
     world_clock: uint16
+    world: World
 
     def __init__(self, cfg: Config, debug_mode: bool=False, test_mode: bool=False):
-        self.cfg: Config = cfg.expand(STORY_CONFIG)
-        self.queue: Queue = Queue()
-        self.public_mem: List[Event] = []
-        self.use_gui: bool = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
-        self.max_cycles: uint64 = uint64(self.cfg.get_value(MAX_CYCLES, "0"))
-        self.max_days: uint16 = uint16(self.cfg.get_value(MAX_DAYS, "0"))
+        self.cfg = cfg.expand(STORY_CONFIG)
+        self.queue = Queue()
+        self.public_mem = []
+        self.use_gui = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
+        self.max_cycles = uint64(self.cfg.get_value(MAX_CYCLES, "0"))
+        self.max_days = uint16(self.cfg.get_value(MAX_DAYS, "0"))
 
-        self.debug_mode: bool = debug_mode
-        self.test_mode: bool = test_mode
+        self.debug_mode = debug_mode
+        self.test_mode = test_mode
 
-        self.force_stop: bool = False
+        self.force_stop = False
+
+        # Setup World
+        self.world = World()
+
+        if not self.world.initialize():
+            error("Unable to initialize world. Exiting.")
+            exit(1)
 
         # Setup World Clock
         self.world_clock = WorldClock()
@@ -211,7 +220,7 @@ class StoryEngine:
 
     @TimerManager.timer_callback
     def poll_event_queue(self):
-        debug("Polling Event Queue")
+        # debug("Polling Event Queue")
         event: Event = None
         while not self.queue.empty():
             event = self.queue.get(block=False)
@@ -235,8 +244,11 @@ class StoryEngine:
     def process_event(self, event: Event):
         if event.get_event_type() == EventType.NarrationEvent:
             self.dispatch_narration(event)
-        elif event.get_event_type() == EventType.ReverieEvent or event.get_event_type() == EventType.ActionEvent:
-            self.agent_mgr.dispatch(event)
+        elif event.get_event_type() == EventType.ActionEvent:
+            # Dispatch event to world
+            pass
+        elif event.get_event_type() == EventType.ChatEvent:
+            self.agent_mgr.dispatch_to_agent(event, event.get_receiver())
         else:
             warn("Unknown event type: %s. Ignoring" % event.get_event_type())
 

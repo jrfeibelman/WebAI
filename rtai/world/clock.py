@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.datetime import datetime as mydatetime
-
+from rtai.utils.logging import info
 class WorldClock:
     """
     Class to represent the simulation world's date/time 
@@ -45,6 +45,7 @@ class WorldClock:
             self.time = 0
             self.day_counter += 1
             self.clock.increment_minute()
+            info("New Day: %s" % self.clock.get_datetime_str())
 
         self.clock += timedelta(minutes=1) # TODO delete
         self.mins_since_last_update = 0# TODO delete

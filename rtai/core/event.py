@@ -16,9 +16,11 @@ class EventType(Enum):
 class Event:   
     # TODO make this an abstract class, and subtype Event for each EventType implementing abstract methods dispatch(), releaseMeToPool()
     timestamp: str
+    msg: str
     event_type: EventType
     sender: AbstractAgent
-    msg: str
+    # Receiver should only be used for chats, and should contain the agent name to send the chat request to
+    receiver: str
 
     __slots__ = ['timestamp', 'event_type', 'sender', 'msg']
 
@@ -81,6 +83,9 @@ class Event:
     
     def get_sender(self):
         return self.sender
+
+    def get_receiver(self):
+        return self.receiver
 
     def __str__(self):
         return "[%s] [%s] (%s) %s" % (self.timestamp, self.event_type, self.sender, self.msg)

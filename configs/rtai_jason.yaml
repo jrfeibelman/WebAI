@@ -9,13 +9,13 @@ Logger:
   TranscriptLogName: transcript
 StoryEngine:
   UseGui: False # Changing this is not reccomended
-  WorkerThreadTimerMs: 1000
-  AgentTimerSec: 5 # TODO replace with being determined by cycles instead of seconds
-  NarrationTimerSec: 120 # TODO replace with being determined by cycles instead of seconds
+  WorkerThreadTimerMs: 500 
+  AgentTimerSec: 1 # TODO replace with being determined by cycles instead of seconds. # This should be less than or equal to WorldClockScaleMs
+  NarrationTimerSec: 480 # TODO replace with being determined by cycles instead of seconds
   # DebugTimerSec: 30
   # StopAfterCycles: 5 # Exits the program after X cycles
-  StopAfterDays: 1 # Exits the program after X days
-  WorldClockScaleMs: 100 # Minutes to milliseconds
+  StopAfterDays: 2 # Exits the program after X days
+  WorldClockScaleMs: 500 # Minutes to milliseconds
 Narrator:
 Agents:
   NumAgents: 1

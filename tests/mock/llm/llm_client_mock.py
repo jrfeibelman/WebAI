@@ -45,7 +45,8 @@ class LLMTestClient(LLMClient):
             ("04:30 PM", "0.5", "Get more groceries"),
             ("05:00 PM", "1.0", "Go home and cook dinner"),
             ("06:00 PM", "1.0", "Have dinner with Dolores"),
-            ("07:00 PM", "5.0", "Patrol the streets of New York City for crime"),
+            ("07:00 PM", "4.5", "Patrol the streets of New York City for crime"),
+            ("11:30 PM", "0.5", "Have conversation with Batman about Joker's latest crime"),
             ("12:00 AM", "0.0", "Go home and to bed"),
         ]
 

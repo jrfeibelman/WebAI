@@ -24,7 +24,7 @@ class AgentManager:
     """
     queue: Queue
     cfg: Config
-    agents: List[Agent]
+    agents: List[Agent] # Should make this a dict for fast access dispatching based on Receiver field?
     registry: Set[str]
     last_narration: Event
     thread_pool: ThreadPoolExecutor
@@ -47,7 +47,7 @@ class AgentManager:
         num_agents = int(self.cfg.get_value(NUM_AGENTS_CONFIG, DEFAULT_NUM_AGENTS))
 
         for _ in range(num_agents):
-            a = Agent(self, self.queue, self.client)
+            a = Agent(self, self.client)
             if self.register(a):
                 self.agents.append(a)
         
@@ -57,17 +57,22 @@ class AgentManager:
         info("Initialized Agent Manager with [%d] agents" % len(self.agents))
         self.tp = ThreadPoolExecutor(len(self.agents))
         return True
+    
+    def dispatch_to_agent(self, event: Event, agent_name: str) -> None:
+        pass
 
-    def dispatch(self, event: Event) -> None:
+    def dispatch_to_queue(self, event: Event) -> None:
+        self.queue.put(event)
         # TODO: how to dispatch event from one agent to another, or to public story engine memory?
         # TODO how to route event to specific agents
         pass
 
     def dispatch_narration(self, event: Event) -> None:
         self.last_narration = event
-        [a.dispatch_narration(event) for a in self.agents]
+        [a.narration_event_trigger(event) for a in self.agents]
 
     def register(self, agent: AbstractAgent) -> bool:
+        # This necessary?
         name = agent.get_name()
 
         if name in self.registry:
@@ -80,7 +85,7 @@ class AgentManager:
     
     @TimerManager.timer_callback
     def update(self, first_day: bool=False, new_day: bool=False) -> None:
-        debug("Updating Agents")
+        # debug("Updating Agents")
         # First update the state of all the agents
         wait([self.tp.submit(a.update) for a in self.agents])
 
