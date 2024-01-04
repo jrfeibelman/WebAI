@@ -99,7 +99,7 @@ class StoryEngine:
         
         # Set up Agents
         self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client, world_clock=self.world_clock)
-        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world_clock=self.world_clock)
+        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world, world_clock=self.world_clock)
         if not self.agent_mgr.register(self.narrator):
             error("Unable to register narrator with agent manager. Exiting.")
             exit(1)

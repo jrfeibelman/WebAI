@@ -28,15 +28,22 @@ One thing to think about is what is assosciated with the agent and what is assos
 * clarify when a thought should be done 
     * in the paper, this is done with <- can this be done without the environment? probably...
 
+-----------------------------------------------------------------------
+
 ### Architecture
+##### Agents
 - All agents have access to the shared AgentManager object, World object, and Clock object
 - All cross agent interaction should be managed by AgentManager
 - All agents should run in their own thread
 - All agents can receive events from AgentManager (narration, other agent request, world change, new day, etc)
+    - Thus they need to poll an internal queue to process events if there are any
 - All agents dispatch events (actions, chats) to AgentManager, which puts it onto worker queue (for World)
 - To chat, one agent initiates a request, and the other accepts. Then AgentManager creates shared conversation data structure
     to maintain chat history used for prompting. When chat is completed, it's summarized and put into memory
 - All LLM functionality for a given agent should be done in separate thread to not block agent from updating its state and waiting
+
+##### Memory
+- Shared memory includes world, clock, and agent manager objects. Otherwise all agents should have own memory
 
 
 ### Identified Issues:

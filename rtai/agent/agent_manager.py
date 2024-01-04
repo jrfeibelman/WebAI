@@ -11,6 +11,7 @@ from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error
 from rtai.llm.llm_client import LLMClient
 from rtai.world.clock import WorldClock
+from rtai.world.world import World
 
 DEFAULT_NUM_AGENTS = 4
 NUM_AGENTS_CONFIG = "NumAgents"
@@ -31,17 +32,19 @@ class AgentManager:
     cycle_count: uint64
     client: LLMClient
     world_clock: WorldClock
+    world: World
 
-    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient, world_clock: WorldClock):
+    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient, world: World, world_clock: WorldClock):
         self.queue = event_queue
-        self.cfg: Config = cfg
-        self.agents: List[Agent] = []
-        self.registry: Set[str] = set()
-        self.last_narration: Event = Event.create_empty_event()
-        self.tp: ThreadPoolExecutor = None
+        self.cfg = cfg
+        self.agents = []
+        self.registry = set()
+        self.last_narration = Event.create_empty_event()
+        self.tp = None
         self.client = client
         self.cycle_count = uint64(0)
         self.world_clock = world_clock
+        self.world = world
 
     def initialize(self) -> bool:
         num_agents = int(self.cfg.get_value(NUM_AGENTS_CONFIG, DEFAULT_NUM_AGENTS))
