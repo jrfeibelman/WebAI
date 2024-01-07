@@ -1,5 +1,10 @@
-from datetime import datetime as pydatetime, timedelta
-from numpy import datetime64, timedelta64
+from datetime import datetime as pydatetime, timedelta as pytimedelta
+from typing import TypeAlias
+
+timedelta: TypeAlias = pytimedelta
+
+def now_str():
+    return pydatetime.utcnow().strftime("%m%d%Y_%H:%M:%S")
 
 class datetime():
     _data: pydatetime
@@ -11,7 +16,7 @@ class datetime():
         return o
     
     @classmethod
-    def strptime(cls, datetime_str: str, format: str):
+    def strptime(cls, datetime_str: str, format: str='%Y-%m-%d %I:%M:%S %p'):
         o = cls.__new__(cls)
         o._data = pydatetime.strptime(datetime_str, format)
         return o
@@ -33,6 +38,10 @@ class datetime():
 
     def get_date_with_time_str(self, time_str: str) -> str:
         return f"{self.get_date_str()} {time_str}"
+    
+    def increment_by(self, seconds: int) -> None:
+        self._data += timedelta(seconds=seconds)
+        # self._data += timedelta64(1, 's')
 
     def increment_minute(self) -> None:
         self._data += timedelta(minutes=1)
@@ -72,9 +81,6 @@ class datetime():
         return self.__str__()
     
     def __add__(self, other: timedelta) -> 'datetime':
-        if not isinstance(other, timedelta):
-            raise TypeError("Operand must be a timedelta object")
-        
         o = datetime(self)
         o._data += other
         return o

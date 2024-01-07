@@ -55,6 +55,6 @@ One thing to think about is what is assosciated with the agent and what is assos
     - What could it be blocking?
         - Changing actions and starting a new one when current one ends 
         - Receving chat requests from other agents
-- *** There must be a max speed enforced on world clock based on WorldClockScaleMs and AgentTimerSec.
+- *** There must be a max speed enforced on world clock based on WorldClockScaleMs and AgentTimerMillis.
     - Maybe add config to synchronize world clock with agent updating to speed up running simulation for test purposes
     - This way, first world clock updates, then agent updates. Will be faster bc on most iters agent update is very fast

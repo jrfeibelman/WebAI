@@ -1,16 +1,15 @@
 from numpy import uint8, uint16, float32
 from numpy.random import normal
-from datetime import timedelta
 from typing import Dict, List, Tuple
 from random import choice
 
 from rtai.utils.logging import log_transcript, debug
 from rtai.agent.persona import Persona
 from rtai.llm.llm_client import LLMClient
-from rtai.agent.cognition.action import Action
-from rtai.agent.cognition.chat import Chat
+from rtai.agent.behavior.action import Action
+from rtai.agent.behavior.chat import Chat
 from rtai.world.clock import WorldClock
-from rtai.utils.datetime import datetime
+from rtai.utils.datetime import datetime, timedelta
 
 class ShortTermMemory:
     # Factor to determine temporal order of events so agents don't perceive same events at each timestep
@@ -79,8 +78,11 @@ class ShortTermMemory:
     chatting_with: str # TODO fix type
     current_chat: Chat
 
-    def __init__(self, persona: Persona, llm_client: LLMClient, world_clock: WorldClock):
+    agent_id: uint16
+
+    def __init__(self, agent_id: uint16, persona: Persona, llm_client: LLMClient, world_clock: WorldClock):
         self.retention = 5
+        self.agent_id = agent_id
         self.persona = persona
         self.llm_client = llm_client
         self.world_clock = world_clock
@@ -99,8 +101,18 @@ class ShortTermMemory:
         # TODO need functionality to pause an action and possibly resume it later
         # Some actions are core actions and others are fixed time actions
         self.current_action = Action(None, None, None, None)
-        self.chatting_with = None # TODO
-        self.current_chat = Chat(None, None, None, None)
+        self.chatting_with = ''
+        self.current_chat = Chat(None, None, None, None, None)
+
+    def add_new_chat(self, 
+                    action_address: str, 
+                    action_start_time: datetime,
+                    action_duration : timedelta,
+                    action_description: str):
+        """
+        Function to add a new chat
+        """
+        return Chat(description=action_description, creator_id=self.agent_id, address=action_address, start_time=action_start_time, duration=action_duration)
 
     def add_new_action(self, 
                         action_address: str, 
@@ -108,7 +120,7 @@ class ShortTermMemory:
                         action_duration : timedelta,
                         action_description: str):
         """
-        Function to add a new
+        Function to add a new action
         """
         return Action(description=action_description, address=action_address, start_time=action_start_time, duration=action_duration)
 
@@ -128,8 +140,8 @@ class ShortTermMemory:
         """
         if not self.current_action.address:
             return True
-        
-        end_time = self.current_chat.end_time if self.chatting_with else self.current_action.end_time
+        print(f"Agent {self.persona.name} - {self.current_chat}")
+        end_time = self.current_chat.end_time if len(self.chatting_with) > 0 else self.current_action.end_time
         if end_time <= self.world_clock.snapshot():
             debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.current_action.description, end_time, self.world_clock.snapshot()))
             return True

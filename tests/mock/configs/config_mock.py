@@ -10,13 +10,12 @@ def mock_config_base() -> Config:
     BASE_CONFIG = """
         StoryEngine:
             UseGui: False
-            WorkerThreadTimerMs: 1000
-            AgentTimerSec: 5
+            WorkerThreadTimerMs: 500
+            AgentTimerMillis: 1000
             NarrationTimerSec: 12
             # DebugTimerSec: 30
             # StopAfterCycles: 5 # Exits the program after X cycles
             # StopAfterDays: 1 # Exits the program after X days
-            WorldClockScaleMs: 500 # Minutes to milliseconds
         Narrator:
         Agents:
             NumAgents: 4

@@ -6,7 +6,7 @@ from inspect import stack
 from logging import info as log_info, debug as log_debug, error as log_error, warning as log_warn
 from logging import basicConfig, getLogger, StreamHandler, Formatter, FileHandler, Formatter, INFO
 
-from rtai.utils.time import now_str
+from rtai.utils.datetime import now_str
 
 # TODO wrap in a class and setup instance in __init__.py, then reroute all logging calls to use instance
 USE_CALLEE_STACK = False

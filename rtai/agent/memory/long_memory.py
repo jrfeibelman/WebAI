@@ -4,7 +4,7 @@ from numpy import uint64
 from rtai.utils.datetime import datetime
 from rtai.core.event import EventType
 from rtai.agent.cognition.agent_concept import AgentConcept
-from rtai.agent.cognition.action import Action
+from rtai.agent.behavior.action import Action
 
 class LongTermMemory:
     """

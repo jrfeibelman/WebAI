@@ -31,10 +31,10 @@ STORY_CONFIG = 'StoryEngine'
 NARRATOR_CONFIG = 'Narrator'
 
 WORKER_THREAD_TIMER_CONFIG = 'WorkerThreadTimerMs'
-AGENT_TIMER_CONFIG = 'AgentTimerSec'
+AGENT_TIMER_CONFIG = 'AgentTimerMillis'
 NARRATION_TIMER_CONFIG = 'NarrationTimerSec'
 DEBUG_TIMER_CONFIG = 'DebugTimerSec'
-WORLD_CLOCK_TIMER_CONFIG = 'WorldClockScaleMs'
+WORLD_CLOCK_TIMER_CONFIG = 'ClockTimerMillis'
 
 WORKER_TIMER_DEFAULT = 100 # MilliSec
 AGENT_TIMER_DEFAULT = 5 # Sec
@@ -87,7 +87,8 @@ class StoryEngine:
             exit(1)
 
         # Setup World Clock
-        self.world_clock = WorldClock()
+        clock_config = cfg.expand("World").expand("Clock")
+        self.world_clock = WorldClock(clock_config)
         
         # Setup LLM Client
         if test_mode:
@@ -109,10 +110,10 @@ class StoryEngine:
 
         # Set up threaded timers (i.e. create a thought every x seconds)
         self.timer_mgr: TimerManager = TimerManager()
-        self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update)
+        self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update, milliseconds=True)
         self.timer_mgr.add_timer(NARRATION_THREAD_NAME, uint16(self.cfg.get_value(NARRATION_TIMER_CONFIG, NARRATION_TIMER_DEFAULT)), self.narrator.generate_narration)
         self.timer_mgr.add_timer(WORKER_THREAD_NAME, uint16(self.cfg.get_value(WORKER_THREAD_TIMER_CONFIG, WORKER_TIMER_DEFAULT)), self.poll_event_queue, milliseconds=True)
-        self.timer_mgr.add_timer(WORLD_CLOCK_THREAD_NAME, uint16(self.cfg.get_value(WORLD_CLOCK_TIMER_CONFIG, WORLD_CLOCK_TIMER_DEFAULT)), self.world_clock.tick, milliseconds=True)
+        self.timer_mgr.add_timer(WORLD_CLOCK_THREAD_NAME, uint16(clock_config.get_value(WORLD_CLOCK_TIMER_CONFIG, WORLD_CLOCK_TIMER_DEFAULT)), self.world_clock.tick, milliseconds=True)
         
         # Debug printing
         debug_timer_sec = uint16(self.cfg.get_value(DEBUG_TIMER_CONFIG, DEBUG_TIMER_CONFIG_DEFAULT))
@@ -191,10 +192,9 @@ class StoryEngine:
         if event.get_event_type() == EventType.NarrationEvent:
             self.dispatch_narration(event)
         elif event.get_event_type() == EventType.ActionEvent:
-            # Dispatch event to world
-            pass
+            self.agent_mgr.dispatch_action_event(event)
         elif event.get_event_type() == EventType.ChatEvent:
-            self.agent_mgr.dispatch_to_agent(event, event.get_receiver())
+            self.agent_mgr.dispatch_chat_event(event)
         else:
             warn("Unknown event type: %s. Ignoring" % event.get_event_type())
 
