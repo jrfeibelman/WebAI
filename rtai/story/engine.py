@@ -29,6 +29,7 @@ AGENTS_CONFIG = 'Agents'
 USE_GUI_CONFIG = 'UseGui'
 STORY_CONFIG = 'StoryEngine'
 NARRATOR_CONFIG = 'Narrator'
+WORLD_CONFIG = 'World'
 
 WORKER_THREAD_TIMER_CONFIG = 'WorkerThreadTimerMs'
 AGENT_TIMER_CONFIG = 'AgentTimerMillis'
@@ -80,7 +81,7 @@ class StoryEngine:
         self.force_stop = False
 
         # Setup World
-        self.world = World()
+        self.world = World(cfg.expand('WORLD_CONFIG'))
 
         if not self.world.initialize():
             error("Unable to initialize world. Exiting.")
@@ -133,6 +134,7 @@ class StoryEngine:
 
     def start(self):
         self.timer_mgr.start_timers()
+        self.agent_mgr.start()
 
         info("Started story engine")
 

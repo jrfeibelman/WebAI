@@ -75,6 +75,10 @@ class AgentManager:
         self.tp = ThreadPoolExecutor(len(self.agents))
         return True
     
+    def start(self) -> None:
+        # TODO spin up each agent in separate process and start agents in parallel
+        pass
+    
     def write_to_chat(self, chat: Chat, message: ChatMessage):
         self.chat_registry[chat.get_id()].append(message)
 

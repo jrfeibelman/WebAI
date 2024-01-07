@@ -23,6 +23,8 @@ def mock_config_base() -> Config:
             model_name: "test_llm"
             base_url: "0.0.0.0:0000"
             api_key: "not-needed"
+        World:
+            LoadFromFiles: ${WEBAI_HOME}/configs/samples/world/world1/
     """
 
     config = YamlLoader.load_from_string(BASE_CONFIG)

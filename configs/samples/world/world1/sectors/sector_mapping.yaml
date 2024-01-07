@@ -1,0 +1,5 @@
+%YAML 1.2
+---
+SectorIDToArenaMapping:
+  0: [0, 1, 2, 3, 4]
+...
