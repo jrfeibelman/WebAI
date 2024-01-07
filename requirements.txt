@@ -1,4 +1,9 @@
 numpy
+pandas
 python-dotenv
 PyYAML
+asyncio
+openai
+pytest
+mypy
 tk

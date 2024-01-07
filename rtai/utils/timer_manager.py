@@ -8,11 +8,11 @@ from rtai.utils.logging import info
 @dataclass
 class TimerWrapper:
     thread_id: str
-    seconds: uint16
+    seconds: float
     callback: Callable
     timer: Thread_Timer
 
-    def __init__(self, thread_id: str, seconds: uint16, callback: Callable, timer: Thread_Timer):
+    def __init__(self, thread_id: str, seconds: float, callback: Callable, timer: Thread_Timer):
         self.thread_id = thread_id
         self.seconds = seconds
         self.callback = callback
@@ -34,7 +34,7 @@ class TimerManager:
     def __new__(cls):
         if not hasattr(cls, '_instance'):
             cls._instance = super().__new__(cls)
-            cls._instance.timers: Dict[uint16, TimerWrapper] = dict()
+            cls._instance.timers: Dict[str, TimerWrapper] = dict()
             cls._instance.terminated: bool = False
         return cls._instance
 
@@ -49,7 +49,8 @@ class TimerManager:
         info("All Timers Joined.........")
 
     def add_timer(self, thread_id: str, seconds: uint16, callback_func: Callable, milliseconds: bool=False) -> None:
-        seconds = uint16(seconds/1000) if milliseconds else uint16(seconds)
+        seconds = float(seconds/1000.0) if milliseconds else float(seconds)
+        print("Adding Timer %s every %s seconds." % (thread_id, seconds))
         self.timers[thread_id] = TimerWrapper(thread_id, seconds, callback_func, Thread_Timer(seconds, callback_func, [thread_id]))
     
     def reset_timer(self, thread_id: str) -> bool:
@@ -62,8 +63,8 @@ class TimerManager:
         """
         A decorator for callback functions from timers 
         """
-        def wrapper(self, thread_id: str):
-            func(self)
+        def wrapper(self, thread_id: str="", *args, **kwargs):
+            func(self, *args, **kwargs)
             if len(thread_id) > 0:
                 TimerManager().reset_timer(thread_id)
         return wrapper

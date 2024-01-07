@@ -1,11 +1,15 @@
 from yaml import load, SafeLoader
 from os import path, environ
 from re import compile
+from io import StringIO
 
 from rtai.utils.cache import Cache
 from rtai.utils.logging import error
 
 class Config(Cache):
+    _idx: int
+    _dict: dict
+    _curSection: str
 
     __slots__='_dict','_curSection'
 
@@ -53,7 +57,7 @@ class YamlLoader(SafeLoader):
 
     def __init__(self, stream):
 
-        self._root = path.split(stream.name)[0]
+        # self._root = path.split(stream.name)[0]
         
         super(YamlLoader, self).__init__(stream)
 
@@ -62,8 +66,13 @@ class YamlLoader(SafeLoader):
         YamlLoader.add_implicit_resolver('!path', YamlLoader.path_matcher, None)
 
     @classmethod
-    def load(cls, config) -> Config:
+    def load(cls, config: str) -> Config:
         with open(config) as yaml:
+            return Config(load(yaml, YamlLoader))
+        
+    @classmethod
+    def load_from_string(cls, config: str) -> Config:
+        with StringIO(config) as yaml:
             return Config(load(yaml, YamlLoader))
 
     def include(self, node) -> Config:

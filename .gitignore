@@ -2,6 +2,7 @@
 logs/
 memray*
 *.DS_Store*
+.vsls.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

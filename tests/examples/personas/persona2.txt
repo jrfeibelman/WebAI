@@ -1,6 +1,7 @@
 first_name: Clark
 last_name: Kent
 name: Superman
+age: 28
 occupation: Superhero, Journalist at the Daily Planet
 backstory: Born on the planet Krypton as Kal-El, he was sent to Earth by his parents just before Krypton's destruction. Raised in Smallville, Kansas, by Jonathan and Martha Kent, who named him Clark Kent, he develops superhuman abilities due to Earth's sun and atmosphere.
 hobbies: Writing, flying, learning about different cultures, helping people
