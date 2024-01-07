@@ -1,16 +1,19 @@
 from queue import Queue
-from threading import Thread
 from typing import List
 from sys import exit
-from numpy import uint16, uint32
+from numpy import uint16, uint64
 
 from rtai.utils.config import Config
 from rtai.story.narrator import Narrator
-from rtai.persona.agent_manager import AgentManager
+from rtai.agent.agent_manager import AgentManager
 from rtai.core.event import Event, EventType
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
 from rtai.llm.llm_client import LLMClient
+from rtai.world.clock import WorldClock
+from rtai.world.world import World
+from tests.mock.llm.llm_client_mock import LLMTestClient
+
 """
 TODO:
 - Memory Profile
@@ -26,57 +29,74 @@ AGENTS_CONFIG = 'Agents'
 USE_GUI_CONFIG = 'UseGui'
 STORY_CONFIG = 'StoryEngine'
 NARRATOR_CONFIG = 'Narrator'
+WORLD_CONFIG = 'World'
 
 WORKER_THREAD_TIMER_CONFIG = 'WorkerThreadTimerMs'
-AGENT_TIMER_CONFIG = 'AgentTimerSec'
+AGENT_TIMER_CONFIG = 'AgentTimerMillis'
 NARRATION_TIMER_CONFIG = 'NarrationTimerSec'
 DEBUG_TIMER_CONFIG = 'DebugTimerSec'
+WORLD_CLOCK_TIMER_CONFIG = 'ClockTimerMillis'
 
 WORKER_TIMER_DEFAULT = 100 # MilliSec
 AGENT_TIMER_DEFAULT = 5 # Sec
 NARRATION_TIMER_DEFAULT = 120 # Sec
 DEBUG_TIMER_CONFIG_DEFAULT = 0 # Sec
+WORLD_CLOCK_TIMER_DEFAULT = 500 # MilliSec
 
 WORKER_THREAD_NAME = 'WorkerThread'
 AGENT_THREAD_NAME = 'AgentThread'
 NARRATION_THREAD_NAME = 'NarrationThread'
 DEBUG_THREAD_NAME = 'DebugThread'
+WORLD_CLOCK_THREAD_NAME = 'WorldClockThread'
+
 MAX_CYCLES = 'StopAfterCycles'
+MAX_DAYS = 'StopAfterDays'
 
 class StoryEngine:
-    cfg: Config
-    queue: Queue
-    public_mem: List[Event]
-    use_gui: bool
-    debug_mode: bool
-    max_cycles: uint32
-    stop_after_cycles: bool
-    force_stop: bool
-    cycle_count: uint32
-    narrator: Narrator
-    agent_mgr: AgentManager
-    timer_mgr: TimerManager
+    """ _summary_ Class to represent the story engine"""
 
-    def __init__(self, cfg: Config, debug_mode: bool=False):
+    def __init__(self, cfg: Config, debug_mode: bool=False, test_mode: bool=False):
+        """ _summary_ Constructor for the story engine
+        
+        Args:
+            cfg (Config): Config object
+            debug_mode (bool, optional): Debug mode flag. Defaults to False.
+            test_mode (bool, optional): Test mode flag. Defaults to False.
+        """
+
         self.cfg: Config = cfg.expand(STORY_CONFIG)
-        self.queue: Queue = Queue()
+        self.queue = Queue()
         self.public_mem: List[Event] = []
         self.use_gui: bool = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
+        self.max_cycles: uint64 = uint64(self.cfg.get_value(MAX_CYCLES, "0"))
+        self.max_days: uint16 = uint16(self.cfg.get_value(MAX_DAYS, "0"))
 
         self.debug_mode: bool = debug_mode
+        self.test_mode: bool = test_mode
 
-        self.max_cycles: uint32 = uint32(self.cfg.get_value(MAX_CYCLES, "0"))
-        self.stop_after_cycles: bool = self.max_cycles > 0
         self.force_stop: bool = False
-        self.cycle_count: uint32 = uint32(0)
+
+        # Setup World
+        self.world: World = World(cfg.expand('WORLD_CONFIG'))
+
+        if not self.world.initialize():
+            error("Unable to initialize world. Exiting.")
+            exit(1)
+
+        # Setup World Clock
+        clock_config = cfg.expand("World").expand("Clock")
+        self.world_clock: WorldClock = WorldClock(clock_config)
         
-        # add llm client here? <-- TODO: add llm interface here
         # Setup LLM Client
-        self.llm_client: LLMClient = LLMClient(cfg.expand("LLMClient"))
+        if test_mode:
+            self.llm_client: LLMClient = LLMTestClient(cfg.expand("LLMClient"))
+            warn("Test mode enabled. LLMClient will leverage test data for responses")
+        else:
+            self.llm_client: LLMClient = LLMClient(cfg.expand("LLMClient"))
         
         # Set up Agents
-        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
-        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client)
+        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client, world_clock=self.world_clock)
+        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world, world_clock=self.world_clock)
         if not self.agent_mgr.register(self.narrator):
             error("Unable to register narrator with agent manager. Exiting.")
             exit(1)
@@ -87,9 +107,10 @@ class StoryEngine:
 
         # Set up threaded timers (i.e. create a thought every x seconds)
         self.timer_mgr: TimerManager = TimerManager()
-        self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update)
+        self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update, milliseconds=True)
         self.timer_mgr.add_timer(NARRATION_THREAD_NAME, uint16(self.cfg.get_value(NARRATION_TIMER_CONFIG, NARRATION_TIMER_DEFAULT)), self.narrator.generate_narration)
         self.timer_mgr.add_timer(WORKER_THREAD_NAME, uint16(self.cfg.get_value(WORKER_THREAD_TIMER_CONFIG, WORKER_TIMER_DEFAULT)), self.poll_event_queue, milliseconds=True)
+        self.timer_mgr.add_timer(WORLD_CLOCK_THREAD_NAME, uint16(clock_config.get_value(WORLD_CLOCK_TIMER_CONFIG, WORLD_CLOCK_TIMER_DEFAULT)), self.world_clock.tick, milliseconds=True)
         
         # Debug printing
         debug_timer_sec = uint16(self.cfg.get_value(DEBUG_TIMER_CONFIG, DEBUG_TIMER_CONFIG_DEFAULT))
@@ -107,57 +128,24 @@ class StoryEngine:
 
         info("Initialized Story Engine")
 
-    def init_gui(self):
-        from tkinter import Tk, Label, Text, Scrollbar, Entry, Button
-        from tkinter import END, TOP
-        info("Initializing GUI")
-        self.root = Tk()
-        self.root.title("Real Time AI")
-        self.root.geometry("1000x750")
-        
-        BG_GRAY = "#ABB2B9"
-        BG_COLOR = "#17202A"
-        TEXT_COLOR = "#EAECEE"
-        
-        FONT = "Helvetica 14"
-        FONT_BOLD = "Helvetica 13 bold"
-
-        label1 = Label(self.root, bg=BG_COLOR, fg=TEXT_COLOR, text="RTAI", font=FONT_BOLD)
-        label1.pack(pady=10, padx=20, side=TOP)
-        
-        self.txt = Text(self.root, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=120, height=30)
-        self.txt.pack(side=TOP)
-        
-        scrollbar = Scrollbar(self.txt)
-        scrollbar.place(relheight=1, relx=0.974)
-        
-        self.entry = Entry(self.root, bg="#2C3E50", fg=TEXT_COLOR, font=FONT, width=55)
-        self.entry.pack(side=TOP)
-
-        send = Button(self.root, text="Manual Narration", font=FONT_BOLD, bg=BG_GRAY, command=self.manual_narration_change)
-        send.pack(side=TOP)
-
-        info("Starting GUI")
-        Thread().start() # ????????? wtf is this
-        self.root.after(100, self.process_event_queue)
-        
-        self.root.mainloop()
-
-    def start(self):
+    def start(self) -> None:
+        """ _summary_ Starts the story engine"""
         self.timer_mgr.start_timers()
+        self.agent_mgr.start()
 
         info("Started story engine")
 
-        if self.use_gui:
-            self.init_gui()
-        else:
-            self.poll_input()
+        self.poll_input()
 
-    def stop(self):
+    def stop(self, status=0) -> None:
+        """ _summary_ Stops the story engine"""
         self.force_stop = True
         self.timer_mgr.stop_timers()
+        info("Shutdown complete")
+        exit(status)
 
-    def poll_input(self):
+    def poll_input(self) -> None:
+        """ _summary_ Polls console for user input"""
         while not self.force_stop:
             x = input(">>> ")
             if x == "exit":
@@ -174,27 +162,31 @@ class StoryEngine:
             else:
                 print("Unknown command")
 
-    def dispatch_narration(self, event: Event, manual: bool = False):
+    def dispatch_narration(self, event: Event, manual: bool = False) -> None:
+        """ _summary_ Dispatches a narration event
+
+        Args:
+            event (Event): Narration event
+            manual (bool, optional): Flag to indicate if the event was manually generated. Defaults to False.
+        """
+
         info("%sNarration Change: %s" % ("Manual " if manual else "", event.get_message()))
         self.public_mem.append(event)
         self.agent_mgr.dispatch_narration(event)
 
-    def manual_narration_change(self, text: str = ""):
-        event: Event
+    def manual_narration_change(self, text: str) -> None:
+        """ _summary_ Manually generates a narration event
 
-        if text == "" and self.use_gui:
-            from tkinter import END
-            send = "Narration (manual): " + self.entry.get()
-            self.txt.insert(END, "\n" + send)
-            event = Event.create_narration_event(self.narrator, self.entry.get())
-        else:
-            event = Event.create_narration_event(self.narrator, text)
-
+        Args:
+            text (str, optional): Text to narrate
+        """
+        event = Event.create_narration_event(self.narrator, text)
         self.dispatch_narration(event, True)
 
     @TimerManager.timer_callback
-    def poll_event_queue(self):
-        debug("Polling Event Queue")
+    def poll_event_queue(self) -> None:
+        """ _summary_ Polls the event queue for new events"""
+        # debug("Polling Event Queue")
         event: Event = None
         while not self.queue.empty():
             event = self.queue.get(block=False)
@@ -202,29 +194,32 @@ class StoryEngine:
             debug("Received event:\n\t%s" % event)
             self.process_event(event)
 
-            if self.use_gui:
-                from tkinter import END
-                self.txt.insert(END, "\n" + "%s" % event)
-                # self.root.after(100, self.process_event_queue) # TODO this line needed for gui?
-            
-        self.cycle_count += 1
-        if self.stop_after_cycles and self.cycle_count >= self.max_cycles:
-            info("Stopping after %d cycles" % self.max_cycles)
+        # Is this the right place to do this?
+        if self.max_cycles > 0 and self.agent_mgr.get_cycle_count() >= self.max_cycles:
+            info("Stopping after %d cycles" % self.agent_mgr.get_cycle_count())
             self.stop()
-            info("Shutdown complete. Press enter to exit")
-            exit(1)
+        if self.max_days > 0 and self.world_clock.get_day_count() >= self.max_days:
+            info("Stopping after %d days" % self.world_clock.get_day_count())
+            self.stop()
 
-
-    def process_event(self, event: Event):
+    def process_event(self, event: Event) -> None:
+        """ _summary_ Processes an event from the event queue
+        
+        Args:
+            event (Event): Event to process
+        """
         if event.get_event_type() == EventType.NarrationEvent:
             self.dispatch_narration(event)
-        elif event.get_event_type() == EventType.ReverieEvent or event.get_event_type() == EventType.ActionEvent:
-            self.agent_mgr.dispatch(event)
+        elif event.get_event_type() == EventType.ActionEvent:
+            self.agent_mgr.dispatch_action_event(event)
+        elif event.get_event_type() == EventType.ChatEvent:
+            self.agent_mgr.dispatch_chat_event(event)
         else:
             warn("Unknown event type: %s. Ignoring" % event.get_event_type())
 
     @TimerManager.timer_callback
-    def debug_timer(self):
+    def debug_timer(self) -> None:
+        """ _summary_ Prints out debug information to see state of simulation on a timer"""
         debug("[DEBUG_TIMER - Engine] Public Memory:\n%s" % self.narrator.get_narration())
         self.narrator.debug_timer()
         self.agent_mgr.debug_timer()

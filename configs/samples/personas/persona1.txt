@@ -4,7 +4,6 @@ name: Hank Thompson
 age: 54
 occupation: Farmer
 backstory: Hank Thompson is a 54-year-old farmer who has spent his entire life tending to the rich farmland of the Midwest. Born and raised in a small town in Iowa, Hank inherited his family farm and has continued the agricultural tradition with pride.
-appearance: 6 feet, Sturdy, Worn-out denim overalls, Faded flannel shirt, Well-worn straw hat
 hobbies: tractor rides, country music
 traits: connection to tradition, simplicity and practicality, love for nature
 motivations: Hank's motivation lies in maintaining and preserving the family farm, upholding traditional farming practices, and finding fulfillment in the simplicity of rural life.
