@@ -17,6 +17,7 @@ from rtai.agent.behavior.chat_message import ChatMessage
 
 DEFAULT_NUM_AGENTS = 4
 NUM_AGENTS_CONFIG = "NumAgents"
+AGENT_STATIC_FILES = "LoadFiles"
 
 class AgentManager:
     """
@@ -56,8 +57,14 @@ class AgentManager:
     def initialize(self) -> bool:
         num_agents = int(self.cfg.get_value(NUM_AGENTS_CONFIG, DEFAULT_NUM_AGENTS))
 
-        for _ in range(num_agents):
-            a = Agent(self, self.client)
+        static_persona_files = self.cfg.get_value(AGENT_STATIC_FILES, [])
+        if len(static_persona_files) > 0:
+            static_persona_files = static_persona_files[1:-1]
+            static_persona_files = [f.strip().replace("'", "") for f in static_persona_files.split(',')]
+            static_persona_files = [static_persona_files[i] if i < len(static_persona_files) else '' for i in range(num_agents)]
+
+        for i in range(num_agents):
+            a = Agent(self, self.client, file_path=static_persona_files[i])
             if self.register(a): # can prob delete register
                 self.agents[a.get_name()] = a
         

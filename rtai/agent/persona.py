@@ -43,6 +43,7 @@ class Persona:
         e = Persona(**data)
         return e
     
+    
     # def _class_from_dict(self, argDict: dict):
     #     fieldSet = {f.name for f in fields(Persona) if f.init}
     #     filteredArgDict = {k : v for k, v in argDict.items() if k in fieldSet}

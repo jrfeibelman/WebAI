@@ -68,10 +68,13 @@ class Agent(AbstractAgent):
         Agent.id += 1
         self.id = Agent.id
 
-        if len(file_path) == 0:
-            self.persona = Persona.generate_from_file('tests/examples/personas/persona%s.txt' % self.id) # TODO use file_path, use LLM to generate personality???
-        else:
+        if len(file_path) > 0:
             self.persona = Persona.generate_from_file(file_path)
+            info("Generating Agent [%s] from file [%s]" % (self.get_name(), file_path))
+        else:
+            self.persona = Persona.generate()
+            info("Generating Agent [%s] from LLM" % (self.get_name()))
+
 
         self.s_mem = ShortTermMemory(self.id, self.persona, self.llm_client, self.agent_mgr.world_clock)
         self.l_mem = LongTermMemory()
@@ -116,8 +119,9 @@ class Agent(AbstractAgent):
                 else:
                     # Accept owned chat, discard received chat
                     debug("Agent [%s] discarded chat request [%s] from [%s]. Using owned chat" % (self.get_name(), event.get_message().seq_num, event.get_sender()))
+
             # Already chatting
-            if self.s_mem.current_chat.get_id() != event.get_message().get_id():
+            elif self.s_mem.current_chat.get_id() != event.get_message().get_id():
                 # If in a chat and its not the chat requested
                 self.reject_chat_request(event)
             else:

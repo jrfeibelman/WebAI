@@ -18,7 +18,9 @@ StoryEngine:
 Narrator:
 Agents:
   NumAgents: 2
-  # TODO add initializing from file config
+  LoadFiles:
+    - ${WEBAI_HOME}/tests/examples/personas/persona1.txt
+    - ${WEBAI_HOME}/tests/examples/personas/persona2.txt
 World:
   Clock:
     StartDate: '2024-01-01'
