@@ -1,10 +1,10 @@
-first_name: Clark
-last_name: Kent
-name: Superman
-age: 28
-occupation: Superhero, Journalist at the Daily Planet
-backstory: Born on the planet Krypton as Kal-El, he was sent to Earth by his parents just before Krypton's destruction. Raised in Smallville, Kansas, by Jonathan and Martha Kent, who named him Clark Kent, he develops superhuman abilities due to Earth's sun and atmosphere.
-hobbies: Writing, flying, learning about different cultures, helping people
-traits: Extremely powerful, morally upright, compassionate, brave, humble, symbol of hope
-motivations: Protecting Earth and its inhabitants, upholding truth and justice, finding a balance between his Kryptonian heritage and Earthly upbringing
-relationships: Lois Lane, Jonathan and Martha Kent, Jimmy Olsen, Lex Luthor, Justice League members
+first_name: Claire
+last_name: Reynolds
+name: Claire Reynolds
+age: 37
+occupation: environmental scientist
+backstory: Claire Reynolds is a 37-year-old environmental scientist dedicated to studying and preserving ecosystems. Raised in a bustling urban environment, Claire developed a passion for nature and the environment early on. She holds advanced degrees in environmental science and has worked on various projects aimed at sustainable practices.
+hobbies: nature photography, trail running
+traits: passionate advocate, deep connection to nature, educator, health enthusiast
+motivations: Claire is a passionate advocate for environmental conservation and sustainable practices.
+relationships: Claire is good friends with Hank

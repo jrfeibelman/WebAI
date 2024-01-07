@@ -4,12 +4,16 @@ This module contains the LLMClient class, which is responsible for communicating
 from rtai.utils.config import Config
 from openai import OpenAI
 import logging
+from guidance import models, instruction, gen
 
 class LLMClient:
     def __init__(self, cfg: Config):
         self.cfg: Config = cfg
-        logging.getLogger("openai").setLevel(logging.ERROR)
-        self.client = OpenAI(base_url=cfg.get_value("base_url", "http://localhost:1234/v1"),
+        # logging.getLogger("openai").setLevel(logging.ERROR)
+        if cfg.get_value("use_server", False):
+            self.mistral = cfg.get_value("local_", "")
+        else:
+            self.client = OpenAI(base_url=cfg.get_value("base_url", "http://localhost:1234/v1"),
                     api_key=cfg.get_value("api_key", "not-needed"))
 
     def generate_from_prompt(self, system_prompt: str = "", user_prompt: str = ""):
@@ -22,4 +26,3 @@ class LLMClient:
             temperature=0.7,
         )
         return str(completion.choices[0].content).strip()  # todo: more cleaning of the string response
-
