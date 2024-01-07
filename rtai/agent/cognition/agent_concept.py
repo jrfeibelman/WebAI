@@ -19,10 +19,9 @@ class AgentConcept:
     obj: str
 
     description: str
-    keywords: Set[str]
 
     def __init__(self, node_id: str, node_count: uint64, type_count: uint64, event_type: EventType, created: datetime, 
-                 expiration: datetime, subject: str, predicate: str, obj: str, description: str, keywords: Set[str]): 
+                 expiration: datetime, subject: str, predicate: str, obj: str, description: str): 
         
         self.node_id = node_id
         self.node_count = node_count
@@ -38,7 +37,6 @@ class AgentConcept:
         self.obj = obj
 
         self.description = description
-        self.keywords = keywords
 
     def summary(self) -> Tuple[str, str, str]:
         return (self.subject, self.predicate, self.obj)

@@ -98,6 +98,8 @@ class Cognition:
             # TODO end of schedule, do nothing
             return
         else:
+            self.agent.s_mem.current_action.mark_completed()
+
             _, tmp_dur, action_desc = self.agent.s_mem.daily_schedule[self.agent.s_mem.daily_schedule_idx] # TODO use action_start
 
             action_dur = timedelta(minutes=int(float(tmp_dur) * 60))
@@ -136,12 +138,12 @@ class Cognition:
         # Dispatch event to worker queue
         self.agent.agent_mgr.dispatch_to_queue(e)
 
-        # TODO should we only add action to long memory once it completes or add it here?
+        # Only add action to long memory once it completes or add it here?
         if completed_action.address:
-            # TODO Add completed action to long memory
-            # self.agent.l_mem.add_action(completed_action)
-            pass
-        
+            if isinstance(self.agent.s_mem.current_action, Chat):
+                self.agent.l_mem.add_chat(completed_action)
+            else:
+                self.agent.l_mem.add_action(completed_action)
 
         log_transcript(self.agent.get_name(), action_start_str, 'Action', action_desc)
         
@@ -187,9 +189,8 @@ class Cognition:
         expiration = created + timedelta(days=30)
 
         s, p, o = (self.agent.persona.name, "plan", date_str)
-        keywords = set(["plan"])
 
-        node: AgentConcept = self.agent.l_mem.add_thought(created, expiration, s, p, o, thought, keywords)
+        node: AgentConcept = self.agent.l_mem.add_plan(expiration, s, p, o, thought)
         log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', f"{node.summary()} --> {node.description}")
         return node
 

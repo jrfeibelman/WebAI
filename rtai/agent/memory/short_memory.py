@@ -81,6 +81,13 @@ class ShortTermMemory:
     agent_id: uint16
 
     def __init__(self, agent_id: uint16, persona: Persona, llm_client: LLMClient, world_clock: WorldClock):
+        """_summary_ Get the latest events in the long term memory given agent specific retention
+
+        Args:
+            retention (_type_): agent specific retention factor for retrieving long term memory
+        Returns:
+            str: string summary of latest events in long term memory
+        """
         self.retention = 5
         self.agent_id = agent_id
         self.persona = persona
@@ -109,8 +116,13 @@ class ShortTermMemory:
                     action_start_time: datetime,
                     action_duration : timedelta,
                     action_description: str):
-        """
-        Function to add a new chat
+        """_summary_ Function to create a new chat
+
+        Args:
+            action_address (str): address of chat
+            action_start_time (datetime): start time of chat
+            action_duration (timedelta): duration of chat
+            action_description (str): description of chat
         """
         return Chat(description=action_description, creator_id=self.agent_id, address=action_address, start_time=action_start_time, duration=action_duration)
 
@@ -119,8 +131,13 @@ class ShortTermMemory:
                         action_start_time: datetime,
                         action_duration : timedelta,
                         action_description: str):
-        """
-        Function to add a new action
+        """_summary_ Function to create a new action
+
+        Args:
+            action_address (str): address of action
+            action_start_time (datetime): start time of action
+            action_duration (timedelta): duration of action
+            action_description (str): description of action
         """
         return Action(description=action_description, address=action_address, start_time=action_start_time, duration=action_duration)
 
@@ -128,19 +145,14 @@ class ShortTermMemory:
         return self.act_start_time.strftime("%H:%M %p")
 
     def has_action_completed(self) -> bool: 
-        """ TODO
-        Checks whether the self.Action instance has finished.  
-
-        INPUT
-        curr_datetime: Current time. If current time is later than the action's
-                        start time + its duration, then the action has finished. 
-        OUTPUT 
-        Boolean [True]: Action has finished.
-        Boolean [False]: Action has not finished and is still ongoing.
+        """_summary_ Checks whether the current Action instance has finished. 
+        
+        Returns:
+            bool: True if the current action has completed, False otherwise
         """
         if not self.current_action.address:
             return True
-        print(f"Agent {self.persona.name} - {self.current_chat}")
+
         end_time = self.current_chat.end_time if len(self.chatting_with) > 0 else self.current_action.end_time
         if end_time <= self.world_clock.snapshot():
             debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.current_action.description, end_time, self.world_clock.snapshot()))

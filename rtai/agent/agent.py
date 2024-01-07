@@ -77,7 +77,7 @@ class Agent(AbstractAgent):
 
 
         self.s_mem = ShortTermMemory(self.id, self.persona, self.llm_client, self.agent_mgr.world_clock)
-        self.l_mem = LongTermMemory()
+        self.l_mem = LongTermMemory(self.persona, self.agent_mgr.world_clock)
         self.cognition = Cognition(self)
 
         info("Created Agent [%s]" % self.get_name())
@@ -192,14 +192,7 @@ class Agent(AbstractAgent):
         """
         Function to receive narration change events from the Narrator
         """
-        # self.memory.append(event)
-        pass
-
-    def agent_event_trigger(self, event: Event) -> None:
-        """
-        Function to receive agent events for other agents such as chat requests from agent manager
-        """
-        pass
+        self.l_mem.process_narration(event)
 
     def go_to_sleep(self):
         """

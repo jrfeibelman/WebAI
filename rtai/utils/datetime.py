@@ -65,6 +65,9 @@ class datetime():
         if hours:
             self._data = self._data.replace(hour=hours)
 
+    def calc_timedelta_diff(self, other: 'datetime') -> timedelta:
+        return self._data - other._data
+
     def __eq__(self, other: 'datetime') -> bool:
         return self._data == other._data
 
@@ -85,7 +88,6 @@ class datetime():
         o._data += other
         return o
     
-
 #     _data: datetime64
 
 #     @classmethod
