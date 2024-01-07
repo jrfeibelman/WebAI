@@ -50,11 +50,11 @@ class LongTermMemory:
         event_type = EventType.ThoughtEvent
         node_id = f"node_{str(node_count)}"
 
-        # TODO incorporate embeddings somehow
-
         # Create the ConceptNode object
         created = self.world_clock.snapshot()
         node = AgentConcept(node_id, node_count, type_count, event_type, created, expiration, subject, predicate, obj, thought)
+
+        # TODO convert agent concept to embedding and store
         
         # Fast Access dictionary caches
         self.seq_thought.append(node)
@@ -84,13 +84,16 @@ class LongTermMemory:
         event_type = EventType.ActionEvent
         node_id = f"node_{str(node_count)}"
 
-        # TODO incorporate embeddings somehow
+        # TODO calculate importance using LLM
+        importance = 10
 
         # Create the ConceptNode object to store into memory
         created = self.world_clock.snapshot()
         s, p, o = (self.persona.name, "act", action.description) # TODO
-        node = AgentConcept(node_id, node_count, type_count, event_type, created, action.completion_time + timedelta(days=30), s, p, o, action.description)
+        node = AgentConcept(node_id, node_count, type_count, event_type, created, action.completion_time + timedelta(days=30), s, p, o, action.description, importance)
         
+        # TODO convert agent concept to embedding and store
+
         # Fast Access dictionary caches
         self.seq_action.append(node)
         self.id_to_node[node_id] = node
@@ -113,12 +116,18 @@ class LongTermMemory:
         event_type = EventType.ActionEvent
         node_id = f"node_{str(node_count)}"
 
-        # TODO incorporate embeddings somehow
+        # TODO summarize conversation to then store
+        conversation_summary = ""
+
+        # TODO calculate importance using LLM
+        importance = 10
 
         # Create the ConceptNode object to store into memory
         s, p, o = (self.persona.name, "chat", chat.description) # TODO
-        node = AgentConcept(node_id, node_count, type_count, event_type, chat.created, chat.completion_time + timedelta(days=30), s, p, o, chat.description)
+        node = AgentConcept(node_id, node_count, type_count, event_type, chat.created, chat.completion_time + timedelta(days=30), s, p, o, conversation_summary, importance)
         
+        # TODO convert agent concept to embedding and store
+
         # Fast Access dictionary caches
         self.seq_chat.append(node)
         self.id_to_node[node_id] = node

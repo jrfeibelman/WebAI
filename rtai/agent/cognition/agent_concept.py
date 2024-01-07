@@ -1,5 +1,5 @@
 from typing import Set, Tuple
-from numpy import uint64
+from numpy import uint64, uint8
 from rtai.core.event import EventType
 
 from rtai.utils.datetime import datetime
@@ -19,9 +19,10 @@ class AgentConcept:
     obj: str
 
     description: str
+    importance: uint8 # Importance
 
     def __init__(self, node_id: str, node_count: uint64, type_count: uint64, event_type: EventType, created: datetime, 
-                 expiration: datetime, subject: str, predicate: str, obj: str, description: str):
+                 expiration: datetime, subject: str, predicate: str, obj: str, description: str, importance: uint8):
         """_summary_ Constructor for an agent concept.
 
         Args:
@@ -51,6 +52,7 @@ class AgentConcept:
         self.obj = obj
 
         self.description = description
+        self.importance = importance
 
     def summary(self) -> Tuple[str, str, str]:
         """_summary_ Get a summary of the agent concept.
