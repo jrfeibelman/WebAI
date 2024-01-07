@@ -25,7 +25,9 @@ World:
     ClockIncrementSec: 30 # Amount that clock is incremented by each cycle
     ClockTimerMillis: 500 # Amount of time between clock increments
 LLMClient: # This is the client that connects to the LLM
-  model_name: "mistral"
-  base_url: "http://localhost:1234/v1"
+  use_server: False
+  local_model_path: "/Users/nyeung/Projects/llama.cpp/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+  model_name: "mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+  base_url: "http://localhost:1234/v1" # for llm server
   api_key: "not-needed"
 ...

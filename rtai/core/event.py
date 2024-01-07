@@ -42,7 +42,7 @@ class Event:
         e =  cls.__new__(cls)
         e.timestamp: datetime = datetime.now()
         e.event_type: EventType = event_type
-        e.sender: AbstractAgent = sender.get_name()
+        e.sender: str = sender.get_name()
         e.msg: str = msg
         # Receiver should only be used for chats, and should contain the agent name to send the chat request to
         e.receiver: str = receiver
@@ -132,7 +132,7 @@ class Event:
         """ _summary_ Method to clear an event"""
         self.timestamp = ""
         self.event_type = EventType.InvalidEvent
-        self.sender = None
+        self.sender = ""
         self.msg = ""
 
     def get_message(self) -> str:
@@ -158,11 +158,11 @@ class Event:
         """
         return self.timestamp
     
-    def get_sender(self) -> AbstractAgent:
+    def get_sender(self) -> str:
         """ _summary_ Method to get the event's sender
         
         Returns:
-            AbstractAgent: Event sender
+            str: Event sender agent name
         """
         return self.sender
 

@@ -9,7 +9,11 @@ from rtai.utils.config import Config
 class LLMClient:
     def __init__(self, cfg: Config):
         self.cfg: Config = cfg
-        self.client = OpenAI(base_url=cfg.get_value("base_url", "http://localhost:1234/v1"),
+        # logging.getLogger("openai").setLevel(logging.ERROR)
+        if cfg.get_value("use_server", False):
+            self.mistral = cfg.get_value("local_", "")
+        else:
+            self.client = OpenAI(base_url=cfg.get_value("base_url", "http://localhost:1234/v1"),
                     api_key=cfg.get_value("api_key", "not-needed"))
         
     def generate_first_daily_plan(self, wake_up_hour: str) -> str:
@@ -78,5 +82,4 @@ class LLMClient:
             ],
             temperature=0.7,
         )
-        return str(completion.choices[0].message.content).strip()  # todo: more cleaning of the string response
-
+        return str(completion.choices[0].content).strip()  # todo: more cleaning of the string response

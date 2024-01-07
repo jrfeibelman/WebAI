@@ -1,6 +1,8 @@
 from guidance import models, instruction, gen
 import guidance
 
+def load_model():
+
 def generate_prompt():
     # persona + common strings
     name1 = "Hank Thompson"

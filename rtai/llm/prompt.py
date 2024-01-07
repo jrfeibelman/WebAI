@@ -68,25 +68,25 @@ def reverie_prompt(persona) -> str:
 # ### Response:
 # Based on the given statements, {{gen 'res' top_k=30 top_p=0.18 repetition_penalty=1.15 temperature=1.99 stop='\n'}}"""
 
-# PROMPT_PLAN = """### Instruction:
+PROMPT_PLAN = """### Instruction:
 
-# Example for plan:
-# Here is {{name}}'s plan from now at 7:14:
-# [From 7:14 to 7:45]: Wake up and complete the morining routine
-# [From 7:45 to 8:35]: Eat breakfirst
-# [From 8:35 to 17:10]: Go to school and study
-# [From 17:10 to 22:30]: Play CSGO
-# [From 22:30 to 7:30]: Go to sleep
+Example for plan:
+Here is {{name}}'s plan from now at 7:14:
+[From 7:14 to 7:45]: Wake up and complete the morining routine
+[From 7:45 to 8:35]: Eat breakfirst
+[From 8:35 to 17:10]: Go to school and study
+[From 17:10 to 22:30]: Play CSGO
+[From 22:30 to 7:30]: Go to sleep
 
-# ### Input:
-# Today is {{current_time}}. Please make a plan today for {{name}} in broad strokes. Given the summary:
-# {{summary}}
+### Input:
+Today is {{current_time}}. Please make a plan today for {{name}} in broad strokes. Given the summary:
+{{summary}}
 
-# ### Response:
-# Here is {{name}}'s plan from now at {{current_time}}:
-# [From {{now}} to {{gen 'to' pattern='[0-9]+:[0-9][0-9]' stop=']'}}]: {{gen 'task' top_k=30 top_p=0.18 repetition_penalty=1.15 temperature=1.99 stop='\n'}}
-# {{#geneach 'items' num_iterations=3}}[From {{gen 'this.from' pattern='[0-9]+:[0-9][0-9]' stop=' '}} to {{gen 'this.to' pattern='[0-9]+:[0-9][0-9]' stop=']'}}]: {{gen 'this.task' top_k=30 top_p=0.18 repetition_penalty=1.15 temperature=1.99 stop='\n'}}
-# {{/geneach}}"""
+### Response:
+Here is {{name}}'s plan from now at {{current_time}}:
+[From {{now}} to {{gen 'to' pattern='[0-9]+:[0-9][0-9]' stop=']'}}]: {{gen 'task' top_k=30 top_p=0.18 repetition_penalty=1.15 temperature=1.99 stop='\n'}}
+{{#geneach 'items' num_iterations=3}}[From {{gen 'this.from' pattern='[0-9]+:[0-9][0-9]' stop=' '}} to {{gen 'this.to' pattern='[0-9]+:[0-9][0-9]' stop=']'}}]: {{gen 'this.task' top_k=30 top_p=0.18 repetition_penalty=1.15 temperature=1.99 stop='\n'}}
+{{/geneach}}"""
 
 # PROMPT_CONTEXT = """### Instruction:
 # Summarize those statements.

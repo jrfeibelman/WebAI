@@ -37,7 +37,7 @@ class LLMTestClient(LLMClient):
     def generate_daily_schedule(self, persona: Persona, wake_up_hour: str) -> List[Tuple[str]]:
         """(start_time, duration, text)
         """
-        test_agents = ['Superman', 'Batman']
+        test_agents = ['Hank Thompson', 'Claire Reynolds']
         chat_recipient = test_agents[1] if persona.name == test_agents[0] else test_agents[0]
         return [
             # ("6:30 AM", "0.25", "Wake up and get washed up"),
@@ -48,8 +48,8 @@ class LLMTestClient(LLMClient):
             ("04:30 PM", "0.5", "Get more groceries"),
             ("05:00 PM", "1.0", "Go home and cook dinner"),
             ("06:00 PM", "1.0", "Have dinner with Dolores"),
-            ("07:00 PM", "4.5", "Patrol the streets of New York City for crime"),
-            ("11:30 PM", "0.5", "Have conversation with Batman about Joker's latest crime"),
+            ("07:00 PM", "4.5", "Watch TV"),
+            ("11:30 PM", "0.5", "Walk aronud"),
             ("12:00 AM", "0.0", "Go home and to bed"),
         ]
 
