@@ -23,10 +23,19 @@ class Cognition:
     counter: int = 0 # TODO delete
 
     def __init__(self, agent: 'Agent'):
+        """_summary_ Constructor for Cognition class.
+
+        Args:
+            agent (Agent): agent that this cognition belongs to
+        """
         self.agent = agent
 
     def perceive(self) -> List:
-        """ 
+        """_summary_ Perceive the environment and return a list of events.
+        
+        Returns:
+            List: List of events perceived by the agent.
+
         Create Thoughts (SKIP FOR NOW)
             - Analyze surroundings: perceives events around the persona and saves events to the memory ?
         """
@@ -35,8 +44,9 @@ class Cognition:
         pass
 
     def retrieve(self):
-        """
-        2) Retreive
+        """ _summary_ Retrieve events and thoughts from long term memory.
+        
+        Retreive
             From simularca:
                 This function takes the events that are perceived by the persona as input
                 and returns a set of related events and thoughts that the persona would 
@@ -64,8 +74,11 @@ class Cognition:
         self.retrieve()
         pass
 
-    def act(self) -> AbstractBehavior:
-        """ Generate next action sequence here for agent --> call add_new_action
+    def determine_action(self) -> AbstractBehavior:
+        """ _summary_ Determine the next action sequence for agent to take and calls add_new_action.
+
+        Returns:
+            AbstractBehavior: The next action to be taken by the agent.
         
         TODO - As a part of this, persona may need to decompose hourly schedule into smaller tasks for long duration events   
         TODO - There might be core events, such as meals and bed time, which are tasks that must be accomplished on a given day
@@ -119,8 +132,8 @@ class Cognition:
                                     action_start_time=action_start,
                                     action_duration=action_dur,
                                     action_description=action_desc)
-            self.agent.agent_mgr.create_chat(new_action)
-            self.agent.initiate_chat(new_action, recipient)
+            self.agent.agent_mgr.chat_mgr.create_chat(new_action)
+            self.agent.conversing.initiate_chat(new_action, recipient)
 
             e = Event.create_chat_event(self.agent, new_action, recipient)
 
@@ -141,6 +154,7 @@ class Cognition:
         # Only add action to long memory once it completes or add it here?
         if completed_action.address:
             if isinstance(self.agent.s_mem.current_action, Chat):
+                self.conversing.end_chat(completed_action)
                 self.agent.l_mem.add_chat(completed_action)
             else:
                 self.agent.l_mem.add_action(completed_action)
@@ -153,8 +167,14 @@ class Cognition:
         return new_action
 
     def plan(self, replan: bool=False, new_day: bool=False, first_day: bool=False) -> AgentConcept:
-        """
-        Function to create a plan for the day
+        """ _summary_ Create a plan for the day and save it to long term memory.
+
+        Args:
+            replan (bool, optional): True if the plan is being replanned, False otherwise. Defaults to False.
+            new_day (bool, optional): True if the plan is being created for a new day, False otherwise. Defaults to False.
+            first_day (bool, optional): True if the plan is being created for the first day of the simulation, False otherwise. Defaults to False.
+        Returns:
+            AgentConcept: The plan for the day.
         """
 
         if first_day:
@@ -195,7 +215,9 @@ class Cognition:
         return node
 
     def chat(self) -> None:
-        history = self.agent.agent_mgr.get_chat_history(self.agent.s_mem.current_chat)
+        """ _summary_ Participate in a chat with another agent"""
+
+        history = self.agent.agent_mgr.chat_mgr.get_chat_history(self.agent.s_mem.current_chat)
         
         if len(history) == 0 and self.agent.s_mem.current_chat.get_creator_id() == self.agent.get_id():
             # Generate first chat of conversation
@@ -215,7 +237,13 @@ class Cognition:
             pass
 
     def _get_chat_recipient(self, desc: str) -> str:
-        """
+        """ _summary_ Get the recipient of the chat from the description of the chat.
+
+        Args:
+            desc (str): Description of the chat event.
+        Returns:
+            str: Name of the recipient of the chat.
+
         TODO make func more robust -> lots of assumptions
         - Have LLM say whether it is chat or not rather than parsing desc
         """
@@ -241,5 +269,13 @@ class Cognition:
         return recipient
     
     def _is_chat(self, desc: str) -> str:
+        """ _summary_ Determine if the description is a chat event.
+
+        Args:
+            desc (str): Description of the event.
+        Returns:
+            str: True if the event is a chat event, False otherwise.
+        """
+        
         d = desc.lower()
         return 'chat' in d or 'speak' in d or 'talk' in d

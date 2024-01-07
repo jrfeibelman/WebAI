@@ -53,35 +53,31 @@ MAX_CYCLES = 'StopAfterCycles'
 MAX_DAYS = 'StopAfterDays'
 
 class StoryEngine:
-    cfg: Config
-    queue: Queue
-    public_mem: List[Event]
-    use_gui: bool
-    debug_mode: bool
-    force_stop: bool
-    narrator: Narrator
-    agent_mgr: AgentManager
-    timer_mgr: TimerManager
-    max_cycles: uint64
-    max_days: uint16
-    world_clock: uint16
-    world: World
+    """ _summary_ Class to represent the story engine"""
 
     def __init__(self, cfg: Config, debug_mode: bool=False, test_mode: bool=False):
-        self.cfg = cfg.expand(STORY_CONFIG)
+        """ _summary_ Constructor for the story engine
+        
+        Args:
+            cfg (Config): Config object
+            debug_mode (bool, optional): Debug mode flag. Defaults to False.
+            test_mode (bool, optional): Test mode flag. Defaults to False.
+        """
+
+        self.cfg: Config = cfg.expand(STORY_CONFIG)
         self.queue = Queue()
-        self.public_mem = []
-        self.use_gui = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
-        self.max_cycles = uint64(self.cfg.get_value(MAX_CYCLES, "0"))
-        self.max_days = uint16(self.cfg.get_value(MAX_DAYS, "0"))
+        self.public_mem: List[Event] = []
+        self.use_gui: bool = self.cfg.get_value(USE_GUI_CONFIG, "False") == "True"
+        self.max_cycles: uint64 = uint64(self.cfg.get_value(MAX_CYCLES, "0"))
+        self.max_days: uint16 = uint16(self.cfg.get_value(MAX_DAYS, "0"))
 
-        self.debug_mode = debug_mode
-        self.test_mode = test_mode
+        self.debug_mode: bool = debug_mode
+        self.test_mode: bool = test_mode
 
-        self.force_stop = False
+        self.force_stop: bool = False
 
         # Setup World
-        self.world = World(cfg.expand('WORLD_CONFIG'))
+        self.world: World = World(cfg.expand('WORLD_CONFIG'))
 
         if not self.world.initialize():
             error("Unable to initialize world. Exiting.")
@@ -89,7 +85,7 @@ class StoryEngine:
 
         # Setup World Clock
         clock_config = cfg.expand("World").expand("Clock")
-        self.world_clock = WorldClock(clock_config)
+        self.world_clock: WorldClock = WorldClock(clock_config)
         
         # Setup LLM Client
         if test_mode:
@@ -132,7 +128,8 @@ class StoryEngine:
 
         info("Initialized Story Engine")
 
-    def start(self):
+    def start(self) -> None:
+        """ _summary_ Starts the story engine"""
         self.timer_mgr.start_timers()
         self.agent_mgr.start()
 
@@ -140,13 +137,15 @@ class StoryEngine:
 
         self.poll_input()
 
-    def stop(self, status=0):
+    def stop(self, status=0) -> None:
+        """ _summary_ Stops the story engine"""
         self.force_stop = True
         self.timer_mgr.stop_timers()
         info("Shutdown complete")
         exit(status)
 
-    def poll_input(self):
+    def poll_input(self) -> None:
+        """ _summary_ Polls console for user input"""
         while not self.force_stop:
             x = input(">>> ")
             if x == "exit":
@@ -163,17 +162,30 @@ class StoryEngine:
             else:
                 print("Unknown command")
 
-    def dispatch_narration(self, event: Event, manual: bool = False):
+    def dispatch_narration(self, event: Event, manual: bool = False) -> None:
+        """ _summary_ Dispatches a narration event
+
+        Args:
+            event (Event): Narration event
+            manual (bool, optional): Flag to indicate if the event was manually generated. Defaults to False.
+        """
+
         info("%sNarration Change: %s" % ("Manual " if manual else "", event.get_message()))
         self.public_mem.append(event)
         self.agent_mgr.dispatch_narration(event)
 
-    def manual_narration_change(self, text: str = ""):
+    def manual_narration_change(self, text: str) -> None:
+        """ _summary_ Manually generates a narration event
+
+        Args:
+            text (str, optional): Text to narrate
+        """
         event = Event.create_narration_event(self.narrator, text)
         self.dispatch_narration(event, True)
 
     @TimerManager.timer_callback
-    def poll_event_queue(self):
+    def poll_event_queue(self) -> None:
+        """ _summary_ Polls the event queue for new events"""
         # debug("Polling Event Queue")
         event: Event = None
         while not self.queue.empty():
@@ -190,7 +202,12 @@ class StoryEngine:
             info("Stopping after %d days" % self.world_clock.get_day_count())
             self.stop()
 
-    def process_event(self, event: Event):
+    def process_event(self, event: Event) -> None:
+        """ _summary_ Processes an event from the event queue
+        
+        Args:
+            event (Event): Event to process
+        """
         if event.get_event_type() == EventType.NarrationEvent:
             self.dispatch_narration(event)
         elif event.get_event_type() == EventType.ActionEvent:
@@ -201,7 +218,8 @@ class StoryEngine:
             warn("Unknown event type: %s. Ignoring" % event.get_event_type())
 
     @TimerManager.timer_callback
-    def debug_timer(self):
+    def debug_timer(self) -> None:
+        """ _summary_ Prints out debug information to see state of simulation on a timer"""
         debug("[DEBUG_TIMER - Engine] Public Memory:\n%s" % self.narrator.get_narration())
         self.narrator.debug_timer()
         self.agent_mgr.debug_timer()

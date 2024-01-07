@@ -10,11 +10,15 @@ from rtai.agent.persona import Persona
 from rtai.world.clock import WorldClock
 
 class LongTermMemory:
-    """_summary_ Class to represent the long term memory of an agent.
+    """_summary_ Class to represent the long term memory of an agent."""
 
-
-    """
     def __init__(self, persona: Persona, world_clock: WorldClock):
+        """_summary_ Constructor for an agent's long term memory.
+
+        Args:
+            persona (Persona): persona of the agent
+            world_clock (WorldClock): world clock of the agent
+        """
         self.persona = persona
         self.world_clock = world_clock
 
@@ -146,10 +150,21 @@ class LongTermMemory:
         """
         pass
 
-    def save_to_file(self, file_path: str):
-        """_summary_ save the current state of long term memory to a file
+    def save_to_file(self, file_path: str) -> None:
+        """_summary_ Save the long term memory to a file.
 
         Args:
-            file_path (str): path to save the file to
+            file_path (str): path to the file to write long term memory to
+        """
+        pass
+
+    def load_from_file(self, file_name: str) -> bool:
+        """_summary_ Load the long term memory from a file.
+
+        Args:
+            file_name (str): name of the file to load long term memory from
+
+        Returns:
+            bool: True if the long term memory was loaded successfully, False otherwise
         """
         pass
