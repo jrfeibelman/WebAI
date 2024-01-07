@@ -226,7 +226,7 @@ class Cognition:
             Cognition.counter += 1
             self.agent.s_mem.current_chat.set_alive(True)
             log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Chat', new_msg)
-        elif history[-1].sender_id != self.agent.get_id():
+        elif len(history) > 0 and history[-1].sender_id != self.agent.get_id():
             # your turn to generate chat
             new_msg = ChatMessage(sender_id=self.agent.get_id(), sender_name=self.agent.get_name(), message='Chat[%s][%s]' % (self.agent.get_name(), Cognition.counter), creation_time=self.agent.agent_mgr.world_clock.snapshot())
             history.append(new_msg)
