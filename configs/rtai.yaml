@@ -8,17 +8,22 @@ Logger:
   UseCalleeStack: True
   TranscriptLogName: transcript
 StoryEngine:
-  UseGui: False # Changing this is not reccomended
+  UseGui: False # Not implemented
   WorkerThreadTimerMs: 1000
-  AgentTimerSec: 5
+  AgentTimerMillis: 5
   NarrationTimerSec: 12
   # DebugTimerSec: 30
   # StopAfterCycles: 5 # Exits the program after X cycles
   # StopAfterDays: 2 # Exits the program after X days
-  WorldClockScaleMs: 1000 # Minutes to milliseconds
 Narrator:
 Agents:
   NumAgents: 2
+World:
+  Clock:
+    StartDate: '2024-01-01'
+    StartTime: '06:15:00 AM'
+    ClockIncrementSec: 30 # Amount that clock is incremented by each cycle
+    ClockTimerMillis: 500 # Amount of time between clock increments
 LLMClient: # This is the client that connects to the LLM
   model_name: "mistral"
   base_url: "http://localhost:1234/v1"

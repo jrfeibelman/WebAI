@@ -1,9 +1,12 @@
 from numpy import uint16
-from datetime import timedelta
 
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.datetime import datetime as mydatetime
 from rtai.utils.logging import info
+from rtai.utils.config import Config
+
+SEC_PER_HALF_DAY = 43200
+
 class WorldClock:
     """
     Class to represent the simulation world's date/time 
@@ -12,25 +15,33 @@ class WorldClock:
     """
 
     day_counter: uint16
-    mins_since_last_update: uint16
+    # mins_since_last_update: uint16
     time: uint16
     clock: mydatetime
+    is_am: bool
     # world_date_str: str
 
-    def __init__(self, start_date: mydatetime=mydatetime.now()):
+
+    # StartDate: '2024-01-01'
+    # StartTime: '05:00 AM'
+    # ClockIncrementSec: 20 # Amount that clock is incremented by each cycle
+    # ClockTimerMillis: 1000 # Amount of time between clock increments
+
+    def __init__(self, config: Config):
 
         # Start world clock at 5 am
-        start_date._data = start_date._data.replace(second=0, microsecond=0, hour=5, minute=0)
-        self.clock = start_date
+        self.clock = mydatetime.strptime('%s %s' % (config['StartDate'], config['StartTime']))
+        self.clock_increment = int(config['ClockIncrementSec'])
 
-        # Tracks number of minutes that have passed in a given day
-        self.time = uint16(300)
+        # Tracks number of seconds that have passed in a given day
+        self.time = uint16(60*60*5)
+        self.is_am = True
 
         # Tracks number of days that have passed since clock was created
         self.day_counter = uint16(0)
 
         # Tracks number of minutes that have passed since lasted updated the clock field
-        self.mins_since_last_update = uint16(0)
+        # self.mins_since_last_update = uint16(0)
 
         # self.world_date_str = self.world_date.strftime("%A %B %d, %Y")
 
@@ -39,16 +50,26 @@ class WorldClock:
         """
         Increments the world clock by one minute
         """
-        self.time += 1
-        self.mins_since_last_update += 1
-        if self.time >= 1440:
+        self.time += self.clock_increment
+        
+        # self.mins_since_last_update += 1
+        self.clock.increment_by(self.clock_increment)
+        info("TIME : %s " % self.clock.get_datetime_str())
+        if self.time >= 43200:
+            if self.is_am:
+                # AM -> PM
+                self.is_am = False
+            else:
+                # NEW DAY
+                self.is_am = True
+                self.day_counter += 1
+                info("New Day: %s" % self.clock.get_datetime_str())
+            
             self.time = 0
-            self.day_counter += 1
-            self.clock.increment_minute()
-            info("New Day: %s" % self.clock.get_datetime_str())
 
-        self.clock += timedelta(minutes=1) # TODO delete
-        self.mins_since_last_update = 0# TODO delete
+
+
+        # self.mins_since_last_update = 0# TODO delete
 
             # self.world_date_str = self.world_date.strftime("%A %B %d, %Y")
         

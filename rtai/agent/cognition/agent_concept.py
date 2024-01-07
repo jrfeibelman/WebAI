@@ -19,10 +19,23 @@ class AgentConcept:
     obj: str
 
     description: str
-    keywords: Set[str]
 
     def __init__(self, node_id: str, node_count: uint64, type_count: uint64, event_type: EventType, created: datetime, 
-                 expiration: datetime, subject: str, predicate: str, obj: str, description: str, keywords: Set[str]): 
+                 expiration: datetime, subject: str, predicate: str, obj: str, description: str):
+        """_summary_ Constructor for an agent concept.
+
+        Args:
+            node_id (str): ID of the agent concept node.
+            node_count (uint64): _description_
+            type_count (uint64): _description_
+            event_type (EventType): type of event the agent concept represents
+            created (datetime): creation time of the agent concept
+            expiration (datetime): expiration time of the agent concept
+            subject (str): subject of the agent concept, which is the noun performing the event
+            predicate (str): predicate of the agent concept, which is the verb describing the event
+            obj (str): object of the agent concept, which is the noun receiving the event
+            description (str): description of the agent concept
+        """
         
         self.node_id = node_id
         self.node_count = node_count
@@ -38,22 +51,26 @@ class AgentConcept:
         self.obj = obj
 
         self.description = description
-        self.keywords = keywords
 
     def summary(self) -> Tuple[str, str, str]:
+        """_summary_ Get a summary of the agent concept.
+        
+        Returns:
+            Tuple[str, str, str]: A tuple of the subject, predicate, and object of the agent concept.
+        """
         return (self.subject, self.predicate, self.obj)
     
-    def __str__(self):
+    def __str__(self) -> None:
         return self.summary()
 
-    def __repr__(self):
-        return self.summary()
+    def __repr__(self) -> None:
+        return str(self)
     
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self.node_id < other.node_id
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.node_id == other.node_id
     
-    def __le__(self, other):
+    def __le__(self, other) -> bool:
         return self.node_id <= other.node_id
