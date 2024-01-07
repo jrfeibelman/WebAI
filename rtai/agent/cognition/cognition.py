@@ -134,7 +134,7 @@ class Cognition:
                                     action_description=action_desc)
             self.agent.agent_mgr.chat_mgr.create_chat(new_action)
             self.agent.conversing.initiate_chat(new_action, recipient)
-
+            print("JRF TEST - %s" % self.agent.get_name())
             e = Event.create_chat_event(self.agent, new_action, recipient)
 
             if len(self.agent.s_mem.chatting_with) != 0:
@@ -253,11 +253,11 @@ class Cognition:
         var_talk = d.split('talk')
 
         if len(var_chat) > 1:
-            recipient = desc.split('hat with ')[1].split(' ')[0]
+            recipient = " ".join(desc.split('hat with ')[1].split(' ')[0:2])
         elif len(var_speak) > 1:
-            recipient = desc.split('peak with ')[1].split(' ')[0]
+            recipient = " ".join(desc.split('peak with ')[1].split(' ')[0:2])
         elif len(var_talk) > 1:
-            recipient = desc.split('alk with ')[1].split(' ')[0]
+            recipient = " ".join(desc.split('alk with ')[1].split(' ')[0:2])
 
         if len(recipient) == 0:
             return ''
