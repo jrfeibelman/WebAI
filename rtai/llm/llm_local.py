@@ -21,7 +21,7 @@ def create_daily_tasks(lm, persona, num_tasks=3):
 @guidance 
 def create_thought(lm, persona, situation, num_thoughts=3):
     for i in range(num_thoughts):
-        lm += f'''Generate a short thought {i+1} that {persona} might have in the following situation: {situation}. "Here is thought {i+1}: {gen(stop='.', name="thoughts", temperature=1.0, list_append=True)}"\n'''
+        lm += f'''Generate a short thought {i+1} that {persona} might have in the following situation {situation}: "{gen(stop='.', name="thoughts", temperature=1.0, list_append=True)}"\n'''
     return lm
 
 @guidance
