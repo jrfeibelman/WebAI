@@ -23,6 +23,7 @@ t_logger = None
 #         return formatted_message
     
 class TranscriptFormatter(Formatter):
+    """ _summary_ Custom formatter for the transcript log using color coding - TODO NOT YET IMPLEMENTED"""
     grey = "\x1b[38;20m"
     yellow = "\x1b[33;20m"
     cyan = "\x1b[36;20m"
@@ -34,6 +35,7 @@ class TranscriptFormatter(Formatter):
     reset = "\x1b[0m"
 
     def format(self, record):
+        """ _summary_ Format the log message """
         custom_name = getattr(record, 'custom_name', '')
         custom_time = getattr(record, 'custom_time', '')
         custom_type = getattr(record, 'custom_type', '')
@@ -44,7 +46,16 @@ class TranscriptFormatter(Formatter):
         return formatted_message
 
 def setup_logging(log_dir: str, log_name: str, log_level: int, transcript_log_name: str='', use_callee_stack: bool=False, log_stdout_pipe: bool=False) -> None:
+    """ _summary_ Setup the logging for the agent
 
+    Args:
+        log_dir (str): directory to store the log files
+        log_name (str): name of the log file
+        log_level (int): logging level
+        transcript_log_name (str, optional): name of the transcript log file. Defaults to ''.
+        use_callee_stack (bool, optional): whether or not to use the callee stack to get the calling class and method. Defaults to False.
+        log_stdout_pipe (bool, optional): whether or not to pipe the log to stdout. Defaults to False.
+    """
     if not path.exists(log_dir):
         makedirs(log_dir)
 
@@ -82,6 +93,11 @@ def setup_logging(log_dir: str, log_name: str, log_level: int, transcript_log_na
         # t_logger.addHandler(ch)
 
 def get_caller_details() -> str:
+    """ _summary_ Get the details of the calling class and method
+    
+    Returns:
+        str: string representation of the calling class and method
+    """
     call_stack = stack()
     try:
         calling_class = call_stack[2][0].f_locals["self"].__class__.__name__
@@ -93,19 +109,53 @@ def get_caller_details() -> str:
     return "%s::%s::%s" % (calling_class, calling_method, line_number)
 
 def info(msg, *args, **kwargs):
+    """ _summary_ Log an info message
+    
+    Args:
+        msg (any): object to log
+        args (list): arguments for the message
+        kwargs (dict): keyword arguments for the message
+    """
     log_info(msg if not USE_CALLEE_STACK else "[%s] %s" % (get_caller_details(), msg), *args, **kwargs)
 
 def debug(msg, *args, **kwargs):
+    """ _summary_ Log a debug message
+    
+    Args:
+        msg (any): object to log
+        args (list): arguments for the message
+        kwargs (dict): keyword arguments for the message
+    """
     log_debug(msg if not USE_CALLEE_STACK else "[%s] %s" % (get_caller_details(), msg), *args, **kwargs)
 
 def warn(msg, *args, **kwargs):
+    """ _summary_ Log a warning message
+    
+    Args:
+        msg (any): object to log
+        args (list): arguments for the message
+        kwargs (dict): keyword arguments for the message
+    """
     log_warn(msg if not USE_CALLEE_STACK else "[%s] %s" % (get_caller_details(), msg), *args, **kwargs)
 
 def error(msg, *args, **kwargs):
+    """ _summary_ Log an error message
+    
+    Args:
+        msg (any): object to log
+        args (list): arguments for the message
+        kwargs (dict): keyword arguments for the message
+    """
     log_error(msg if not USE_CALLEE_STACK else "[%s] %s" % (get_caller_details(), msg), *args, **kwargs)
 
 def log_transcript(sender, time, event, msg):
+    """ _summary_ Log a transcript message
+    
+    Args:
+        sender (str): name of the sender
+        time (str): time of the message
+        event (str): event of the message
+        msg (str): message to log
+    """
     if t_logger:
-        # msg = f'[{time}][{sender}][{event}] {msg}'
         t_logger.info(msg, extra={'custom_name': sender, 'custom_time': time, 'custom_type': event})
-        # print("JASON - msg: %s" % msg)

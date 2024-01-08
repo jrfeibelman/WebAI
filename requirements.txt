@@ -4,5 +4,7 @@ python-dotenv
 PyYAML
 asyncio
 openai
+llama-cpp-python
+guidance
 pytest
 mypy

@@ -50,9 +50,12 @@ class LongTermMemory:
         event_type = EventType.ThoughtEvent
         node_id = f"node_{str(node_count)}"
 
+        # TODO calculate importance using LLM
+        importance = 10
+
         # Create the ConceptNode object
         created = self.world_clock.snapshot()
-        node = AgentConcept(node_id, node_count, type_count, event_type, created, expiration, subject, predicate, obj, thought)
+        node = AgentConcept(node_id, node_count, type_count, event_type, created, expiration, subject, predicate, obj, thought, importance)
 
         # TODO convert agent concept to embedding and store
         
