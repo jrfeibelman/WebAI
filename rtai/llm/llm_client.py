@@ -1,85 +1,84 @@
 '''
 This module contains the LLMClient class, which is responsible for communicating with the LLM server.
 '''
-from openai import OpenAI
-from typing import List
+from typing import List, Tuple
+from guidance import models, gen
+import guidance
 
 from rtai.utils.config import Config
 
+
 class LLMClient:
-    def __init__(self, cfg: Config):
+    model = None
+
+    def __new__(cls) -> 'LLMClient':
+        """ _summary_ Singleton constructor for the LLMClient"""
+        if not hasattr(cls, '_instance'):
+            cls._instance = super().__new__(cls)
+            cls._instance.model = None
+        return cls._instance
+
+    def initialize(self, cfg: Config) -> bool:
         self.cfg: Config = cfg
-        # logging.getLogger("openai").setLevel(logging.ERROR)
-        if cfg.get_value("use_server", False):
-            self.mistral = cfg.get_value("local_", "")
-        else:
-            self.client = OpenAI(base_url=cfg.get_value("base_url", "http://localhost:1234/v1"),
-                    api_key=cfg.get_value("api_key", "not-needed"))
-        
-    def generate_first_daily_plan(self, wake_up_hour: str) -> str:
-        system_prompt = """
+        LLMClient.model = models.LlamaCpp(cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=20000)
+        LLMClient.model.echo = False
+        return True
+            
+    @guidance
+    def create_daily_tasks(self, lm, persona, num_tasks=3):
+        for i in range(num_tasks):
+            lm += f'''Task {i+1} that {persona} does in a day: "{gen(stop='"', name="tasks", temperature=1.0, list_append=True, max_tokens=100)}"\n'''
+        return lm
 
-        """
+    @guidance
+    def estimate_duration(self, lm, persona, tasks):
+        lm += f"Estimate a realistic duration, in hours, of how much time a {persona} would take for each task: \n"
+        for i in range(len(tasks)):
+            lm += f'''Task {i+1} will take {persona} {gen(stop='"', regex="[0-9]", name="duration", temperature=0.7, max_tokens=10, list_append=True)} hours\n'''
+        return lm
 
-        user_prompt = """
+    @guidance
+    def estimate_start_times(self, lm, persona, tasks):
+        lm +=  f"Generate a start time for when {persona} will start each task: \n"
+        for i in range(len(tasks)):
+            lm += f'''Task {i+1} will start at {gen(stop='"', regex="[0-9]:[0-9][0-9]", name="start_time", temperature=0.7, max_tokens=10, list_append=True)} hours\n'''
+        return lm
 
-        """
-        return self.generate_from_prompt(system_prompt, user_prompt)
-    
-    def generate_daily_plan(self) -> str:
-        system_prompt = """
+    @guidance
+    def create_dialogue(self, persona1, persona2, location):
+        global model
+        dialogue_prompt = f"""
+        Generate a short dialogue between {persona1.name} and {persona2.name} in {location}
 
-        """
+        {persona1.name} context: {persona1.common_str} {persona1.relationships[persona2.name]}
+        {persona2.name} context: {persona2.common_str} {persona2.relationships[persona1.name]}
 
-        user_prompt = """
+        Example of dialogue:
+        Hank: Howdy, Claire, how's it going?
+        Claire: Good, what about you?
 
-        """
-        return self.generate_from_prompt(system_prompt, user_prompt)
-    
-    def generate_daily_req(self) -> List[str]:
-        system_prompt = """
+        Here is the short dialogue:
+        {gen('dialogue', max_tokens=1000)}"""
+        lm = model + dialogue_prompt
+        return lm["dialogue"]
 
-        """
+    def generate_daily_plan(self, persona):
+        pass
 
-        user_prompt = """
-
-        """
-        return self.generate_from_prompt(system_prompt, user_prompt)
-    
-    def generate_daily_schedule(self, wake_up_hour: str) -> List[str]:
-        hour_str = ["00:00 AM", "01:00 AM", "02:00 AM", "03:00 AM", "04:00 AM", 
-            "05:00 AM", "06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", 
-            "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", 
-            "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM", "07:00 PM",
-            "08:00 PM", "09:00 PM", "10:00 PM", "11:00 PM"]
-        
-        system_prompt = """
-
-        """
-
-        user_prompt = """
-
-        """
-        return self.generate_from_prompt(system_prompt, user_prompt)
-    
-    def generate_narration(self) -> str:
-        # TODO LATER
-        system_prompt = """
-
-        """
-
-        user_prompt = """
-
-        """
-        return self.generate_from_prompt(system_prompt, user_prompt)
-    
-    def generate_from_prompt(self, system_prompt: str = "", user_prompt: str = "") -> str:
-        completion = self.client.chat.completions.create(
-            model="local-model", # TODO: use config to generlalize this to online hosted models, don't need this field for local model
-            messages=[
-                {"role": "system", "content": system_prompt}, # can think of the system prompt as context (i.e. memories)
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.7,
-        )
-        return str(completion.choices[0].content).strip()  # todo: more cleaning of the string response
+    def generate_daily_schedule(self, persona, wake_up_hour) -> List[Tuple[str, str, str]]:
+        print("CALLED")
+        global model
+        # generate the tasks
+        out1 = model + self.create_daily_tasks(persona)
+        tasks = out1['tasks']
+        print(tasks)
+        # estimate the duration
+        out2 = model + self.estimate_duration(persona, tasks)
+        duration = out2["duration"]
+        print(duration)
+        # estimate the start times
+        out3 = model + self.estimate_start_times(persona, tasks)
+        start_time = out3["start_time"]
+        print(start_time)
+        # return a list of triples
+        return list(zip(tasks, duration, start_time))

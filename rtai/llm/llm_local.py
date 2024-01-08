@@ -4,6 +4,7 @@ Scaffolding to use local LLM model without server
 from guidance import models, gen
 import guidance
 from rtai.utils.config import Config
+from tests.mock.llm.llm_local_mock import generate_daily_plan as generate_daily_plan_mock
 
 # global llm model
 
@@ -53,6 +54,7 @@ def create_dialogue(persona1, persona2, location):
     return lm["dialogue"]
 
 def generate_daily_plan(persona):
+    print("CALLED")
     global model
     # generate the tasks
     out1 = model + create_daily_tasks(persona)

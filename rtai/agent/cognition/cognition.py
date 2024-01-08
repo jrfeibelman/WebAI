@@ -104,7 +104,9 @@ class Cognition:
             # Schedule sleep --> Wakeup event
             self.agent.is_sleeping = True
             action_desc = "Sleep"
-            wake_up_hour_str = self.agent.s_mem.daily_schedule[0][0] # TODO wakeup hour by LLM or by other func?
+            print(self.agent.s_mem.daily_schedule)
+            wake_up_hour_str = self.agent.s_mem.daily_schedule[0][2] # TODO wakeup hour by LLM or by other func?
+            print(wake_up_hour_str)
             action_dur = action_start.get_timedelta_from_time_str(wake_up_hour_str)
             self.agent.go_to_sleep()
         elif self.agent.s_mem.daily_schedule_idx >= len(self.agent.s_mem.daily_schedule):
@@ -187,12 +189,12 @@ class Cognition:
             # Create new daily plan
             self.agent.s_mem.generate_daily_plan()
 
-        log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Plan: %s' % self.agent.s_mem.daily_plan)
+        # log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Plan: %s' % self.agent.s_mem.daily_plan)
 
         # Generate list of daily requirements for the day
-        self.agent.s_mem.generate_daily_req()
+        # self.agent.s_mem.generate_daily_req()
 
-        log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Requirements: %s' % self.agent.s_mem.daily_req)
+        # log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Requirements: %s' % self.agent.s_mem.daily_req)
 
         # Create hourly schedule for the persona - list of todo items where each has a duration that adds up to a full day
         self.agent.s_mem.generate_hourly_schedule(self.agent.persona, wake_up_hour)

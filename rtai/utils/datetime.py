@@ -121,7 +121,8 @@ class datetime:
         Returns:
             timedelta: timedelta object from the input time string
         """
-        return pydatetime.strptime(time_str, "%I:%M %p").replace(month=self._data.month, day=self._data.day, year=self._data.year) - self._data
+        return pydatetime.strptime(time_str, "%H:%M").replace(month=self._data.month, day=self._data.day, year=self._data.year) - self._data
+        # return pydatetime.strptime(time_str, "%I:%M %p").replace(month=self._data.month, day=self._data.day, year=self._data.year) - self._data
 
     def get_datetime_raw(self) -> pydatetime:
         """ _summary_ Get the raw datetime object

@@ -24,7 +24,7 @@ Agents:
 World:
   Clock:
     StartDate: '2024-01-01'
-    StartTime: '06:25:00 AM'
+    StartTime: '08:55:00 AM'
     ClockIncrementSec: 15 # Amount that clock is incremented by each cycle
     ClockTimerMillis: 250 # Amount of time between clock increments
   LoadFromFiles: ${WEBAI_HOME}/configs/samples/world/world1/

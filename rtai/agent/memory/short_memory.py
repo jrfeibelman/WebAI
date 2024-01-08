@@ -3,13 +3,14 @@ from numpy.random import normal
 from typing import Dict, List, Tuple
 from random import choice
 
-from rtai.utils.logging import log_transcript, debug
+from rtai.utils.logging import log_transcript, debug, warn
 from rtai.agent.persona import Persona
-from rtai.llm.llm_client import LLMClient
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.world.clock import WorldClock
 from rtai.utils.datetime import datetime, timedelta
+
+from rtai.llm.llm_client import LLMClient
 
 class ShortTermMemory:
     """_summary_ Class to represent the short term memory of an agent."""
@@ -171,9 +172,11 @@ class ShortTermMemory:
     
     def generate_daily_plan(self) -> None:
         """_summary_ Generate a daily plan for the agent.
+
+        Construct daily schedule according to format List[Tuple[str, str, str]] where each tuple is (task, duration, start_time)
         """
-        self.daily_plan = self.llm_client.generate_daily_plan()
-        self.daily_schedule_idx = 0
+        self.daily_plan = self.llm_client.generate_daily_plan(self.persona)
+        # self.daily_schedule_idx = 0
         debug("Agent [%s] generated daily plan: [%s]" % (self.persona.name, self.daily_plan))
     
     def generate_first_daily_plan(self, wake_up_hour: str) -> None:
@@ -182,14 +185,18 @@ class ShortTermMemory:
         Args:
             wake_up_hour (str): time to wake up for the day
         """
-        self.daily_plan = self.llm_client.generate_first_daily_plan(wake_up_hour)
-        self.daily_schedule_idx = 0
-        debug("Agent [%s] generated first daily plan: [%s]" % (self.persona.name, self.daily_plan))
+        warn("Generate First Daily Plan called but not yet implemented")
+        return self.generate_daily_plan()
+        # self.daily_plan = generate_daily_plan(self.persona)
+        # # self.daily_plan = self.llm_client.generate_first_daily_plan(wake_up_hour)
+        # self.daily_schedule_idx = 0
+        # debug("Agent [%s] generated first daily plan: [%s]" % (self.persona.name, self.daily_plan))
 
     def generate_daily_req(self) -> None:
         """_summary_ Generate the daily requirements for the agent.
         """
-        self.daily_req = self.llm_client.generate_daily_req()
+        self.daily_req = generate_daily_plan(self.persona)
+        # self.daily_req = self.llm_client.generate_daily_req()
         debug("Agent [%s] generated daily requirements: [%s]" % (self.persona.name, self.daily_req))
 
     def generate_hourly_schedule(self, persona: Persona, wake_up_hour) -> None:

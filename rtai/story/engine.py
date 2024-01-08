@@ -12,7 +12,9 @@ from rtai.utils.logging import info, debug, error, warn
 from rtai.llm.llm_client import LLMClient
 from rtai.world.clock import WorldClock
 from rtai.world.world import World
+
 from tests.mock.llm.llm_client_mock import LLMTestClient
+from rtai.llm.llm_client import LLMClient
 
 """
 TODO:
@@ -30,6 +32,7 @@ USE_GUI_CONFIG = 'UseGui'
 STORY_CONFIG = 'StoryEngine'
 NARRATOR_CONFIG = 'Narrator'
 WORLD_CONFIG = 'World'
+LLM_CLIENT_CONFIG = 'LLMClient'
 
 WORKER_THREAD_TIMER_CONFIG = 'WorkerThreadTimerMs'
 AGENT_TIMER_CONFIG = 'AgentTimerMillis'
@@ -76,24 +79,29 @@ class StoryEngine:
 
         self.force_stop: bool = False
 
-        # Setup World
-        self.world: World = World(cfg.expand('WORLD_CONFIG'))
-
-        if not self.world.initialize():
-            error("Unable to initialize world. Exiting.")
-            exit(1)
-
         # Setup World Clock
         clock_config = cfg.expand("World").expand("Clock")
         self.world_clock: WorldClock = WorldClock(clock_config)
         
         # Setup LLM Client
         if test_mode:
-            self.llm_client: LLMClient = LLMTestClient(cfg.expand("LLMClient"))
+            self.llm_client: LLMClient = LLMTestClient()
             warn("Test mode enabled. LLMClient will leverage test data for responses")
         else:
-            self.llm_client: LLMClient = LLMClient(cfg.expand("LLMClient"))
+            self.llm_client: LLMClient = LLMClient()
+            warn("Test mode disabled. LLMClient will leverage Local LLM for responses")
+
+        if not self.llm_client.initialize(cfg.expand(LLM_CLIENT_CONFIG)):
+            error("Unable to initialize LLMClient. Exiting.")
+            exit(1)
         
+        # Setup World
+        self.world: World = World(cfg.expand(WORLD_CONFIG))
+
+        if not self.world.initialize():
+            error("Unable to initialize world. Exiting.")
+            exit(1)
+
         # Set up Agents
         self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client, world_clock=self.world_clock)
         self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world, world_clock=self.world_clock)

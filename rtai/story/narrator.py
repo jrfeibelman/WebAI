@@ -44,7 +44,7 @@ class Narrator(AbstractAgent):
 
         # TODO - call LLM to generate narration
         prompt = "Joker"
-        completion = self.llm_client.generate_from_prompt(system_prompt="You are a narrator", user_prompt=prompt)
+        completion = "" # self.llm_client.generate_from_prompt(system_prompt="You are a narrator", user_prompt=prompt)
 
         log_transcript('Narrator', self.world_clock.get_time_str(), 'Auto', completion)
 
