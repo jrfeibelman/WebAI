@@ -13,7 +13,7 @@ from rtai.utils.config import Config
 def mock_llm_client(mock_config_base: Config):
     return LLMTestClient(mock_config_base)
 
-class LLMTestClient:
+class LLMTestClient(LLMClient):
     model = None
 
     def __new__(cls) -> 'LLMTestClient':

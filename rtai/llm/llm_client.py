@@ -4,6 +4,7 @@ This module contains the LLMClient class, which is responsible for communicating
 from typing import List, Tuple
 from guidance import models, gen
 import guidance
+# from guidance.models.llama_cpp.llama_cpp import LlamaCpp
 
 from rtai.utils.config import Config
 
@@ -11,11 +12,11 @@ from rtai.utils.config import Config
 class LLMClient:
     model = None
 
-    def __new__(cls) -> 'LLMClient':
+    def __new__(cls, cfg: Config) -> 'LLMClient':
         """ _summary_ Singleton constructor for the LLMClient"""
         if not hasattr(cls, '_instance'):
             cls._instance = super().__new__(cls)
-            cls._instance.model = None
+            cls.model = None
         return cls._instance
 
     def initialize(self, cfg: Config) -> bool:
@@ -25,20 +26,21 @@ class LLMClient:
         return True
             
     @guidance
-    def create_daily_tasks(self, lm, persona, num_tasks=3):
+    def create_daily_tasks(lm, self, persona, num_tasks=3):
         for i in range(num_tasks):
-            lm += f'''Task {i+1} that {persona} does in a day: "{gen(stop='"', name="tasks", temperature=1.0, list_append=True, max_tokens=100)}"\n'''
+            lm += f'''Briefly describe a task {i+1} that {persona} does in a day in 10 or less words: "{gen(stop=".", name="tasks", temperature=1.0, list_append=True)}"\n'''
+            # lm += f'''Task {i+1} that {persona} does in a day: "{gen(stop='"', name="tasks", temperature=1.0, list_append=True, max_tokens=100)}"\n'''
         return lm
 
     @guidance
-    def estimate_duration(self, lm, persona, tasks):
+    def estimate_duration(lm, self, persona, tasks):
         lm += f"Estimate a realistic duration, in hours, of how much time a {persona} would take for each task: \n"
         for i in range(len(tasks)):
             lm += f'''Task {i+1} will take {persona} {gen(stop='"', regex="[0-9]", name="duration", temperature=0.7, max_tokens=10, list_append=True)} hours\n'''
         return lm
 
     @guidance
-    def estimate_start_times(self, lm, persona, tasks):
+    def estimate_start_times(lm, self, persona, tasks):
         lm +=  f"Generate a start time for when {persona} will start each task: \n"
         for i in range(len(tasks)):
             lm += f'''Task {i+1} will start at {gen(stop='"', regex="[0-9]:[0-9][0-9]", name="start_time", temperature=0.7, max_tokens=10, list_append=True)} hours\n'''
@@ -46,7 +48,6 @@ class LLMClient:
 
     @guidance
     def create_dialogue(self, persona1, persona2, location):
-        global model
         dialogue_prompt = f"""
         Generate a short dialogue between {persona1.name} and {persona2.name} in {location}
 
@@ -59,25 +60,25 @@ class LLMClient:
 
         Here is the short dialogue:
         {gen('dialogue', max_tokens=1000)}"""
-        lm = model + dialogue_prompt
+        lm = LLMClient.model + dialogue_prompt
         return lm["dialogue"]
 
     def generate_daily_plan(self, persona):
-        pass
+        return ""
 
-    def generate_daily_schedule(self, persona, wake_up_hour) -> List[Tuple[str, str, str]]:
+    def generate_daily_schedule(self, persona) -> List[Tuple[str, str, str]]:
         print("CALLED")
-        global model
         # generate the tasks
-        out1 = model + self.create_daily_tasks(persona)
+        print(type(self.model))
+        out1 = LLMClient.model + self.create_daily_tasks(persona)
         tasks = out1['tasks']
         print(tasks)
         # estimate the duration
-        out2 = model + self.estimate_duration(persona, tasks)
+        out2 = LLMClient.model + self.estimate_duration(persona, tasks)
         duration = out2["duration"]
         print(duration)
         # estimate the start times
-        out3 = model + self.estimate_start_times(persona, tasks)
+        out3 = LLMClient.model + self.estimate_start_times(persona, tasks)
         start_time = out3["start_time"]
         print(start_time)
         # return a list of triples

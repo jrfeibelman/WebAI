@@ -11,56 +11,43 @@ class AgentConcept:
     event_type: EventType # TODO should probably be a string
 
     created: datetime
-    expiration: datetime
+    expiration: datetime # If importance falls below thrshold
     last_accessed: datetime # Might want to make this datetime
 
-    subject: str
-    predicate: str
-    obj: str
+    embedding_key: str
 
-    description: str
+    content: str
     importance: uint8 # Importance
 
-    def __init__(self, node_id: str, node_count: uint64, type_count: uint64, event_type: EventType, created: datetime, 
-                 expiration: datetime, subject: str, predicate: str, obj: str, description: str, importance: uint8):
+    def __init__(self, node_id: str, event_type: EventType, created: datetime, expiration: datetime, content: str, importance: uint8):
         """_summary_ Constructor for an agent concept.
 
         Args:
             node_id (str): ID of the agent concept node.
-            node_count (uint64): _description_
-            type_count (uint64): _description_
             event_type (EventType): type of event the agent concept represents
             created (datetime): creation time of the agent concept
             expiration (datetime): expiration time of the agent concept
-            subject (str): subject of the agent concept, which is the noun performing the event
-            predicate (str): predicate of the agent concept, which is the verb describing the event
-            obj (str): object of the agent concept, which is the noun receiving the event
-            description (str): description of the agent concept
+            content (str): content of the agent concept
+            importance (uint8): importance of the agent concept
         """
         
         self.node_id = node_id
-        self.node_count = node_count
-        self.type_count = type_count
         self.event_type = event_type
 
         self.created = created
         self.expiration = expiration
         self.last_accessed = self.created
 
-        self.subject = subject
-        self.predicate = predicate
-        self.obj = obj
-
-        self.description = description
+        self.content = content
         self.importance = importance
 
-    def summary(self) -> Tuple[str, str, str]:
+    def summary(self) -> str:
         """_summary_ Get a summary of the agent concept.
         
         Returns:
             Tuple[str, str, str]: A tuple of the subject, predicate, and object of the agent concept.
         """
-        return (self.subject, self.predicate, self.obj)
+        return self.content
     
     def __str__(self) -> None:
         return self.summary()

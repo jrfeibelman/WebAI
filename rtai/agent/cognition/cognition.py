@@ -41,7 +41,6 @@ class Cognition:
         """
         self.observe()
         self.think()
-        pass
 
     def retrieve(self):
         """ _summary_ Retrieve events and thoughts from long term memory.
@@ -62,12 +61,14 @@ class Cognition:
                             while the latter layer specifies the "curr_event", "events", 
                             and "thoughts" that are relevant.
         """
+        # TODO neil implement retrieve
         pass
 
     def think(self):
         pass
 
     def observe(self):
+        # TODO JASON - implement observe
         pass
 
     def reflect(self):
@@ -213,7 +214,7 @@ class Cognition:
         s, p, o = (self.agent.persona.name, "plan", date_str)
 
         node: AgentConcept = self.agent.l_mem.add_plan(expiration, s, p, o, thought)
-        log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', f"{node.summary()} --> {node.description}")
+        log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', f"{node.summary()} --> {node.content}")
         return node
 
     def chat(self) -> None:

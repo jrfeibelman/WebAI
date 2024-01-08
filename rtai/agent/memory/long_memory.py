@@ -29,8 +29,10 @@ class LongTermMemory:
 
         self.current_narration: str = ""
 
+        self.embeddings = None # TODO NEIL
+
     def add_plan(self, expiration : datetime, subject: str, predicate: str, 
-                    obj: str, thought: str) -> AgentConcept:
+                    obj: str, content: str) -> AgentConcept:
         """_summary_ Add a new plan to long term memory
 
         Args:
@@ -46,7 +48,6 @@ class LongTermMemory:
         """
         # Setting up the node ID and counts
         node_count = len(self.id_to_node.keys()) + 1
-        type_count = len(self.seq_thought) + 1
         event_type = EventType.ThoughtEvent
         node_id = f"node_{str(node_count)}"
 
@@ -55,7 +56,7 @@ class LongTermMemory:
 
         # Create the ConceptNode object
         created = self.world_clock.snapshot()
-        node = AgentConcept(node_id, node_count, type_count, event_type, created, expiration, subject, predicate, obj, thought, importance)
+        node = AgentConcept(node_id, event_type, created, expiration, content, importance)
 
         # TODO convert agent concept to embedding and store
         
@@ -93,7 +94,7 @@ class LongTermMemory:
         # Create the ConceptNode object to store into memory
         created = self.world_clock.snapshot()
         s, p, o = (self.persona.name, "act", action.description) # TODO
-        node = AgentConcept(node_id, node_count, type_count, event_type, created, action.completion_time + timedelta(days=30), s, p, o, action.description, importance)
+        node = AgentConcept(node_id, event_type, created, action.completion_time + timedelta(days=30), action.description, importance)
         
         # TODO convert agent concept to embedding and store
 
@@ -127,7 +128,7 @@ class LongTermMemory:
 
         # Create the ConceptNode object to store into memory
         s, p, o = (self.persona.name, "chat", chat.description) # TODO
-        node = AgentConcept(node_id, node_count, type_count, event_type, chat.created, chat.completion_time + timedelta(days=30), s, p, o, conversation_summary, importance)
+        node = AgentConcept(node_id, event_type, chat.created, chat.completion_time + timedelta(days=30), conversation_summary, importance)
         
         # TODO convert agent concept to embedding and store
 

@@ -179,7 +179,7 @@ class ShortTermMemory:
         # self.daily_schedule_idx = 0
         debug("Agent [%s] generated daily plan: [%s]" % (self.persona.name, self.daily_plan))
     
-    def generate_first_daily_plan(self, wake_up_hour: str) -> None:
+    def generate_first_daily_plan(self, wake_up_hour: str='') -> None:
         """_summary_ Generate a daily plan for the agent for the first day of the simulation.
 
         Args:
@@ -206,7 +206,7 @@ class ShortTermMemory:
             persona (Persona): persona of the agent
             wake_up_hour (str): time to wake up for the day
         """
-        self.daily_schedule = self.llm_client.generate_daily_schedule(persona, wake_up_hour)
+        self.daily_schedule = self.llm_client.generate_daily_schedule(persona=persona)
         debug("Agent [%s] generated hourly schedule: [%s]" % (self.persona.name, self.daily_schedule))
 
     def generate_wake_up_hour(self) -> str:

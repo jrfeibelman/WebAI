@@ -88,7 +88,7 @@ class StoryEngine:
             self.llm_client: LLMClient = LLMTestClient()
             warn("Test mode enabled. LLMClient will leverage test data for responses")
         else:
-            self.llm_client: LLMClient = LLMClient()
+            self.llm_client: LLMClient = LLMClient(cfg.expand(LLM_CLIENT_CONFIG))
             warn("Test mode disabled. LLMClient will leverage Local LLM for responses")
 
         if not self.llm_client.initialize(cfg.expand(LLM_CLIENT_CONFIG)):
