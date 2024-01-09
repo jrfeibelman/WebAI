@@ -29,7 +29,6 @@ class LLMClient:
     def create_daily_tasks(lm, self, persona, num_tasks=3):
         for i in range(num_tasks):
             lm += f'''Briefly describe a task {i+1} that {persona} does in a day in 10 or less words: "{gen(stop=".", name="tasks", temperature=1.0, list_append=True)}"\n'''
-            # lm += f'''Task {i+1} that {persona} does in a day: "{gen(stop='"', name="tasks", temperature=1.0, list_append=True, max_tokens=100)}"\n'''
         return lm
 
     @guidance
