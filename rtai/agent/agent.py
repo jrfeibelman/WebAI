@@ -55,7 +55,6 @@ class Agent(AbstractAgent):
         self.agent_queue: Queue = Queue()
         self.is_sleeping: bool = False
 
-
         Agent.id += 1
         self.id = Agent.id
 
@@ -79,7 +78,7 @@ class Agent(AbstractAgent):
     def update(self) -> None:
         """ _summary_ Update the agent's state
         """
-        self.retrieve(self.perceive())
+        self.cognition.perceive()
         debug("Agent [%s] finished update()" % (self.get_name()))
 
     def process_queue(self) -> None:
@@ -200,6 +199,17 @@ class Agent(AbstractAgent):
         """
         return self.id
     
+    def interrogate(self, question: str) -> str:
+        """ _summary_ Interrogate the agent with a question
+        
+        Args:
+            question (str): Question to ask
+            
+        Returns:
+            str: Response to question
+        """
+        return "Dummy Response"
+
     def save_to_file(self, file_path: str) -> None:
         """ _summary_ Save the agent's state to a file
         

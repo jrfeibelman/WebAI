@@ -12,7 +12,7 @@ from rtai.utils.config import Config
 class LLMClient:
     model = None
 
-    def __new__(cls, cfg: Config) -> 'LLMClient':
+    def __new__(cls) -> 'LLMClient':
         """ _summary_ Singleton constructor for the LLMClient"""
         if not hasattr(cls, '_instance'):
             cls._instance = super().__new__(cls)
@@ -65,11 +65,14 @@ class LLMClient:
 
     def generate_daily_plan(self, persona):
         return ""
-
+    
+    @guidance
+    def generate_observation(self, persona, current_action):
+        lm = LLMClient.model + f"Generate an observation that {persona} has about their current action {current_action}:\n{gen('observe', max_tokens=1000)}"
+        return lm['observe']
+    
     def generate_daily_schedule(self, persona) -> List[Tuple[str, str, str]]:
-        print("CALLED")
         # generate the tasks
-        print(type(self.model))
         out1 = LLMClient.model + self.create_daily_tasks(persona)
         tasks = out1['tasks']
         print(tasks)

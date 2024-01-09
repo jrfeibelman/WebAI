@@ -30,10 +30,10 @@ class Chat(Action):
         Chat.seq_num += 1
 
     def __str__(self) -> str:
-        return f"Chat [{self.seq_num}] [{self.description}]"
+        return f"Chat [{self.description}]"
 
     def __repr__(self) -> str:
-        return str(self)
+        return f"Chat [{self.seq_num}] [{self.description}]"
     
     def mark_completed(self) -> None:
         """_summary_ Mark the chat as completed and calculate the chat duration."""

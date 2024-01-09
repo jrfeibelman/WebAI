@@ -88,7 +88,7 @@ class StoryEngine:
             self.llm_client: LLMClient = LLMTestClient()
             warn("Test mode enabled. LLMClient will leverage test data for responses")
         else:
-            self.llm_client: LLMClient = LLMClient(cfg.expand(LLM_CLIENT_CONFIG))
+            self.llm_client: LLMClient = LLMClient()
             warn("Test mode disabled. LLMClient will leverage Local LLM for responses")
 
         if not self.llm_client.initialize(cfg.expand(LLM_CLIENT_CONFIG)):
@@ -162,6 +162,23 @@ class StoryEngine:
             elif "narrate" in x:
                 text = x.split("narrate ")[1]
                 self.manual_narration_change(text)
+            elif "pause" in x:
+                self.timer_mgr.pause_timers()
+            elif "resume" in x:
+                self.timer_mgr.resume_timers()
+            elif "interrogate" in x:
+                if not self.timer_mgr.is_paused:
+                    error("Failed to interrogate agent - timers must be paused first.")
+                    continue
+
+                agent_name = x.split("interrogate ")[1]
+                if agent_name not in self.agent_mgr.agents:
+                    error("Tried to interrogate unknown agent: %s" % a)
+                    continue
+
+                self.enter_interrogation(agent_name)
+                info("Finished interrogating Agent [%s]" % agent_name)
+
             elif x == "h" or x == "help":
                 print("Commands:\n \
                     help - print this help message\n \
@@ -169,6 +186,23 @@ class StoryEngine:
                     exit - exit the program")
             else:
                 print("Unknown command")
+
+    def enter_interrogation(self, agent_name: str) -> None:
+        agent = self.agent_mgr.agents[agent_name]
+        with agent.enter_interrogation():
+            info("Agent [%s] is now under interrogation. Type 'end interrogate' to end." % agent_name)
+            while True:
+                x = input(">>> ")
+                if x == "end":
+                    return
+                elif x == "h" or x == "help":
+                    print("Commands:\n \
+                        help - print this help message\n \
+                        narrate <str> - manually narrate\n \
+                        end - end interrogation")
+                else:
+                    response = agent.interrogate(x)
+                    info("Agent [%s] response: %s" % (agent_name, response))
 
     def dispatch_narration(self, event: Event, manual: bool = False) -> None:
         """ _summary_ Dispatches a narration event

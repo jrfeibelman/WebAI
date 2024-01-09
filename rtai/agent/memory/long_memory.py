@@ -31,17 +31,11 @@ class LongTermMemory:
 
         self.embeddings = None # TODO NEIL
 
-    def add_plan(self, expiration : datetime, subject: str, predicate: str, 
-                    obj: str, content: str) -> AgentConcept:
+    def add_plan(self, content: str) -> AgentConcept:
         """_summary_ Add a new plan to long term memory
 
         Args:
-            created (datetime): time that plan was created
-            expiration (datetime): time to expire the plan from long term memory
-            subject (str): subject of the plan
-            predicate (str): predicate of the plan
-            obj (str): object of the plan
-            thought (str): string representation of the plan description
+            content (str): string representation of the plan description
 
         Returns:
             AgentConcept: created AgentConcept from the input parameters
@@ -56,6 +50,7 @@ class LongTermMemory:
 
         # Create the ConceptNode object
         created = self.world_clock.snapshot()
+        expiration = created + timedelta(days=30)
         node = AgentConcept(node_id, event_type, created, expiration, content, importance)
 
         # TODO convert agent concept to embedding and store
@@ -66,8 +61,34 @@ class LongTermMemory:
 
         return node
     
-    def add_thought(self) -> AgentConcept:
-        pass
+    def add_observation(self, content: str) -> AgentConcept:
+        """_summary_ Add a new observation to long term memory
+
+        Args:
+            content (str): string representation of the observation description
+
+        Returns:
+            AgentConcept: created AgentConcept from the input parameters
+        """
+        # Setting up the node ID and counts
+        node_count = len(self.id_to_node.keys()) + 1
+        event_type = EventType.ThoughtEvent
+        node_id = f"node_{str(node_count)}"
+
+        # TODO calculate importance using LLM
+        importance = 10
+
+        # Create the ConceptNode object
+        created = self.world_clock.snapshot()
+        expiration = created + timedelta(days=30)
+        node = AgentConcept(node_id, event_type, created, expiration, content, importance)
+
+        # TODO convert agent concept to embedding and store
+        
+        # Fast Access dictionary caches
+        self.seq_thought.append(node)
+        self.id_to_node[node_id] = node
+        return node
 
     def add_reverie(self) -> AgentConcept:
         pass

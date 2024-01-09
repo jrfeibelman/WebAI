@@ -40,8 +40,11 @@ class LLMTestClient(LLMClient):
 
     def generate_daily_plan(self, persona):
         return ""
+    
+    def generate_observation(self, persona, current_action):
+        return ""
 
-    def generate_daily_schedule(self, persona, wake_up_hour) -> List[Tuple[str, str, str]]:
+    def generate_daily_schedule(self, persona) -> List[Tuple[str, str, str]]:
         print("CALLED")
         return [
             ("Wake up and make coffee", "0.5", "9:00"),

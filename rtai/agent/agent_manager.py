@@ -174,7 +174,7 @@ class AgentManager:
         # debug("Updating Agents")
         agents = self.agents.values()
 
-        # First update the state of all the agents        
+        # First update the state of all the agents    
         wait([self.tp.submit(a.update) for a in agents])
 
         # TODO - have agents communicate with one another and actions inform other agents action in a reactive manner 

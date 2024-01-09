@@ -1,13 +1,25 @@
 
 from abc import abstractmethod, ABCMeta
-
+from contextlib import contextmanager
 class AbstractAgent(metaclass=ABCMeta):
     """_summary_ Abstract base class to represent an agent."""
 
     def __init__(self):
-        pass
+        self._under_interrogation: bool = False
 
     # TODO add funcs for prompt generation and calling LLM
+        
+    @contextmanager
+    def enter_interrogation(self):
+        self._under_interrogation = True
+        try:
+            yield
+        finally:
+            self._under_interrogation = False
+
+    # @abstractmethod
+    # def interrogate(self, question: str) -> str:
+    #     pass
 
     @abstractmethod
     def get_name(self) -> str:

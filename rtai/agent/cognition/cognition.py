@@ -40,7 +40,7 @@ class Cognition:
             - Analyze surroundings: perceives events around the persona and saves events to the memory ?
         """
         self.observe()
-        self.think()
+        return []
 
     def retrieve(self):
         """ _summary_ Retrieve events and thoughts from long term memory.
@@ -64,12 +64,22 @@ class Cognition:
         # TODO neil implement retrieve
         pass
 
-    def think(self):
-        pass
-
     def observe(self):
-        # TODO JASON - implement observe
-        pass
+        """ _summary_ Observe the environment """
+        # First get environment around user
+        # world = self.agent.agent_mgr.world
+
+        # Get data needed to create observation
+
+        # Generate observation
+        current_action = self.agent.s_mem.current_action if len(self.agent.s_mem.chatting_with) == 0 else self.agent.s_mem.current_chat
+        observation: str = self.agent.llm_client.generate_observation(self.agent.persona, current_action)
+
+        # Save observation to long term memory
+        node: AgentConcept = self.agent.l_mem.add_observation(observation)
+        log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Observation)', f"{node.summary()}")
+        return node
+
 
     def reflect(self):
         self.retrieve()
@@ -208,12 +218,8 @@ class Cognition:
         for i in self.agent.s_mem.daily_plan:
             thought += f" {i},"
         thought = thought[:-1] + "."
-        created = self.agent.agent_mgr.world_clock.snapshot()
-        expiration = created + timedelta(days=30)
 
-        s, p, o = (self.agent.persona.name, "plan", date_str)
-
-        node: AgentConcept = self.agent.l_mem.add_plan(expiration, s, p, o, thought)
+        node: AgentConcept = self.agent.l_mem.add_plan(thought)
         log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', f"{node.summary()} --> {node.content}")
         return node
 
