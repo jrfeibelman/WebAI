@@ -32,6 +32,7 @@ USE_GUI_CONFIG = 'UseGui'
 STORY_CONFIG = 'StoryEngine'
 NARRATOR_CONFIG = 'Narrator'
 WORLD_CONFIG = 'World'
+CLOCK_CONFIG = 'Clock'
 LLM_CLIENT_CONFIG = 'LLMClient'
 
 WORKER_THREAD_TIMER_CONFIG = 'WorkerThreadTimerMs'
@@ -80,7 +81,7 @@ class StoryEngine:
         self.force_stop: bool = False
 
         # Setup World Clock
-        clock_config = cfg.expand("World").expand("Clock")
+        clock_config = cfg.expand(CLOCK_CONFIG)
         world_clock: clock = clock(clock_config)
         
         # Setup LLM Client
