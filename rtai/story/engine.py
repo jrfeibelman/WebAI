@@ -97,7 +97,8 @@ class StoryEngine:
             exit(1)
         
         # Setup World
-        self.world: World = World(cfg.expand(WORLD_CONFIG))
+        self.world: World = World(cfg.expand(WORLD_CONFIG), self.queue)
+        initial_shared_memories: List[str] = self.world.get_shared_memories()
 
         if not self.world.initialize():
             error("Unable to initialize world. Exiting.")
