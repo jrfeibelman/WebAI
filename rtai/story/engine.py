@@ -10,7 +10,7 @@ from rtai.core.event import Event, EventType
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
 from rtai.llm.llm_client import LLMClient
-from rtai.world.clock import WorldClock
+from rtai.world.clock import clock
 from rtai.world.world import World
 
 from tests.mock.llm.llm_client_mock import LLMTestClient
@@ -81,7 +81,7 @@ class StoryEngine:
 
         # Setup World Clock
         clock_config = cfg.expand("World").expand("Clock")
-        self.world_clock: WorldClock = WorldClock(clock_config)
+        world_clock: clock = clock(clock_config)
         
         # Setup LLM Client
         if test_mode:
@@ -103,8 +103,8 @@ class StoryEngine:
             exit(1)
 
         # Set up Agents
-        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client, world_clock=self.world_clock)
-        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world, world_clock=self.world_clock)
+        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
+        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world)
         if not self.agent_mgr.register(self.narrator):
             error("Unable to register narrator with agent manager. Exiting.")
             exit(1)
@@ -118,7 +118,7 @@ class StoryEngine:
         self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update, milliseconds=True)
         self.timer_mgr.add_timer(NARRATION_THREAD_NAME, uint16(self.cfg.get_value(NARRATION_TIMER_CONFIG, NARRATION_TIMER_DEFAULT)), self.narrator.generate_narration)
         self.timer_mgr.add_timer(WORKER_THREAD_NAME, uint16(self.cfg.get_value(WORKER_THREAD_TIMER_CONFIG, WORKER_TIMER_DEFAULT)), self.poll_event_queue, milliseconds=True)
-        self.timer_mgr.add_timer(WORLD_CLOCK_THREAD_NAME, uint16(clock_config.get_value(WORLD_CLOCK_TIMER_CONFIG, WORLD_CLOCK_TIMER_DEFAULT)), self.world_clock.tick, milliseconds=True)
+        self.timer_mgr.add_timer(WORLD_CLOCK_THREAD_NAME, uint16(clock_config.get_value(WORLD_CLOCK_TIMER_CONFIG, WORLD_CLOCK_TIMER_DEFAULT)), world_clock.tick, milliseconds=True)
         
         # Debug printing
         debug_timer_sec = uint16(self.cfg.get_value(DEBUG_TIMER_CONFIG, DEBUG_TIMER_CONFIG_DEFAULT))
@@ -240,8 +240,8 @@ class StoryEngine:
         if self.max_cycles > 0 and self.agent_mgr.get_cycle_count() >= self.max_cycles:
             info("Stopping after %d cycles" % self.agent_mgr.get_cycle_count())
             self.stop()
-        if self.max_days > 0 and self.world_clock.get_day_count() >= self.max_days:
-            info("Stopping after %d days" % self.world_clock.get_day_count())
+        if self.max_days > 0 and clock.get_day_count() >= self.max_days:
+            info("Stopping after %d days" % clock.get_day_count())
             self.stop()
 
     def process_event(self, event: Event) -> None:

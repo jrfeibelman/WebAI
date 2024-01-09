@@ -12,6 +12,7 @@ from rtai.agent.abstract_agent import AbstractAgent
 from rtai.core.event import Event, EventType
 from rtai.utils.logging import info, debug, warn, log_transcript
 from rtai.agent.persona import Persona
+from rtai.world.clock import clock
 from rtai.agent.memory.short_memory import ShortTermMemory
 from rtai.agent.memory.long_memory import LongTermMemory
 from rtai.utils.datetime import datetime, timedelta
@@ -65,8 +66,8 @@ class Agent(AbstractAgent):
             self.persona: Persona = Persona.generate()
             info("Generating Agent [%s] from LLM" % (self.get_name()))
 
-        self.s_mem: ShortTermMemory = ShortTermMemory(self.id, self.persona, self.llm_client, self.agent_mgr.world_clock)
-        self.l_mem: LongTermMemory = LongTermMemory(self.persona, self.agent_mgr.world_clock)
+        self.s_mem: ShortTermMemory = ShortTermMemory(self.id, self.persona, self.llm_client)
+        self.l_mem: LongTermMemory = LongTermMemory(self.persona)
         self.cognition: Cognition = Cognition(self)
         self.conversing: Conversing = Conversing(self)
 
@@ -123,7 +124,7 @@ class Agent(AbstractAgent):
 
         # if action expired, create new agenda/plan
         if self.s_mem.has_action_completed():
-            debug("Action [%s] completed at [%s]" % (self.s_mem.current_action.description, self.agent_mgr.world_clock.get_time_str()))
+            debug("Action [%s] completed at [%s]" % (self.s_mem.current_action.description, clock.get_time_str()))
             self.cognition.determine_action()
             
         # TODO later - if perceived event that needs to be responded to (such as chat), generate action or chat

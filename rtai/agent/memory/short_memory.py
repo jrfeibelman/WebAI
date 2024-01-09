@@ -7,7 +7,7 @@ from rtai.utils.logging import log_transcript, debug, warn
 from rtai.agent.persona import Persona
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
-from rtai.world.clock import WorldClock
+from rtai.world.clock import clock
 from rtai.utils.datetime import datetime, timedelta
 
 from rtai.llm.llm_client import LLMClient
@@ -20,8 +20,6 @@ class ShortTermMemory:
     persona: Persona
     # LLM interfacing client
     llm_client: LLMClient
-
-    world_clock: WorldClock
 
     # Reflection variables
     concept_forget: uint16
@@ -82,19 +80,17 @@ class ShortTermMemory:
 
     agent_id: uint16
 
-    def __init__(self, agent_id: uint16, persona: Persona, llm_client: LLMClient, world_clock: WorldClock):
+    def __init__(self, agent_id: uint16, persona: Persona, llm_client: LLMClient):
         """_summary_ Constructor for an agent's short term memory.
 
         Args:
             persona (Persona): persona of the agent
             llm_client (LLMClient): LLM interfacing client
-            world_clock (WorldClock): world clock of the agent
         """
         self.retention = 5
         self.agent_id = agent_id
         self.persona = persona
         self.llm_client = llm_client
-        self.world_clock = world_clock
 
         self.concept_forget = 100
         self.daily_reflection_time = 60 * 3
@@ -165,8 +161,8 @@ class ShortTermMemory:
             return True
 
         end_time = self.current_chat.end_time if len(self.chatting_with) > 0 else self.current_action.end_time
-        if end_time <= self.world_clock.snapshot():
-            debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.current_action.description, end_time, self.world_clock.snapshot()))
+        if end_time <= clock.peek():
+            debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.current_action.description, end_time, clock.peek()))
             return True
         return False
     

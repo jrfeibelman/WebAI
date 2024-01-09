@@ -11,6 +11,7 @@ from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.behavior.chat_message import ChatMessage
 from rtai.agent.behavior.abstract_behavior import AbstractBehavior
+from rtai.world.clock import clock
 
 class Cognition:
     """
@@ -77,7 +78,7 @@ class Cognition:
 
         # Save observation to long term memory
         node: AgentConcept = self.agent.l_mem.add_observation(observation)
-        log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Observation)', f"{node.summary()}")
+        log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Observation)', f"{node.summary()}")
         return node
 
 
@@ -107,7 +108,7 @@ class Cognition:
             ("11:30 PM", "0.5", "Have conversation with Batman about Joker's latest crime"),
             ("12:00 AM", "0.0", "Go home and go to sleep"),
         """
-        action_start: datetime = self.agent.agent_mgr.world_clock.snapshot()
+        action_start: datetime = clock.snapshot()
 
         # Get current index into daily schedule
         # BUG if first day and start when not sleeping...
@@ -200,27 +201,27 @@ class Cognition:
             # Create new daily plan
             self.agent.s_mem.generate_daily_plan()
 
-        # log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Plan: %s' % self.agent.s_mem.daily_plan)
+        # log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Plan)', 'Daily Plan: %s' % self.agent.s_mem.daily_plan)
 
         # Generate list of daily requirements for the day
         # self.agent.s_mem.generate_daily_req()
 
-        # log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Requirements: %s' % self.agent.s_mem.daily_req)
+        # log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Plan)', 'Daily Requirements: %s' % self.agent.s_mem.daily_req)
 
         # Create hourly schedule for the persona - list of todo items where each has a duration that adds up to a full day
         self.agent.s_mem.generate_hourly_schedule(self.agent.persona, wake_up_hour)
 
-        log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', 'Daily Schedule: %s' % self.agent.s_mem.daily_schedule)
+        log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Plan)', 'Daily Schedule: %s' % self.agent.s_mem.daily_schedule)
 
         # Save daily requirements to long term memory
-        date_str = self.agent.agent_mgr.world_clock.get_date_str()
+        date_str = clock.get_date_str()
         thought = f"This is {self.agent.persona.name}'s plan for {date_str}:"
         for i in self.agent.s_mem.daily_plan:
             thought += f" {i},"
         thought = thought[:-1] + "."
 
         node: AgentConcept = self.agent.l_mem.add_plan(thought)
-        log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Thought(Plan)', f"{node.summary()} --> {node.content}")
+        log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Plan)', f"{node.summary()} --> {node.content}")
         return node
 
     def chat(self) -> None:
@@ -230,17 +231,17 @@ class Cognition:
         
         if len(history) == 0 and self.agent.s_mem.current_chat.get_creator_id() == self.agent.get_id():
             # Generate first chat of conversation
-            new_msg = ChatMessage(sender_id=self.agent.get_id(), sender_name=self.agent.get_name(), message='Chat[%s][%s]' % (self.agent.get_name(), Cognition.counter), creation_time=self.agent.agent_mgr.world_clock.snapshot())
+            new_msg = ChatMessage(sender_id=self.agent.get_id(), sender_name=self.agent.get_name(), message='Chat[%s][%s]' % (self.agent.get_name(), Cognition.counter))
             history.append(new_msg)
             Cognition.counter += 1
             self.agent.s_mem.current_chat.set_alive(True)
-            log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Chat', new_msg)
+            log_transcript(self.agent.get_name(), clock.get_time_str(), 'Chat', new_msg)
         elif len(history) > 0 and history[-1].sender_id != self.agent.get_id():
             # your turn to generate chat
-            new_msg = ChatMessage(sender_id=self.agent.get_id(), sender_name=self.agent.get_name(), message='Chat[%s][%s]' % (self.agent.get_name(), Cognition.counter), creation_time=self.agent.agent_mgr.world_clock.snapshot())
+            new_msg = ChatMessage(sender_id=self.agent.get_id(), sender_name=self.agent.get_name(), message='Chat[%s][%s]' % (self.agent.get_name(), Cognition.counter))
             history.append(new_msg)
             Cognition.counter += 1
-            log_transcript(self.agent.get_name(), self.agent.agent_mgr.world_clock.get_time_str(), 'Chat', new_msg)
+            log_transcript(self.agent.get_name(), clock.get_time_str(), 'Chat', new_msg)
         else:
             # wait for other person to generate chat
             pass

@@ -8,26 +8,24 @@ from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, log_transcript
 from rtai.llm.llm_client import LLMClient
-from rtai.world.clock import WorldClock
+from rtai.world.clock import clock
 
 class Narrator(AbstractAgent):
     """ _summary_ Class to represent Narrator Agent"""
 
-    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient, world_clock: WorldClock):
+    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient):
         """ _summary_ Constructor to create a new narrator agent
         
         Args:
             event_queue (Queue): Queue to put events on
             cfg (Config): Config to use for narrator
             client (LLMClient): LLM Client to use for narrator
-            world_clock (WorldClock): World Clock to use for narrator
         """
         super().__init__()
         self.queue: Queue = event_queue
         self.llm_client: LLMClient = client
         self.cfg: Config = cfg
         self.narration: List[Event] = []
-        self.world_clock: WorldClock = world_clock
         self._counter: int = 0 # TODO eventually delete ? add termination to config
         info("Initialized narrator")
 
@@ -46,7 +44,7 @@ class Narrator(AbstractAgent):
         prompt = "Joker"
         completion = "" # self.llm_client.generate_from_prompt(system_prompt="You are a narrator", user_prompt=prompt)
 
-        log_transcript('Narrator', self.world_clock.get_time_str(), 'Auto', completion)
+        log_transcript('Narrator', clock.get_time_str(), 'Auto', completion)
 
         elapsed_time = perf_counter() - start_time
 

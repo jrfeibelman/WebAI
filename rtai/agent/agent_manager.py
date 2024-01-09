@@ -10,7 +10,6 @@ from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error
 from rtai.llm.llm_client import LLMClient
-from rtai.world.clock import WorldClock
 from rtai.world.world import World
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.behavior.chat_message import ChatMessage
@@ -32,7 +31,7 @@ class AgentManager:
     
     """
 
-    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient, world: World, world_clock: WorldClock):
+    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient, world: World):
         """_summary_ Constructor for the Agent Manager.
 
         Args:
@@ -40,7 +39,6 @@ class AgentManager:
             cfg (Config): Config object for the Agent Manager.
             client (LLMClient): LLM Client for the Agent Manager.
             world (World): World object for the Agent Manager.
-            world_clock (WorldClock): World Clock for the Agent Manager.
         """
         self.queue: Queue = event_queue
         self.cfg: Config = cfg
@@ -50,7 +48,6 @@ class AgentManager:
         self.tp: ThreadPoolExecutor = None
         self.client: LLMClient = client
         self.cycle_count: uint64 = uint64(0)
-        self.world_clock: WorldClock = world_clock
         self.world: World = world
         self.chat_mgr: ChatManager = ChatManager()
 

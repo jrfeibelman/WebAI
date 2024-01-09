@@ -2,7 +2,8 @@ from typing import Set, Tuple
 from numpy import uint64, uint8
 from rtai.core.event import EventType
 
-from rtai.utils.datetime import datetime
+from rtai.utils.datetime import datetime, timedelta
+from rtai.world.clock import clock
 
 class AgentConcept:
     node_id: str
@@ -19,23 +20,22 @@ class AgentConcept:
     content: str
     importance: uint8 # Importance
 
-    def __init__(self, node_id: str, event_type: EventType, created: datetime, expiration: datetime, content: str, importance: uint8):
+    def __init__(self, node_id: str, event_type: EventType, content: str, importance: uint8, expiration: timedelta=None):
         """_summary_ Constructor for an agent concept.
 
         Args:
             node_id (str): ID of the agent concept node.
             event_type (EventType): type of event the agent concept represents
-            created (datetime): creation time of the agent concept
-            expiration (datetime): expiration time of the agent concept
             content (str): content of the agent concept
             importance (uint8): importance of the agent concept
+            expiration (timedelta): expiration time of the agent concept
         """
         
         self.node_id = node_id
         self.event_type = event_type
 
-        self.created = created
-        self.expiration = expiration
+        self.created = clock.snapshot()
+        self.expiration = self.created + expiration if expiration else None
         self.last_accessed = self.created
 
         self.content = content
@@ -43,9 +43,6 @@ class AgentConcept:
 
     def summary(self) -> str:
         """_summary_ Get a summary of the agent concept.
-        
-        Returns:
-            Tuple[str, str, str]: A tuple of the subject, predicate, and object of the agent concept.
         """
         return self.content
     

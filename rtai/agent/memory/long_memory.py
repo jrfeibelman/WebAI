@@ -7,20 +7,17 @@ from rtai.agent.cognition.agent_concept import AgentConcept
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.persona import Persona
-from rtai.world.clock import WorldClock
 
 class LongTermMemory:
     """_summary_ Class to represent the long term memory of an agent."""
 
-    def __init__(self, persona: Persona, world_clock: WorldClock):
+    def __init__(self, persona: Persona):
         """_summary_ Constructor for an agent's long term memory.
 
         Args:
             persona (Persona): persona of the agent
-            world_clock (WorldClock): world clock of the agent
         """
         self.persona = persona
-        self.world_clock = world_clock
 
         self.id_to_node: Dict[str, AgentConcept] = dict()
         self.seq_action: List[AgentConcept] = []
@@ -49,9 +46,8 @@ class LongTermMemory:
         importance = 10
 
         # Create the ConceptNode object
-        created = self.world_clock.snapshot()
-        expiration = created + timedelta(days=30)
-        node = AgentConcept(node_id, event_type, created, expiration, content, importance)
+        expiration = timedelta(days=30)
+        node = AgentConcept(node_id, event_type, content, importance, expiration)
 
         # TODO convert agent concept to embedding and store
         
@@ -79,9 +75,8 @@ class LongTermMemory:
         importance = 10
 
         # Create the ConceptNode object
-        created = self.world_clock.snapshot()
-        expiration = created + timedelta(days=30)
-        node = AgentConcept(node_id, event_type, created, expiration, content, importance)
+        expiration = timedelta(days=30)
+        node = AgentConcept(node_id, event_type, content, importance, expiration)
 
         # TODO convert agent concept to embedding and store
         
@@ -113,9 +108,7 @@ class LongTermMemory:
         importance = 10
 
         # Create the ConceptNode object to store into memory
-        created = self.world_clock.snapshot()
-        s, p, o = (self.persona.name, "act", action.description) # TODO
-        node = AgentConcept(node_id, event_type, created, action.completion_time + timedelta(days=30), action.description, importance)
+        node = AgentConcept(node_id, event_type, action.description, importance, timedelta(days=30))
         
         # TODO convert agent concept to embedding and store
 
