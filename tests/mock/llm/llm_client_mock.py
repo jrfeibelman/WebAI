@@ -45,15 +45,24 @@ class LLMTestClient(LLMClient):
         return ""
 
     def generate_daily_schedule(self, persona) -> List[Tuple[str, str, str]]:
-        print("CALLED")
-        return [
-            ("Wake up and make coffee", "0.5", "9:00"),
-            ("Have chat", "2", "9:30"),
-            ("Attend Work", "8", "11:30"),
-            ("Have dinner", "1", "19:30"),
-            ("Play video games", "4", "20:30"),
-            ("Sleep", "9", "00:30")
-        ]
+        if persona.name == "Hank Thompson":
+            return [
+                ("Wake up and make coffee", "0.25", "9:00"),
+                ("Have a chat with Claire Reynolds", "2.25", "9:15"),
+                ("Do work on farm", "8", "11:30"),
+                ("Eat dinner", "1", "19:30"),
+                ("Play video games", "4", "20:30"),
+                ("Sleep", "9", "00:30")
+            ]        
+        else:
+            return [
+                ("Wake up and shower", "0.25", "9:00"),
+                ("Have a chat with Hank Thompson", "2.25", "9:15"),
+                ("Conduct fieldwork on ecosystem", "8", "11:30"),
+                ("Have dinner", "1", "19:30"),
+                ("Watch TV", "4", "20:30"),
+                ("Sleep", "9", "00:30")
+            ]
 
         
 

@@ -126,7 +126,7 @@ class Cognition:
         else:
             self.agent.s_mem.current_action.mark_completed()
 
-            _, tmp_dur, action_desc = self.agent.s_mem.daily_schedule[self.agent.s_mem.daily_schedule_idx] # TODO use action_start
+            action_desc, tmp_dur, planned_start_time = self.agent.s_mem.daily_schedule[self.agent.s_mem.daily_schedule_idx] # TODO use action_start
 
             action_dur = timedelta(minutes=int(float(tmp_dur) * 60))
             self.agent.s_mem.daily_schedule_idx += 1
