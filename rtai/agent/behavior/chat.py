@@ -1,5 +1,5 @@
 from numpy import uint64, uint16
-from typing import Set
+from typing import Set, List
 
 from rtai.utils.datetime import datetime, timedelta
 from rtai.agent.behavior.action import Action
@@ -25,12 +25,13 @@ class Chat(Action):
         self.participants: Set[str] = set()
         self.creator_id: uint16 = creator_id
         self.alive: bool = False
+        self.finished_conversation: List[str] = []
 
         self.seq_num = Chat.seq_num
         Chat.seq_num += 1
 
     def __str__(self) -> str:
-        return f"Chat [{self.description}]"
+        return f"Chat [{self.description}]" if len(self.finished_conversation) == 0 else f"Chat [{self.description}] [{self.finished_conversation}]"
 
     def __repr__(self) -> str:
         return f"Chat [{self.seq_num}] [{self.description}]"

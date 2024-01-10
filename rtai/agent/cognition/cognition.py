@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, List
 if TYPE_CHECKING:
     from rtai.agent.agent import Agent
 
-from rtai.core.event import Event
+from rtai.core.event import Event, EventType
 from rtai.utils.logging import log_transcript
-from rtai.agent.cognition.agent_concept import AgentConcept
+from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.utils.datetime import datetime, timedelta
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
@@ -77,7 +77,7 @@ class Cognition:
         observation: str = self.agent.llm_client.generate_observation(self.agent.persona, current_action)
 
         # Save observation to long term memory
-        node: AgentConcept = self.agent.l_mem.add_observation(observation)
+        node: ConceptNode = self.agent.l_mem.add_concept(observation, EventType.ThoughtEvent)
         log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Observation)', f"{node.summary()}")
         return node
 
@@ -169,9 +169,11 @@ class Cognition:
         if completed_action.address:
             if isinstance(self.agent.s_mem.current_action, Chat):
                 self.conversing.end_chat(completed_action)
-                self.agent.l_mem.add_chat(completed_action)
+                convo = self.agent.agent_mgr.chat_mgr.get_chat_history(completed_action)
+                completed_action.finished_conversation = convo
+                self.agent.l_mem.add_concept(completed_action, EventType.ChatEvent)
             else:
-                self.agent.l_mem.add_action(completed_action)
+                self.agent.l_mem.add_concept(completed_action, EventType.ActionEvent)
 
         log_transcript(self.agent.get_name(), action_start_str, 'Action', action_desc)
         
@@ -180,7 +182,7 @@ class Cognition:
 
         return new_action
 
-    def plan(self, replan: bool=False, new_day: bool=False, first_day: bool=False) -> AgentConcept:
+    def plan(self, replan: bool=False, new_day: bool=False, first_day: bool=False) -> ConceptNode:
         """ _summary_ Create a plan for the day and save it to long term memory.
 
         Args:
@@ -188,7 +190,7 @@ class Cognition:
             new_day (bool, optional): True if the plan is being created for a new day, False otherwise. Defaults to False.
             first_day (bool, optional): True if the plan is being created for the first day of the simulation, False otherwise. Defaults to False.
         Returns:
-            AgentConcept: The plan for the day.
+            ConceptNode: The plan for the day.
         """
 
         if first_day:
@@ -220,7 +222,7 @@ class Cognition:
             thought += f" {i},"
         thought = thought[:-1] + "."
 
-        node: AgentConcept = self.agent.l_mem.add_plan(thought)
+        node: ConceptNode = self.agent.l_mem.add_concept(thought, EventType.ThoughtEvent)
         log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Plan)', f"{node.summary()} --> {node.content}")
         return node
 

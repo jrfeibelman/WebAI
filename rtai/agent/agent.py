@@ -17,7 +17,7 @@ from rtai.agent.memory.short_memory import ShortTermMemory
 from rtai.agent.memory.long_memory import LongTermMemory
 from rtai.utils.datetime import datetime, timedelta
 from rtai.llm.llm_client import LLMClient
-from rtai.agent.cognition.agent_concept import AgentConcept
+from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.cognition.cognition import Cognition
