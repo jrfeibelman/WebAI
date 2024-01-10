@@ -46,6 +46,16 @@ class LLMClient:
         return lm
 
     @guidance
+    def generate_interrogation(lm, self, question, context, persona):
+        lm += f"""You are {persona}. Answer the question given the context:
+
+        This is the context: {context}
+        
+        Q: {question}
+        A: \n{gen('interrogation', max_tokens=1000)}"""
+        return lm
+
+    @guidance
     def create_dialogue(self, persona1, persona2, location):
         dialogue_prompt = f"""
         Generate a short dialogue between {persona1.name} and {persona2.name} in {location}

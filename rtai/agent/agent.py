@@ -209,10 +209,14 @@ class Agent(AbstractAgent):
         Returns:
             str: Response to question
         """
+        # grab the context of the question
+        # TODO: move to cognition?
+        context = self.l_mem.retriever.retrieve(question)
 
         # TODO - implement this Neil
-        self.llm_client
-        return "Dummy Response"
+        lm = LLMClient.model
+        lm += LLMClient.generate_interrogation(self.persona, context, question)
+        return lm["interrogation"]
 
     def save_to_file(self, file_path: str) -> None:
         """ _summary_ Save the agent's state to a file
