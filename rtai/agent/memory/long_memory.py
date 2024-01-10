@@ -7,7 +7,13 @@ from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.persona import Persona
+<<<<<<< Updated upstream
 from rtai.world.clock import clock
+=======
+from rtai.world.clock import WorldClock
+from rtai.agent.retriever import Retriever
+
+>>>>>>> Stashed changes
 from collections import OrderedDict
 import faiss
 from sentence_transformers import SentenceTransformer
@@ -49,6 +55,8 @@ class LongTermMemory:
         self.embeddings_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         embeddings_dim = 768
         self.index = faiss.IndexFlatL2(embeddings_dim)
+
+        self.retriever = Retriever(self.embeddings_model, self.index, self.storage)
 
     def create_embeddings(self):
         '''

@@ -1,15 +1,15 @@
 import datetime
 import faiss
-
+import numpy as np
 
 class Retriever:
-    def __init__(self, embedding_model, index, storage):
+    def __init__(self, embeddings_model, index, storage):
         self.index = index
-        self.embedding_model = embedding_model
+        self.embeddings_model = embeddings_model
         self.storage = storage
     
     def _text_to_vector(self, text):
-        query_embedding = self.embeddings_model.encode(text)
+        query_embedding = self.embeddings_model.encode([text])
         faiss.normalize_L2(query_embedding)
         return query_embedding
     
@@ -55,12 +55,14 @@ class Retriever:
         distances, indices = self._top_k_similiary_search(self.index, query)
         concepts = self._retrieve_concepts_from_indices(indices)
         
+        # recency, importance, and relevance
         recency_scores = self.recency_score(concepts)
         importance_scores = self.importance_score(concepts)
         relevance_scores = [1 - distance for distance in distances]  # 1 - distance because we want higher distance to be lower score
 
+        # normalize and sort concepts by scores
         raw_score = [sum(score) for score in zip(recency_scores, importance_scores, relevance_scores)]
         normalized_score = self._min_max_normalize_scores(raw_score) # map scores to [0, 1]
         sorted_scores = sorted(zip(indices, normalized_score), key=lambda x: x[1], reverse=True)
 
-        return sorted_scores[:k]
+        return sorted_scores[:k] # should return indices
