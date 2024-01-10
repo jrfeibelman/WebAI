@@ -12,6 +12,7 @@ from collections import OrderedDict
 import faiss
 from sentence_transformers import SentenceTransformer
 
+# storage class to manage concept insertion
 # class ConceptStorage(dict):
 #     def __init__(self, *args, **kwargs):
 #         super().__init__(*args, **kwargs)
@@ -42,12 +43,12 @@ class LongTermMemory:
 
         self.current_narration: str = "" # should this be here?
 
-        # variables for RAG pipeline
-        self.embeddings_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2') # <- one
-
-        # self.vectorstore = None
-        embeddings_dim = 768 # TODO: add as a config value
-        self.index = faiss.IndexFlatL2(embeddings_dim) # n agent, n indexes
+        '''
+        Embeddings
+        '''
+        self.embeddings_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
+        embeddings_dim = 768
+        self.index = faiss.IndexFlatL2(embeddings_dim)
 
     def create_embeddings(self):
         '''
@@ -63,7 +64,7 @@ class LongTermMemory:
      
     def search_embeddings(self, query: str, k: int) -> Tuple[List[int], List[float]]:
         '''
-        searches the embeddings for the query and returns the top k results
+        searches the embeddings for the query and returns the distances and indices of the top k results
         '''
         query_embedding = self.embeddings_model.encode([query]) # query needs to be a list
         faiss.normalize_L2(query_embedding)
