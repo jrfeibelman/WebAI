@@ -201,7 +201,7 @@ class Agent(AbstractAgent):
         return self.id
     
     def interrogate(self, question: str) -> str:
-        """ _summary_ Interrogate the agent with a question
+        """ _summary_ Interrogate the agent with a question. None of the interrogation should change any of the agent state.
         
         Args:
             question (str): Question to ask
@@ -209,6 +209,9 @@ class Agent(AbstractAgent):
         Returns:
             str: Response to question
         """
+
+        # TODO - implement this Neil
+        self.llm_client
         return "Dummy Response"
 
     def save_to_file(self, file_path: str) -> None:

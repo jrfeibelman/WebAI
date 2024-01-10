@@ -32,7 +32,7 @@ class Retriever:
         Scores the concepts on how recent it is
         '''
         current_time = datetime.datetime.now()
-        return [current_time - concept._last_accessed for concept in concepts]
+        return [current_time - concept._last_accessed for concept in concepts] # decay rate
     
     def importance_score(self, concepts):
         '''
@@ -53,16 +53,19 @@ class Retriever:
         retrieves the content of top k concept nodes based off recency + importance + relevance
         '''
         distances, indices = self._top_k_similiary_search(self.index, query)
+        relevance_scores = [1 - distance for distance in distances]  # 1 - distance because we want higher distance to be lower score
+        
         concepts = self._retrieve_concepts_from_indices(indices)
         
         # recency, importance, and relevance
         recency_scores = self.recency_score(concepts)
         importance_scores = self.importance_score(concepts)
-        relevance_scores = [1 - distance for distance in distances]  # 1 - distance because we want higher distance to be lower score
-
+    
         # normalize and sort concepts by scores
         raw_score = [sum(score) for score in zip(recency_scores, importance_scores, relevance_scores)]
         normalized_score = self._min_max_normalize_scores(raw_score) # map scores to [0, 1]
-        sorted_scores = sorted(zip(indices, normalized_score), key=lambda x: x[1], reverse=True)
+
+
+        sorted_scores = sorted(zip(indices, normalized_score), key=lambda x: x[1], reverse=True)[:k] # indices of the top k
 
         return sorted_scores[:k] # should return indices

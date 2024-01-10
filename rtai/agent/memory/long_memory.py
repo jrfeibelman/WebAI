@@ -7,14 +7,9 @@ from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.persona import Persona
-<<<<<<< Updated upstream
 from rtai.world.clock import clock
-=======
-from rtai.world.clock import WorldClock
-from rtai.agent.retriever import Retriever
-
->>>>>>> Stashed changes
 from collections import OrderedDict
+from rtai.agent.retriever import Retriever
 import faiss
 from sentence_transformers import SentenceTransformer
 
@@ -56,7 +51,7 @@ class LongTermMemory:
         embeddings_dim = 768
         self.index = faiss.IndexFlatL2(embeddings_dim)
 
-        self.retriever = Retriever(self.embeddings_model, self.index, self.storage)
+        self.retriever = Retriever(self.embeddings_model, self.index, self.id_to_node)
 
     def create_embeddings(self):
         '''
@@ -80,7 +75,7 @@ class LongTermMemory:
         return distances, indices  # we probably want the raw content?
 
     def add_concept(self, content: str, event_type: EventType, expiration: timedelta = None) -> ConceptNode:
-        node_id = len(self.id_to_node.keys()) + 1
+        node_id = len(self.id_to_node.keys())
 
         if event_type == EventType.ChatEvent:
             # TODO if chat event, summarize the chat and add to long term memory
