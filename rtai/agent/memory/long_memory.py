@@ -12,6 +12,7 @@ from collections import OrderedDict
 import faiss
 from sentence_transformers import SentenceTransformer
 
+# storage class to manage concept insertion
 # class ConceptStorage(dict):
 #     def __init__(self, *args, **kwargs):
 #         super().__init__(*args, **kwargs)
@@ -44,12 +45,12 @@ class LongTermMemory:
 
         self.current_narration: str = "" # should this be here?
 
-        # variables for RAG pipeline
-        self.embeddings_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2') # <- one
-
-        # self.vectorstore = None
-        embeddings_dim = 768 # TODO: add as a config value
-        self.index = faiss.IndexFlatL2(embeddings_dim) # n agent, n indexes
+        '''
+        Embeddings
+        '''
+        self.embeddings_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
+        embeddings_dim = 768
+        self.index = faiss.IndexFlatL2(embeddings_dim)
 
     def create_embeddings(self):
         '''
@@ -65,7 +66,7 @@ class LongTermMemory:
      
     def search_embeddings(self, query: str, k: int) -> Tuple[List[int], List[float]]:
         '''
-        searches the embeddings for the query and returns the top k results
+        searches the embeddings for the query and returns the distances and indices of the top k results
         '''
         query_embedding = self.embeddings_model.encode([query]) # query needs to be a list
         faiss.normalize_L2(query_embedding)
@@ -73,6 +74,9 @@ class LongTermMemory:
         return distances, indices  # we probably want the raw content?
 
     def add_concept(self, content: str, event_type: EventType, expiration: timedelta = None):
+        '''
+        add a concept node to long term memory storage
+        '''
         node_id = len(self.storage) + 1
         
         created = datetime.now() # should move this logic into agent_concept? TODO: change this back to using the world clock
@@ -82,8 +86,7 @@ class LongTermMemory:
         concept = AgentConcept(node_id=node_id, content=content, event_type=event_type, created=created, expiration=expiration, importance=10)  # TODO: do the call
         self.storage[node_id] = concept
 
-        # TODO: decide when to update embeddings
-        
+        # TODO: decide when to update embeddings?
         return concept # may not return concept later
     
     # TODO: collapse add_plan, add_action, add_chat into add_concept
