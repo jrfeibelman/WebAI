@@ -19,11 +19,11 @@ Narrator:
 Agents:
   NumAgents: 2
 World:
-  Clock:
-    StartDate: '2024-01-01'
-    StartTime: '06:15:00 AM'
-    ClockIncrementSec: 30 # Amount that clock is incremented by each cycle
-    ClockTimerMillis: 500 # Amount of time between clock increments
+Clock:
+  StartDate: '2024-01-01'
+  StartTime: '06:15:00 AM'
+  ClockIncrementSec: 30 # Amount that clock is incremented by each cycle
+  ClockTimerMillis: 500 # Amount of time between clock increments
 LLMClient: # This is the client that connects to the LLM
   use_server: False
   local_model_path: "/Users/nyeung/Projects/llama.cpp/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"

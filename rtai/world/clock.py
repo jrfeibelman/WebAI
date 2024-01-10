@@ -7,43 +7,32 @@ from rtai.utils.config import Config
 
 SEC_PER_HALF_DAY = 43200
 
-class WorldClock:
+class clock:
     """
     Class to represent the simulation world's date/time 
     
     Maybe using an entire datetime object ....
     """
 
-    day_counter: uint16
-    # mins_since_last_update: uint16
-    time: uint16
+    # Tracks number of days that have passed since clock was created
+    day_counter: uint16 = uint16(0)
+
     clock: mydatetime
-    is_am: bool
-    # world_date_str: str
 
+    def __new__(cls, config: Config) -> 'clock':
+        """ _summary_ Singleton constructor for the world clock"""
+        if not hasattr(cls, '_instance'):
+            cls._instance = super().__new__(cls)
 
-    # StartDate: '2024-01-01'
-    # StartTime: '05:00 AM'
-    # ClockIncrementSec: 20 # Amount that clock is incremented by each cycle
-    # ClockTimerMillis: 1000 # Amount of time between clock increments
+            # Start world clock at 5 am
+            cls.clock = mydatetime.strptime('%s %s' % (config['StartDate'], config['StartTime'])) # static datetime object
+            cls._instance.clock_increment = int(config['ClockIncrementSec'])
 
-    def __init__(self, config: Config):
+            # Tracks number of seconds that have passed in a given day
+            cls._instance.time = uint16(60*60*5)
+            cls._instance.is_am = True
 
-        # Start world clock at 5 am
-        self.clock = mydatetime.strptime('%s %s' % (config['StartDate'], config['StartTime']))
-        self.clock_increment = int(config['ClockIncrementSec'])
-
-        # Tracks number of seconds that have passed in a given day
-        self.time = uint16(60*60*5)
-        self.is_am = True
-
-        # Tracks number of days that have passed since clock was created
-        self.day_counter = uint16(0)
-
-        # Tracks number of minutes that have passed since lasted updated the clock field
-        # self.mins_since_last_update = uint16(0)
-
-        # self.world_date_str = self.world_date.strftime("%A %B %d, %Y")
+        return cls._instance
 
     @TimerManager.timer_callback
     def tick(self) -> None:
@@ -73,27 +62,35 @@ class WorldClock:
 
             # self.world_date_str = self.world_date.strftime("%A %B %d, %Y")
         
-    def snapshot(self) -> mydatetime:
-        return self.clock.copy()
+    @classmethod
+    def snapshot(cls) -> mydatetime:
+        return clock.clock.copy()
+    
+    @classmethod
+    def peek(cls) -> mydatetime:
+        return clock.clock
 
-    def get_time_str(self) -> str:
+    @classmethod
+    def get_time_str(cls) -> str:
         """
         Returns the time as a string object
         """
         # return  "%02d:%02d %s" % (self.get_hour() % 12, self.get_minute(), self.get_meridiem())
-        return self.clock.get_time_str()
+        return clock.clock.get_time_str()
     
-    def get_date_str(self) -> str:
+    @classmethod
+    def get_date_str(cls) -> str:
         """
         Returns the date as a string object
         """
-        return self.clock.get_date_str()
+        return clock.clock.get_date_str()
     
-    def get_datetime_str(self) -> str:
+    @classmethod
+    def get_datetime_str(cls) -> str:
         """
         Returns the date and time as a string object
         """
-        return self.clock.get_datetime_str(show_seconds=False)
+        return clock.clock.get_datetime_str(show_seconds=False)
 
     def __str__(self) -> str:
         return self.get_datetime_str()
@@ -135,8 +132,9 @@ class WorldClock:
     #     """
     #     return "AM" if self.get_hour() < 12 else "PM"
     
-    def get_day_count(self) -> uint16:
+    @classmethod
+    def get_day_count(cls) -> uint16:
         """
         Return the number of days that have passed since the world clock started
         """
-        return self.day_counter
+        return clock.day_counter

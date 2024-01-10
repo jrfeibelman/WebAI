@@ -3,8 +3,8 @@ last_name: Thompson
 name: Hank Thompson
 age: 54
 occupation: Farmer
-backstory: Hank Thompson is a 54-year-old farmer who has spent his entire life tending to the rich farmland of the Midwest. Born and raised in a small town in Iowa, Hank inherited his family farm and has continued the agricultural tradition with pride.
+backstory: Hank Thompson is a 54-year-old farmer who has spent his entire life tending to the rich farmland of the village Riverbend. Born and raised in a small town in Iowa, Hank inherited his family corn farm and has continued the agricultural tradition with pride.
 hobbies: tractor rides, country music
 traits: connection to tradition, simplicity and practicality, love for nature
 motivations: Hank's motivation lies in maintaining and preserving the family farm, upholding traditional farming practices, and finding fulfillment in the simplicity of rural life.
-relationships: Hank is good friends with Claire
+relationships: Hank is good friends with Claire Reynolds

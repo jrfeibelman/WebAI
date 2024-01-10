@@ -12,11 +12,12 @@ from rtai.agent.abstract_agent import AbstractAgent
 from rtai.core.event import Event, EventType
 from rtai.utils.logging import info, debug, warn, log_transcript
 from rtai.agent.persona import Persona
+from rtai.world.clock import clock
 from rtai.agent.memory.short_memory import ShortTermMemory
 from rtai.agent.memory.long_memory import LongTermMemory
 from rtai.utils.datetime import datetime, timedelta
 from rtai.llm.llm_client import LLMClient
-from rtai.agent.cognition.agent_concept import AgentConcept
+from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.cognition.cognition import Cognition
@@ -55,7 +56,6 @@ class Agent(AbstractAgent):
         self.agent_queue: Queue = Queue()
         self.is_sleeping: bool = False
 
-
         Agent.id += 1
         self.id = Agent.id
 
@@ -66,8 +66,8 @@ class Agent(AbstractAgent):
             self.persona: Persona = Persona.generate()
             info("Generating Agent [%s] from LLM" % (self.get_name()))
 
-        self.s_mem: ShortTermMemory = ShortTermMemory(self.id, self.persona, self.llm_client, self.agent_mgr.world_clock)
-        self.l_mem: LongTermMemory = LongTermMemory(self.persona, self.agent_mgr.world_clock)
+        self.s_mem: ShortTermMemory = ShortTermMemory(self.id, self.persona, self.llm_client)
+        self.l_mem: LongTermMemory = LongTermMemory(self.persona)
         self.cognition: Cognition = Cognition(self)
         self.conversing: Conversing = Conversing(self)
 
@@ -79,7 +79,7 @@ class Agent(AbstractAgent):
     def update(self) -> None:
         """ _summary_ Update the agent's state
         """
-        self.retrieve(self.perceive())
+        self.cognition.perceive()
         debug("Agent [%s] finished update()" % (self.get_name()))
 
     def process_queue(self) -> None:
@@ -124,7 +124,7 @@ class Agent(AbstractAgent):
 
         # if action expired, create new agenda/plan
         if self.s_mem.has_action_completed():
-            debug("Action [%s] completed at [%s]" % (self.s_mem.current_action.description, self.agent_mgr.world_clock.get_time_str()))
+            debug("Action [%s] completed at [%s]" % (self.s_mem.current_action.description, clock.get_time_str()))
             self.cognition.determine_action()
             
         # TODO later - if perceived event that needs to be responded to (such as chat), generate action or chat
@@ -200,6 +200,17 @@ class Agent(AbstractAgent):
         """
         return self.id
     
+    def interrogate(self, question: str) -> str:
+        """ _summary_ Interrogate the agent with a question
+        
+        Args:
+            question (str): Question to ask
+            
+        Returns:
+            str: Response to question
+        """
+        return "Dummy Response"
+
     def save_to_file(self, file_path: str) -> None:
         """ _summary_ Save the agent's state to a file
         

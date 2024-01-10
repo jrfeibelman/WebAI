@@ -4,7 +4,6 @@ from rtai.agent.agent import Agent
 
 from tests.mock.agent.agent_manager_mock import mock_agent_manager
 from tests.mock.configs.config_mock import mock_config_base
-from tests.mock.world.world_clock_mock import mock_world_clock
 from tests.mock.llm.llm_client_mock import mock_llm_client
 from tests.mock.story.engine_mock import mock_worker_queue
 

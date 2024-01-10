@@ -3,13 +3,14 @@ from numpy.random import normal
 from typing import Dict, List, Tuple
 from random import choice
 
-from rtai.utils.logging import log_transcript, debug
+from rtai.utils.logging import log_transcript, debug, warn
 from rtai.agent.persona import Persona
-from rtai.llm.llm_client import LLMClient
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
-from rtai.world.clock import WorldClock
+from rtai.world.clock import clock
 from rtai.utils.datetime import datetime, timedelta
+
+from rtai.llm.llm_client import LLMClient
 
 class ShortTermMemory:
     """_summary_ Class to represent the short term memory of an agent."""
@@ -19,8 +20,6 @@ class ShortTermMemory:
     persona: Persona
     # LLM interfacing client
     llm_client: LLMClient
-
-    world_clock: WorldClock
 
     # Reflection variables
     concept_forget: uint16
@@ -81,19 +80,17 @@ class ShortTermMemory:
 
     agent_id: uint16
 
-    def __init__(self, agent_id: uint16, persona: Persona, llm_client: LLMClient, world_clock: WorldClock):
+    def __init__(self, agent_id: uint16, persona: Persona, llm_client: LLMClient):
         """_summary_ Constructor for an agent's short term memory.
 
         Args:
             persona (Persona): persona of the agent
             llm_client (LLMClient): LLM interfacing client
-            world_clock (WorldClock): world clock of the agent
         """
         self.retention = 5
         self.agent_id = agent_id
         self.persona = persona
         self.llm_client = llm_client
-        self.world_clock = world_clock
 
         self.concept_forget = 100
         self.daily_reflection_time = 60 * 3
@@ -164,32 +161,38 @@ class ShortTermMemory:
             return True
 
         end_time = self.current_chat.end_time if len(self.chatting_with) > 0 else self.current_action.end_time
-        if end_time <= self.world_clock.snapshot():
-            debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.current_action.description, end_time, self.world_clock.snapshot()))
+        if end_time <= clock.peek():
+            debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.current_action.description, end_time, clock.peek()))
             return True
         return False
     
     def generate_daily_plan(self) -> None:
         """_summary_ Generate a daily plan for the agent.
+
+        Construct daily schedule according to format List[Tuple[str, str, str]] where each tuple is (task, duration, start_time)
         """
-        self.daily_plan = self.llm_client.generate_daily_plan()
-        self.daily_schedule_idx = 0
+        self.daily_plan = self.llm_client.generate_daily_plan(self.persona)
+        # self.daily_schedule_idx = 0
         debug("Agent [%s] generated daily plan: [%s]" % (self.persona.name, self.daily_plan))
     
-    def generate_first_daily_plan(self, wake_up_hour: str) -> None:
+    def generate_first_daily_plan(self, wake_up_hour: str='') -> None:
         """_summary_ Generate a daily plan for the agent for the first day of the simulation.
 
         Args:
             wake_up_hour (str): time to wake up for the day
         """
-        self.daily_plan = self.llm_client.generate_first_daily_plan(wake_up_hour)
-        self.daily_schedule_idx = 0
-        debug("Agent [%s] generated first daily plan: [%s]" % (self.persona.name, self.daily_plan))
+        warn("Generate First Daily Plan called but not yet implemented")
+        return self.generate_daily_plan()
+        # self.daily_plan = generate_daily_plan(self.persona)
+        # # self.daily_plan = self.llm_client.generate_first_daily_plan(wake_up_hour)
+        # self.daily_schedule_idx = 0
+        # debug("Agent [%s] generated first daily plan: [%s]" % (self.persona.name, self.daily_plan))
 
     def generate_daily_req(self) -> None:
         """_summary_ Generate the daily requirements for the agent.
         """
-        self.daily_req = self.llm_client.generate_daily_req()
+        self.daily_req = generate_daily_plan(self.persona)
+        # self.daily_req = self.llm_client.generate_daily_req()
         debug("Agent [%s] generated daily requirements: [%s]" % (self.persona.name, self.daily_req))
 
     def generate_hourly_schedule(self, persona: Persona, wake_up_hour) -> None:
@@ -199,7 +202,7 @@ class ShortTermMemory:
             persona (Persona): persona of the agent
             wake_up_hour (str): time to wake up for the day
         """
-        self.daily_schedule = self.llm_client.generate_daily_schedule(persona, wake_up_hour)
+        self.daily_schedule = self.llm_client.generate_daily_schedule(persona=persona)
         debug("Agent [%s] generated hourly schedule: [%s]" % (self.persona.name, self.daily_schedule))
 
     def generate_wake_up_hour(self) -> str:

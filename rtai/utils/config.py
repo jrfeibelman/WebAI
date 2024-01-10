@@ -28,7 +28,7 @@ class Config(Cache):
     def update(self, event) -> None:
         pass
 
-    def contains(self, key : str) -> bool:
+    def contains(self, key: str) -> bool:
         """ _summary_ Check if the config contains the key
         
         Args:
@@ -58,7 +58,7 @@ class Config(Cache):
             errStr = "Key [%s] not found in config %s." % (key, '' if self._curSection == '' else "  {'%s': %s}" % (self._curSection, self._dict))
             raise KeyError(errStr)
 
-    def get_value(self, key, default_value=None) -> str:
+    def get_value(self, key: str, default_value: bool=None) -> str:
         """ _summary_ Get the value of the key
         
         Args:
@@ -66,7 +66,8 @@ class Config(Cache):
             default_value (str, optional): default value to return if key is not found. Defaults to None.
             
         Returns:
-            str: value of the key"""
+            str: value of the key
+        """
         try:
             value = self._get(key)
             return str(value)
@@ -75,7 +76,15 @@ class Config(Cache):
                 error("%s  No default_value provided" % err)
             return default_value
             
-    def expand(self, key) -> str:
+    def expand(self, key: str) -> str:
+        """ _summary_ Expand a key to its value
+
+        Args:
+            key (str): key to expand
+
+        Returns:
+            str: expanded value of the key
+        """
         try:
             value = self._get(key)
             return Config(value, key)

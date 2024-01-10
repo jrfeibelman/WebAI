@@ -22,16 +22,15 @@ Agents:
     - ${WEBAI_HOME}/configs/samples/personas/persona1.txt
     - ${WEBAI_HOME}/configs/samples/personas/persona2.txt
 World:
+  Clock:
+    StartDate: '2024-01-01'
+    StartTime: '08:55:00 AM'
+    ClockIncrementSec: 15 # Amount that clock is incremented by each cycle
+    ClockTimerMillis: 250 # Amount of time between clock increments
   LoadFromFiles: ${WEBAI_HOME}/configs/samples/world/world1/
-  LoadSharedMemories: ${WEBAI_HOME}/configs/samples/world/world1/shared_memories.txt
-Clock:
-  StartDate: '2024-01-01'
-  StartTime: '08:55:00 AM'
-  ClockIncrementSec: 15 # Amount that clock is incremented by each cycle
-  ClockTimerMillis: 250 # Amount of time between clock increments
 LLMClient: # This is the client that connects to the LLM
   use_server: False
-  local_model_path: "/Users/feibs/.cache/lm-studio/models/TheBloke/Mistral-7B-Instruct-v0.1-GGUF/mistral-7b-instruct-v0.1.Q5_K_M.gguf"
+  local_model_path: "/Users/nyeung/Projects/llama.cpp/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
   model_name: "mistral-7b-instruct-v0.2.Q4_K_M.gguf"
   base_url: "http://192.168.1.70:1234/v1"
   api_key: "not-needed"

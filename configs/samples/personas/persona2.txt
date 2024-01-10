@@ -7,4 +7,4 @@ backstory: Claire Reynolds is a 37-year-old environmental scientist dedicated to
 hobbies: nature photography, trail running
 traits: passionate advocate, deep connection to nature, educator, health enthusiast
 motivations: Claire is a passionate advocate for environmental conservation and sustainable practices.
-relationships: Claire is good friends with Hank
+relationships: Claire is good friends with Hank Thompson

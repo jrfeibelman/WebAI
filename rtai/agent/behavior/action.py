@@ -26,10 +26,10 @@ class Action(AbstractBehavior):
         self.action_duration: timedelta = None
 
     def __str__(self) -> str:
-        return f"Action [{self.description}] start [{self.start_time}] - end [{self.end_time}] --> dur [{self.plan_duration}]"
+        return f"Action [{self.description}]"
 
     def __repr__(self) -> str:
-        return f"Action [{self.description}]"
+        return f"Action [{self.description}] start [{self.start_time}] - end [{self.end_time}] --> dur [{self.plan_duration}]"
 
     def _calc_end_time(self, start_time: datetime, duration: timedelta) -> datetime:
         """_summary_ Calculate the end time of an action.

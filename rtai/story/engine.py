@@ -10,9 +10,11 @@ from rtai.core.event import Event, EventType
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
 from rtai.llm.llm_client import LLMClient
-from rtai.world.clock import WorldClock
+from rtai.world.clock import clock
 from rtai.world.world import World
+
 from tests.mock.llm.llm_client_mock import LLMTestClient
+from rtai.llm.llm_client import LLMClient
 
 """
 TODO:
@@ -30,6 +32,8 @@ USE_GUI_CONFIG = 'UseGui'
 STORY_CONFIG = 'StoryEngine'
 NARRATOR_CONFIG = 'Narrator'
 WORLD_CONFIG = 'World'
+CLOCK_CONFIG = 'Clock'
+LLM_CLIENT_CONFIG = 'LLMClient'
 
 WORKER_THREAD_TIMER_CONFIG = 'WorkerThreadTimerMs'
 AGENT_TIMER_CONFIG = 'AgentTimerMillis'
@@ -76,27 +80,33 @@ class StoryEngine:
 
         self.force_stop: bool = False
 
+        # Setup World Clock
+        clock_config = cfg.expand(CLOCK_CONFIG)
+        world_clock: clock = clock(clock_config)
+        
+        # Setup LLM Client
+        if test_mode:
+            self.llm_client: LLMClient = LLMTestClient()
+            warn("Test mode enabled. LLMClient will leverage test data for responses")
+        else:
+            self.llm_client: LLMClient = LLMClient()
+            warn("Test mode disabled. LLMClient will leverage Local LLM for responses")
+
+        if not self.llm_client.initialize(cfg.expand(LLM_CLIENT_CONFIG)):
+            error("Unable to initialize LLMClient. Exiting.")
+            exit(1)
+        
         # Setup World
-        self.world: World = World(cfg.expand('WORLD_CONFIG'))
+        self.world: World = World(cfg.expand(WORLD_CONFIG), self.queue)
+        initial_shared_memories: List[str] = self.world.get_shared_memories()
 
         if not self.world.initialize():
             error("Unable to initialize world. Exiting.")
             exit(1)
 
-        # Setup World Clock
-        clock_config = cfg.expand("World").expand("Clock")
-        self.world_clock: WorldClock = WorldClock(clock_config)
-        
-        # Setup LLM Client
-        if test_mode:
-            self.llm_client: LLMClient = LLMTestClient(cfg.expand("LLMClient"))
-            warn("Test mode enabled. LLMClient will leverage test data for responses")
-        else:
-            self.llm_client: LLMClient = LLMClient(cfg.expand("LLMClient"))
-        
         # Set up Agents
-        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client, world_clock=self.world_clock)
-        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world, world_clock=self.world_clock)
+        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
+        self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world)
         if not self.agent_mgr.register(self.narrator):
             error("Unable to register narrator with agent manager. Exiting.")
             exit(1)
@@ -110,7 +120,7 @@ class StoryEngine:
         self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update, milliseconds=True)
         self.timer_mgr.add_timer(NARRATION_THREAD_NAME, uint16(self.cfg.get_value(NARRATION_TIMER_CONFIG, NARRATION_TIMER_DEFAULT)), self.narrator.generate_narration)
         self.timer_mgr.add_timer(WORKER_THREAD_NAME, uint16(self.cfg.get_value(WORKER_THREAD_TIMER_CONFIG, WORKER_TIMER_DEFAULT)), self.poll_event_queue, milliseconds=True)
-        self.timer_mgr.add_timer(WORLD_CLOCK_THREAD_NAME, uint16(clock_config.get_value(WORLD_CLOCK_TIMER_CONFIG, WORLD_CLOCK_TIMER_DEFAULT)), self.world_clock.tick, milliseconds=True)
+        self.timer_mgr.add_timer(WORLD_CLOCK_THREAD_NAME, uint16(clock_config.get_value(WORLD_CLOCK_TIMER_CONFIG, WORLD_CLOCK_TIMER_DEFAULT)), world_clock.tick, milliseconds=True)
         
         # Debug printing
         debug_timer_sec = uint16(self.cfg.get_value(DEBUG_TIMER_CONFIG, DEBUG_TIMER_CONFIG_DEFAULT))
@@ -154,6 +164,23 @@ class StoryEngine:
             elif "narrate" in x:
                 text = x.split("narrate ")[1]
                 self.manual_narration_change(text)
+            elif "pause" in x:
+                self.timer_mgr.pause_timers()
+            elif "resume" in x:
+                self.timer_mgr.resume_timers()
+            elif "interrogate" in x:
+                if not self.timer_mgr.is_paused:
+                    error("Failed to interrogate agent - timers must be paused first.")
+                    continue
+
+                agent_name = x.split("interrogate ")[1]
+                if agent_name not in self.agent_mgr.agents:
+                    error("Tried to interrogate unknown agent: %s" % a)
+                    continue
+
+                self.enter_interrogation(agent_name)
+                info("Finished interrogating Agent [%s]" % agent_name)
+
             elif x == "h" or x == "help":
                 print("Commands:\n \
                     help - print this help message\n \
@@ -161,6 +188,23 @@ class StoryEngine:
                     exit - exit the program")
             else:
                 print("Unknown command")
+
+    def enter_interrogation(self, agent_name: str) -> None:
+        agent = self.agent_mgr.agents[agent_name]
+        with agent.enter_interrogation():
+            info("Agent [%s] is now under interrogation. Type 'end interrogate' to end." % agent_name)
+            while True:
+                x = input(">>> ")
+                if x == "end":
+                    return
+                elif x == "h" or x == "help":
+                    print("Commands:\n \
+                        help - print this help message\n \
+                        narrate <str> - manually narrate\n \
+                        end - end interrogation")
+                else:
+                    response = agent.interrogate(x)
+                    info("Agent [%s] response: %s" % (agent_name, response))
 
     def dispatch_narration(self, event: Event, manual: bool = False) -> None:
         """ _summary_ Dispatches a narration event
@@ -198,8 +242,8 @@ class StoryEngine:
         if self.max_cycles > 0 and self.agent_mgr.get_cycle_count() >= self.max_cycles:
             info("Stopping after %d cycles" % self.agent_mgr.get_cycle_count())
             self.stop()
-        if self.max_days > 0 and self.world_clock.get_day_count() >= self.max_days:
-            info("Stopping after %d days" % self.world_clock.get_day_count())
+        if self.max_days > 0 and clock.get_day_count() >= self.max_days:
+            info("Stopping after %d days" % clock.get_day_count())
             self.stop()
 
     def process_event(self, event: Event) -> None:
