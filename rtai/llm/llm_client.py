@@ -12,12 +12,16 @@ from rtai.utils.config import Config
 class LLMClient:
     model = None
 
-    def __new__(cls) -> 'LLMClient':
-        """ _summary_ Singleton constructor for the LLMClient"""
-        if not hasattr(cls, '_instance'):
-            cls._instance = super().__new__(cls)
-            cls.model = None
-        return cls._instance
+    # TODO make singleton
+    # def __new__(cls) -> 'LLMClient':
+    #     """ _summary_ Singleton constructor for the LLMClient"""
+    #     if not hasattr(cls, '_instance'):
+    #         cls._instance = super().__new__(cls)
+    #         cls.model = None
+    #     return cls._instance
+    
+    def __init__(self) -> None:
+        LLMClient.model = None
 
     def initialize(self, cfg: Config) -> bool:
         self.cfg: Config = cfg
@@ -65,11 +69,12 @@ class LLMClient:
     def generate_daily_plan(self, persona):
         return ""
     
-    @guidance
+    # @guidance
     def generate_observation(self, persona, current_action):
-        lm = LLMClient.model
-        lm += f"Generate an observation that {persona} has about their current action {current_action}:\n{gen('observe', max_tokens=1000)}"
-        return lm['observe']
+        return "Test Observation"
+        # lm = LLMClient.model
+        # lm += f"Generate an observation that {persona} has about their current action {current_action}:\n{gen('observe', max_tokens=1000)}"
+        # return lm['observe']
     
     def generate_daily_schedule(self, persona) -> List[Tuple[str, str, str]]:
         # generate the tasks

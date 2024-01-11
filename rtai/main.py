@@ -15,6 +15,7 @@ def parse_args() -> dict:
     ap = ArgumentParser()
     ap.add_argument("-c", "--config_file", help="set config file", type=str, default="configs/rtai.yaml")
     ap.add_argument("-t", "--test_mode", help="set test mode", action='store_true')
+    ap.add_argument("-i", "--static_init", help="set initialization from static files", action='store_true')
 
     args = vars(ap.parse_args())
     return args
@@ -27,6 +28,7 @@ if __name__ == "__main__":
     args = parse_args()
     config_file = args['config_file']
     test_mode = args['test_mode']
+    static_init = args['static_init']
 
     if not path.exists(config_file):
         print("Error: config file %s does not exist" % config_file)
@@ -49,5 +51,5 @@ if __name__ == "__main__":
         setup_logging(log_dir, log_name, log_level, transcript_log_name, use_callee_stack, log_stdout_pipe)
 
     # Create Engine
-    engine = StoryEngine(cfg, debug_mode=log_level == DEBUG, test_mode=test_mode)
+    engine = StoryEngine(cfg, debug_mode=log_level == DEBUG, test_mode=test_mode, static_init=static_init)
     engine.start()

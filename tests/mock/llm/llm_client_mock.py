@@ -16,12 +16,9 @@ def mock_llm_client(mock_config_base: Config):
 class LLMTestClient(LLMClient):
     model = None
 
-    def __new__(cls) -> 'LLMTestClient':
-        """ _summary_ Singleton constructor for the LLMClient"""
-        if not hasattr(cls, '_instance'):
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
+    def __init__(self) -> None:
+        super().__init__()
+    
     def initialize(self, cfg: Config) -> bool:
         self.cfg: Config = cfg
         return True

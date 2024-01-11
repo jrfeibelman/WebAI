@@ -59,7 +59,7 @@ MAX_DAYS = 'StopAfterDays'
 class StoryEngine:
     """ _summary_ Class to represent the story engine"""
 
-    def __init__(self, cfg: Config, debug_mode: bool=False, test_mode: bool=False):
+    def __init__(self, cfg: Config, debug_mode: bool=False, test_mode: bool=False, static_init: bool=False):
         """ _summary_ Constructor for the story engine
         
         Args:
@@ -77,7 +77,7 @@ class StoryEngine:
 
         self.debug_mode: bool = debug_mode
         self.test_mode: bool = test_mode
-
+        self.static_init: bool = static_init
         self.force_stop: bool = False
 
         # Setup World Clock
@@ -95,6 +95,11 @@ class StoryEngine:
         if not self.llm_client.initialize(cfg.expand(LLM_CLIENT_CONFIG)):
             error("Unable to initialize LLMClient. Exiting.")
             exit(1)
+
+        if static_init:
+            self.static_client: LLMTestClient = LLMTestClient()
+            print(type(self.static_client))
+            warn("Static Initialization mode enabled. LLMClient will leverage test data for initialization")
         
         # Setup World
         self.world: World = World(cfg.expand(WORLD_CONFIG), self.queue)
@@ -115,6 +120,8 @@ class StoryEngine:
             error("Unable to initialize agent manager. Exiting.")
             exit(1)
 
+        self.agent_mgr.load_initial_memories(initial_shared_memories)
+
         # Set up threaded timers (i.e. create a thought every x seconds)
         self.timer_mgr: TimerManager = TimerManager()
         self.timer_mgr.add_timer(AGENT_THREAD_NAME, uint16(self.cfg.get_value(AGENT_TIMER_CONFIG, AGENT_TIMER_DEFAULT)), self.agent_mgr.update, milliseconds=True)
@@ -134,7 +141,7 @@ class StoryEngine:
         self.agent_mgr.dispatch_narration(narration)
 
         # Set initial state of agents
-        self.agent_mgr.update(first_day=True)
+        self.agent_mgr.update(first_day=True, test_llm_client=self.static_client if static_init else None)
 
         info("Initialized Story Engine")
 

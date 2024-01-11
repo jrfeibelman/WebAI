@@ -14,6 +14,7 @@ from rtai.world.world import World
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.behavior.chat_message import ChatMessage
 from rtai.agent.chat_manager import ChatManager
+from tests.mock.llm.llm_client_mock import LLMTestClient
 
 DEFAULT_NUM_AGENTS = 4
 NUM_AGENTS_CONFIG = "NumAgents"
@@ -161,15 +162,21 @@ class AgentManager:
         return True
     
     @TimerManager.timer_callback
-    def update(self, first_day: bool=False, new_day: bool=False) -> None:
+    def update(self, first_day: bool=False, new_day: bool=False, test_llm_client: LLMTestClient=None) -> None:
         """ _summary_ Update all the agents in Agent Manager
         
         Args:
             first_day (bool, optional): Whether or not it is the first day. Defaults to False.
             new_day (bool, optional): Whether or not it is a new day. Defaults to False.
+            test_llm_client (LLMTestClient, optional): Test LLM Client to use for static initialization once. Defaults to None.
         """
         # debug("Updating Agents")
         agents = self.agents.values()
+
+        if test_llm_client is not None: # TODO delete - super hacky and just for testing
+            for a in agents:
+                a.s_mem.llm_client = test_llm_client
+                a.llm_client = test_llm_client
 
         # First update the state of all the agents    
         wait([self.tp.submit(a.update) for a in agents])
@@ -181,6 +188,11 @@ class AgentManager:
             
         # Then generate reflections / reveries for all the agents
         wait([self.tp.submit(a.reflect) for a in agents])
+
+        if test_llm_client is not None: # TODO delete - super hacky and just for testing
+            for a in agents:
+                a.s_mem.llm_client = self.client
+                a.llm_client = self.client
 
         self.cycle_count += 1
     
@@ -204,3 +216,11 @@ class AgentManager:
             uint64: Cycle count
         """
         return self.cycle_count
+    
+    def load_initial_memories(self, memories: List[str]) -> None:
+        """ _summary_ Load the initial memories for the agents
+
+        Args:
+            memories (List[str]): List of memories to load
+        """
+        [a.load_initial_memories(memories) for a in self.agents.values()]
