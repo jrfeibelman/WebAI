@@ -69,9 +69,10 @@ class LongTermMemory:
         # self.index = None
 
         # create a new index
-        index = faiss.IndexFlatL2(300)
+        index = faiss.IndexFlatL2(768)
         index.add(embeddings)
         self.index = index
+        self.retriever.update_index(self.index)
      
     def search_embeddings(self, query: str, k: int) -> Tuple[List[int], List[float]]:
         '''

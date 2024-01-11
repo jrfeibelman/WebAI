@@ -52,17 +52,12 @@ class LLMClient:
     @guidance
     def create_interrogation(lm, self, persona, context, question):
         # print(f"Type of lm is {type(lm)}, {type(persona)}, {type(context)}, {type(question)}")
-        lm += f"""You are {persona}. Answer the question given the context:
-
-        This is the context:
-        
-        Q: {question}
-        A: \n{gen(stop='"', name="interrogation", max_tokens=1000)}"""
+        lm += f'''You are {persona}. Answer the question like you are {persona} in 2 lines max, given the context: {context}. Q: {question} A: \n{gen(stop='Q:', name="interrogation", max_tokens=1000)}'''
         return lm
 
     @guidance
     def create_dialogue(self, persona1, persona2, location):
-        dialogue_prompt = f"""
+        lm += f"""
         Generate a short dialogue between {persona1.name} and {persona2.name} in {location}
 
         {persona1.name} context: {persona1.common_str} {persona1.relationships[persona2.name]}
@@ -74,8 +69,8 @@ class LLMClient:
 
         Here is the short dialogue:
         {gen('dialogue', max_tokens=1000)}"""
-        lm = LLMClient.model + dialogue_prompt
-        return lm["dialogue"]
+        # lm = LLMClient.model + dialogue_prompt
+        return lm
 
     def generate_daily_plan(self, persona):
         return ""
@@ -89,15 +84,16 @@ class LLMClient:
     
     def generate_daily_schedule(self, persona) -> List[Tuple[str, str, str]]:
         # generate the tasks
-        out1 = LLMClient.model + self.create_daily_tasks(persona)
+        mistral = LLMClient.model
+        out1 = mistral + self.create_daily_tasks(persona)
         tasks = out1['tasks']
         print(tasks)
         # estimate the duration
-        out2 = LLMClient.model + self.estimate_duration(persona, tasks)
+        out2 = mistral + self.estimate_duration(persona, tasks)
         duration = out2["duration"]
         print(duration)
         # estimate the start times
-        out3 = LLMClient.model + self.estimate_start_times(persona, tasks)
+        out3 = mistral + self.estimate_start_times(persona, tasks)
         start_time = out3["start_time"]
         print(start_time)
         # return a list of triples
@@ -107,6 +103,8 @@ class LLMClient:
         print("persona", persona)
         print("retrieved context", context)
         print("question", question)
-        out = LLMClient.model + self.create_interrogation(persona, context, question)
+        mistral2 = models.LlamaCpp(self.cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=2048)
+        mistral2.echo = False
+        out = mistral2 + self.create_interrogation(persona=persona, context=context, question=question)
         resp = out["interrogation"]
         return resp

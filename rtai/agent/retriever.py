@@ -17,6 +17,9 @@ class Retriever:
         self.max_retrieval = 1000 # the max number of concepts to retrieve
         self.max_context = 5 # the max number of concepts to use to create a context
     
+    def update_index(self, index):
+        self.index = index
+        
     def _text_to_vector(self, text):
         query_embedding = self.embeddings_model.encode([text])
         faiss.normalize_L2(query_embedding)
