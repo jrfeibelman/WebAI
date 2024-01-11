@@ -53,6 +53,9 @@ class LongTermMemory:
 
         self.retriever = Retriever(self.embeddings_model, self.index, self.id_to_node)
 
+    # def set_index(self, index):
+    #     self.index = index
+
     def create_embeddings(self):
         '''
         Creates embeddings of all the content in long term memory and adds the index
@@ -62,8 +65,13 @@ class LongTermMemory:
         embeddings = self.embeddings_model.encode(sentences)
 
         # faiss set index
-        faiss.normalize_L2(embeddings)
-        self.index.add(embeddings)
+        faiss.normalize_L2(embeddings) # generate embeddings on the entire storage
+        # self.index = None
+
+        # create a new index
+        index = faiss.IndexFlatL2(300)
+        index.add(embeddings)
+        self.index = index
      
     def search_embeddings(self, query: str, k: int) -> Tuple[List[int], List[float]]:
         '''
@@ -74,7 +82,8 @@ class LongTermMemory:
         distances, indices = self.index.search(query_embedding, k) # get the top k serarch embeddings
         return distances, indices  # we probably want the raw content?
 
-    def add_concept(self, content: str, event_type: EventType, expiration: timedelta = None) -> ConceptNode:
+    def add_concept(self, content: str, event_type: EventType = None, expiration: timedelta = None) -> ConceptNode:
+        print(content)
         node_id = len(self.id_to_node.keys())
 
         if event_type == EventType.ChatEvent:
@@ -99,6 +108,8 @@ class LongTermMemory:
         elif event_type == EventType.ChatEvent:
             self.seq_chat.append(node)
 
+        # recalculate the embeddings everytime a new concept node is added
+        self.create_embeddings()
         return node
     
     def process_narration(self, narration: str) -> ConceptNode:

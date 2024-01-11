@@ -1,9 +1,9 @@
 
 import faiss
 import numpy as np
-from operator import itemgetter
 from rtai.utils.datetime import datetime
 from typing import List
+from time import sleep
 
 '''
 https://www.pinecone.io/learn/series/faiss/faiss-tutorial/
@@ -40,20 +40,29 @@ class Retriever:
         '''
         Gets the a list of concepts from a list of indices
         '''
-        return [self.storage[index] for index in indices_list]
+        print(f"Storage is here {self.storage.items()}")
+        res = []
+        for index in indices_list:
+            res.append(self.storage[index])
+        # return [self.storage[index] for index in indices_list]
+        return res
 
-    def _recency_score(self, concepts) -> List[float]:  # TODO: check that this works
+    def _recency_score(self, concepts) -> List[float]:  # TODO: add the rececy
         '''
         Scores the concepts on how recent it is
         '''
-        # current_time = datetime.now()
-        # recency_scores = []
-        # for concept in concepts:
-        #     last_accessed = concept._last_accessed
-        #     recency = current_time.calc_timedelta_diff(concept._last_accessed)
-        #     recency_scores.append(recency)
-        # return [current_time - concept._last_accessed for concept in concepts]
-        return [1 for concept in concepts] # TODO: figure out how to use custom datetime delta
+        current_time = datetime.now()
+        recency_scores = []
+        # print("sleeping for 2 seconds")
+        # sleep(2)
+        for concept in concepts:
+            last_accessed = concept._last_accessed
+            recency = last_accessed.calc_timedelta_diff(current_time)
+            print (f"recency for {concept} is {recency}")
+            recency_scores.append(recency.total_seconds())
+        print(f"recency scores are {recency_scores}")
+        # return [ for concept in concepts]
+        return recency_scores
     
     def _importance_score(self, concepts):
         '''
@@ -100,7 +109,7 @@ class Retriever:
         
         return context
     
-    def retrieve_context(self, query, k=2):
+    def retrieve_context(self, query, k=3):
         '''
         retrieves a context string composed of the top k concept nodes based off query
         

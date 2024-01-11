@@ -46,13 +46,14 @@ class LLMClient:
         return lm
 
     @guidance
-    def generate_interrogation(lm, self, question, context, persona):
+    def create_interrogation(lm, self, persona, context, question):
+        # print(f"Type of lm is {type(lm)}, {type(persona)}, {type(context)}, {type(question)}")
         lm += f"""You are {persona}. Answer the question given the context:
 
-        This is the context: {context}
+        This is the context:
         
         Q: {question}
-        A: \n{gen('interrogation', max_tokens=1000)}"""
+        A: \n{gen(stop='"', name="interrogation", max_tokens=1000)}"""
         return lm
 
     @guidance
@@ -75,11 +76,12 @@ class LLMClient:
     def generate_daily_plan(self, persona):
         return ""
     
-    @guidance
-    def generate_observation(self, persona, current_action):
-        lm = LLMClient.model
-        lm += f"Generate an observation that {persona} has about their current action {current_action}:\n{gen('observe', max_tokens=1000)}"
-        return lm['observe']
+    # @guidance
+    def generate_observation(self, persona, current_action, common_str):
+        return ""
+        # lm = LLMClient.model
+        # lm += f"Generate an observation that {persona} has about their current action {current_action}:\n{gen('observe', max_tokens=1000)}"
+        # return lm['observe']
     
     def generate_daily_schedule(self, persona) -> List[Tuple[str, str, str]]:
         # generate the tasks
@@ -96,3 +98,11 @@ class LLMClient:
         print(start_time)
         # return a list of triples
         return list(zip(tasks, duration, start_time))
+    
+    def generate_interrogation(self, persona, context, question):
+        print("persona", persona)
+        print("retrieved context", context)
+        print("question", question)
+        out = LLMClient.model + self.create_interrogation(persona, context, question)
+        resp = out["interrogation"]
+        return resp

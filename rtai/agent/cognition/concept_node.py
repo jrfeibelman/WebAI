@@ -12,7 +12,7 @@ class ConceptNode:
     importance: int # Importance
     _last_accessed: datetime
     expiration: datetime
-    created: datetime
+    created_real_time: datetime
 
     def __init__(self, node_id: str, event_type: EventType, content: str, importance: uint8, expiration: timedelta=None):
         """_summary_ Constructor for an agent concept.
@@ -25,14 +25,13 @@ class ConceptNode:
             expiration (timedelta): expiration time of the agent concept
         """
         self.node_id: str = node_id
-        self.content = content
+        self.content = str(content)
         self.event_type = event_type
 
-        self.created: datetime = clock.snapshot()
-        self.expiration: datetime = self.created + expiration if expiration else None
-        self._last_accessed = self.created
+        self.created_real_time: datetime = datetime.now()
+        self.expiration: datetime = self.created_real_time + expiration if expiration else None
+        self._last_accessed = self.created_real_time
 
-        self.content = content
         self.importance = importance
 
     def summary(self) -> str:
