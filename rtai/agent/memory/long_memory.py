@@ -1,5 +1,5 @@
 from typing import Tuple, Set, Dict, List, OrderedDict
-from numpy import uint64
+from numpy import uint64, float32
 
 from rtai.utils.datetime import datetime, timedelta
 from rtai.core.event import EventType, Event
@@ -91,7 +91,7 @@ class LongTermMemory:
             pass
 
         # TODO calculate importance using LLM
-        importance = 10
+        importance: float32 = 1.0
         
         expiration = timedelta(days=15) # expiration function of importance
 

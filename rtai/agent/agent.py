@@ -138,7 +138,9 @@ class Agent(AbstractAgent):
             self.cognition.plan(False, new_day, first_day)
 
         # if action expired, create new agenda/plan
-        if self.s_mem.has_action_completed():
+        current_action: Action = self.s_mem.current_action if len(self.s_mem.chatting_with) == 0 else self.s_mem.current_action
+               
+        if current_action.has_completed():
             debug("Action [%s] completed at [%s]" % (self.s_mem.current_action.description, clock.get_time_str()))
             self.cognition.determine_action()
             
@@ -282,3 +284,12 @@ class Agent(AbstractAgent):
         commonset += f"Daily plan requirement: {self.s_mem.daily_plan}\n"
         # commonset += f"Current Date: {self.curr_time.strftime('%A %B %d')}\n"
         return commonset
+    
+    def load_initial_memories(self, memories: List[ConceptNode]) -> None:
+        """ _summary_ Load the agent's initial memories
+
+        Args:
+            memories (List[ConceptNode]): Memories to load
+        """
+        for mem in memories:
+            self.l_mem.add_concept(mem)

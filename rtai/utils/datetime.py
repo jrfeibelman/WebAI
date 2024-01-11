@@ -4,7 +4,9 @@ from typing import TypeAlias
 timedelta: TypeAlias = pytimedelta
 
 def now_str() -> str:
-    """ _summary_ Get a string representation of the current UTC time 
+    """ _summary_ Get a string representation of the current UTC time
+
+    Useful for logging or where you just need a string of the current real time 
     
     Returns:
         str: string representation of the current UTC time

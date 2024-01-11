@@ -1,4 +1,6 @@
 from rtai.utils.datetime import datetime, timedelta
+from rtai.world.clock import clock
+from rtai.utils.logging import debug
 from rtai.agent.behavior.abstract_behavior import AbstractBehavior
 
 class Action(AbstractBehavior):
@@ -43,6 +45,15 @@ class Action(AbstractBehavior):
         if start_time._data.second != 0:
             start_time.replace_time(seconds=0)
         return (start_time + duration)
+    
+    def has_completed(self) -> bool:
+        if not self.address:
+            return True
+
+        if self.end_time <= clock.peek():
+            debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.description, self.end_time, clock.peek()))
+            return True
+        return False
     
     def mark_completed(self) -> None:
         """_summary_ Mark the action as completed and calculate the action duration."""

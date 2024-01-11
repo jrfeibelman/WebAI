@@ -151,21 +151,6 @@ class ShortTermMemory:
         """
         return self.act_start_time.strftime("%H:%M %p")
 
-    def has_action_completed(self) -> bool: 
-        """_summary_ Checks whether the current Action instance has finished. 
-        
-        Returns:
-            bool: True if the current action has completed, False otherwise
-        """
-        if not self.current_action.address:
-            return True
-
-        end_time = self.current_chat.end_time if len(self.chatting_with) > 0 else self.current_action.end_time
-        if end_time <= clock.peek():
-            debug("Action [%s] with end time [%s] completed at world time [%s]" % (self.current_action.description, end_time, clock.peek()))
-            return True
-        return False
-    
     def generate_daily_plan(self) -> None:
         """_summary_ Generate a daily plan for the agent.
 
