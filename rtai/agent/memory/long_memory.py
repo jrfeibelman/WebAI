@@ -81,7 +81,7 @@ class LongTermMemory:
         return distances, indices  # we probably want the raw content?
 
     def add_concept(self, content: str, event_type: EventType = None, expiration: timedelta = None) -> ConceptNode:
-        print(content)
+        # print(content)
         node_id = len(self.id_to_node.keys())
 
         if event_type == EventType.ChatEvent:

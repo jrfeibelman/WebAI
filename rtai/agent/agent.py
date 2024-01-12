@@ -51,7 +51,6 @@ class Agent(AbstractAgent):
     
     
     """
-    id: uint16 = uint16(0)
 
     def __init__(self, agent_mgr: AgentManager, client: LLMClient, file_path: str=""):
         """ _summary_ Constructor to create a new agent
@@ -61,18 +60,14 @@ class Agent(AbstractAgent):
             client (LLMClient): LLM Client for the agent
             file_path (str, optional): File path to load persona from. Defaults to "".        
         """
-        super().__init__()
-
-        self.agent_mgr: AgentManager = agent_mgr
+        super().__init__(agent_mgr)
+        
         self.llm_client: LLMClient = client
 
         self.conversations: List[Event] = []
 
         self.agent_queue: Queue = Queue()
         self.is_sleeping: bool = False
-
-        Agent.id += 1
-        self.id = Agent.id
 
         if len(file_path) > 0:
             self.persona: Persona = Persona.generate_from_file(file_path)
@@ -209,15 +204,7 @@ class Agent(AbstractAgent):
         """
         return self.persona.get_name()
     
-    def get_id(self) -> uint16:
-        """ _summary_ Get the agent's id 
-        
-        Returns:
-            uint16: Agent's id
-        """
-        return self.id
-    
-    def interrogate(self, question: str, interrogation_history: str) -> str:
+    def interrogate(self, chat: Chat, question: str) -> str:
         """ _summary_ Interrogate the agent with a question. None of the interrogation should change any of the agent state.
 
         The agent should not remember the interrogation. The agent should not change its behavior based on the interrogation.
@@ -228,9 +215,18 @@ class Agent(AbstractAgent):
         Returns:
             str: Response to question
         """
+        self.agent_mgr.chat_mgr.write_to_chat(chat, "Q: %s"  % (question))
+        chat_history = '\n'.join(self.agent_mgr.chat_mgr.get_chat_history(chat))
+
+        # TODO: move to cognition? -  Neil
+        # grab the context of the question
         retrieved_context = self.l_mem.retriever.retrieve_context(question)
         persona = self.get_common_set_str()
-        out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question, history=interrogation_history)
+        out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question, history=chat_history)
+        log_transcript("System", clock.get_time_str(), 'Interrogation(Question)', question)
+        log_transcript(self.persona.get_name(), clock.get_time_str(), 'Interrogation(Answer)', out)
+
+        self.agent_mgr.chat_mgr.write_to_chat(chat, "A: %s"  % (out))
         return out
 
     def save_to_file(self, file_path: str) -> None:

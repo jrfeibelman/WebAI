@@ -110,8 +110,8 @@ class StoryEngine:
             exit(1)
 
         # Set up Agents
-        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
         self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world)
+        self.narrator: Narrator = Narrator(self.agent_mgr, self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
         if not self.agent_mgr.register(self.narrator):
             error("Unable to register narrator with agent manager. Exiting.")
             exit(1)
@@ -198,8 +198,7 @@ class StoryEngine:
 
     def enter_interrogation(self, agent_name: str) -> None:
         agent = self.agent_mgr.agents[agent_name]
-        interrogation_history = ['']
-        with agent.enter_interrogation():
+        with agent.enter_interrogation() as interrogation_chat:
             info("Agent [%s] is now under interrogation. Type 'end interrogate' to end." % agent_name)
             while True:
                 x = input(">>> ")
@@ -211,10 +210,8 @@ class StoryEngine:
                         narrate <str> - manually narrate\n \
                         end - end interrogation")
                 else:
-                    interrogation_history_str = '\n'.join(interrogation_history)
-                    response = agent.interrogate(question=x, interrogation_history=interrogation_history_str)
-                    interrogation_history.append('Q:' + x)
-                    interrogation_history.append('A:' + response)
+                    response = agent.interrogate(chat=interrogation_chat, question=x)
+
                     info("Agent [%s] response: %s" % (agent_name, response))
 
     def dispatch_narration(self, event: Event, manual: bool = False) -> None:

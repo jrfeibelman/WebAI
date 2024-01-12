@@ -1,21 +1,42 @@
 
 from abc import abstractmethod, ABCMeta
 from contextlib import contextmanager
+from numpy import uint16
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rtai.agent.agent_manager import AgentManager
+
+from rtai.agent.behavior.chat import Chat
+from rtai.world.clock import clock
+from rtai.utils.datetime import timedelta
+
 class AbstractAgent(metaclass=ABCMeta):
     """_summary_ Abstract base class to represent an agent."""
 
-    def __init__(self):
+    id: uint16 = uint16(0)
+
+    def __init__(self, agent_manager: 'AgentManager'):
+        self.agent_mgr = agent_manager
         self._under_interrogation: bool = False
+        AbstractAgent.id += 1
+        self.id = AbstractAgent.id
 
     # TODO add funcs for prompt generation and calling LLM
         
     @contextmanager
-    def enter_interrogation(self):
+    def enter_interrogation(self) -> Chat:
         self._under_interrogation = True
+
+        chat = Chat(description=f"Interrogation of {self.get_name()}", creator_id=self.get_id(), address="", start_time=clock.snapshot(), duration=timedelta(seconds=0))
+        chat.register_participant(self.get_name())
+        self.agent_mgr.chat_mgr.create_chat(chat)
+
         try:
-            yield
+            yield chat
         finally:
             self._under_interrogation = False
+            self.agent_mgr.chat_mgr.delete_chat(chat)
 
     # @abstractmethod
     # def interrogate(self, question: str) -> str:
@@ -49,3 +70,11 @@ class AbstractAgent(metaclass=ABCMeta):
             bool: Whether the agent was successfully loaded.
         """
         pass
+
+    def get_id(self) -> uint16:
+        """ _summary_ Get the agent's id 
+        
+        Returns:
+            uint16: Agent's id
+        """
+        return self.id
