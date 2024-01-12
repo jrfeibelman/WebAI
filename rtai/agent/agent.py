@@ -217,8 +217,10 @@ class Agent(AbstractAgent):
         """
         return self.id
     
-    def interrogate(self, question: str) -> str:
+    def interrogate(self, question: str, interrogation_history: str) -> str:
         """ _summary_ Interrogate the agent with a question. None of the interrogation should change any of the agent state.
+
+        The agent should not remember the interrogation. The agent should not change its behavior based on the interrogation.
         
         Args:
             question (str): Question to ask
@@ -226,23 +228,10 @@ class Agent(AbstractAgent):
         Returns:
             str: Response to question
         """
-        # load environment
-        # TODO: move this to initialization
-        # env_path = "/Users/nyeung/Projects/WebAI/configs/samples/world/world1/shared_memories.txt"
-        # with open(env_path, 'r') as file:
-        #     lines = file.readlines()
-        #     a = [line.strip() for line in lines]
-        
-        # for content in a:
-        #     self.l_mem.add_concept(content)
-        
-        # self.l_mem.create_embeddings()
-
-        # TODO: move to cognition? -  Neil
-        # grab the context of the question
+        print("history is: ", interrogation_history)
         retrieved_context = self.l_mem.retriever.retrieve_context(question)
         persona = self.get_common_set_str()
-        out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question)
+        out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question, history=interrogation_history)
         return out
 
     def save_to_file(self, file_path: str) -> None:

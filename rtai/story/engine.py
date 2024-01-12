@@ -198,6 +198,7 @@ class StoryEngine:
 
     def enter_interrogation(self, agent_name: str) -> None:
         agent = self.agent_mgr.agents[agent_name]
+        interrogation_history = ['']
         with agent.enter_interrogation():
             info("Agent [%s] is now under interrogation. Type 'end interrogate' to end." % agent_name)
             while True:
@@ -210,7 +211,10 @@ class StoryEngine:
                         narrate <str> - manually narrate\n \
                         end - end interrogation")
                 else:
-                    response = agent.interrogate(x)
+                    interrogation_history_str = '\n'.join(interrogation_history)
+                    response = agent.interrogate(question=x, interrogation_history=interrogation_history_str)
+                    interrogation_history.append('Q:' + x)
+                    interrogation_history.append('A:' + response)
                     info("Agent [%s] response: %s" % (agent_name, response))
 
     def dispatch_narration(self, event: Event, manual: bool = False) -> None:
