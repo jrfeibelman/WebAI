@@ -51,7 +51,6 @@ class Agent(AbstractAgent):
     
     
     """
-    id: uint16 = uint16(0)
 
     def __init__(self, agent_mgr: AgentManager, client: LLMClient, file_path: str=""):
         """ _summary_ Constructor to create a new agent
@@ -61,18 +60,14 @@ class Agent(AbstractAgent):
             client (LLMClient): LLM Client for the agent
             file_path (str, optional): File path to load persona from. Defaults to "".        
         """
-        super().__init__()
-
-        self.agent_mgr: AgentManager = agent_mgr
+        super().__init__(agent_mgr)
+        
         self.llm_client: LLMClient = client
 
         self.conversations: List[Event] = []
 
         self.agent_queue: Queue = Queue()
         self.is_sleeping: bool = False
-
-        Agent.id += 1
-        self.id = Agent.id
 
         if len(file_path) > 0:
             self.persona: Persona = Persona.generate_from_file(file_path)
@@ -209,15 +204,7 @@ class Agent(AbstractAgent):
         """
         return self.persona.get_name()
     
-    def get_id(self) -> uint16:
-        """ _summary_ Get the agent's id 
-        
-        Returns:
-            uint16: Agent's id
-        """
-        return self.id
-    
-    def interrogate(self, question: str) -> str:
+    def interrogate(self, chat: Chat, question: str) -> str:
         """ _summary_ Interrogate the agent with a question. None of the interrogation should change any of the agent state.
         
         Args:
@@ -226,23 +213,20 @@ class Agent(AbstractAgent):
         Returns:
             str: Response to question
         """
-        # load environment
-        # TODO: move this to initialization
-        # env_path = "/Users/nyeung/Projects/WebAI/configs/samples/world/world1/shared_memories.txt"
-        # with open(env_path, 'r') as file:
-        #     lines = file.readlines()
-        #     a = [line.strip() for line in lines]
-        
-        # for content in a:
-        #     self.l_mem.add_concept(content)
-        
-        # self.l_mem.create_embeddings()
+        self.agent_mgr.chat_mgr.write_to_chat(chat, "Said to %s: %s"  % (self.get_name(), question))
+        chat_history = self.agent_mgr.chat_mgr.get_chat_history(chat)
+        print("HISTORY:[\n%s\n]" % chat_history)
 
         # TODO: move to cognition? -  Neil
         # grab the context of the question
         retrieved_context = self.l_mem.retriever.retrieve_context(question)
         persona = self.get_common_set_str()
         out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question)
+        log_transcript("System", clock.get_time_str(), 'Interrogation(Question)', question)
+        log_transcript(self.persona.get_name(), clock.get_time_str(), 'Interrogation(Answer)', out)
+
+        # TODO add to chat
+        self.agent_mgr.chat_mgr.write_to_chat(chat, "Said by %s: %s"  % (self.get_name(), out))
         return out
 
     def save_to_file(self, file_path: str) -> None:

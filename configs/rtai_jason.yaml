@@ -4,7 +4,7 @@ Logger:
   Level: DEBUG
   LogDirectory: ${WEBAI_HOME}/logs/
   LogName: rtai
-  PipeToStdout: True
+  # PipeToStdout: True
   UseCalleeStack: True
   TranscriptLogName: transcript
 StoryEngine:
