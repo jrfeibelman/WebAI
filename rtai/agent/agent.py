@@ -215,7 +215,7 @@ class Agent(AbstractAgent):
         Returns:
             str: Response to question
         """
-        self.agent_mgr.chat_mgr.write_to_chat(chat, "Question: %s"  % (question))
+        self.agent_mgr.chat_mgr.write_to_chat(chat, "Q: %s"  % (question))
         chat_history = '\n'.join(self.agent_mgr.chat_mgr.get_chat_history(chat))
 
         # TODO: move to cognition? -  Neil
@@ -226,7 +226,7 @@ class Agent(AbstractAgent):
         log_transcript("System", clock.get_time_str(), 'Interrogation(Question)', question)
         log_transcript(self.persona.get_name(), clock.get_time_str(), 'Interrogation(Answer)', out)
 
-        self.agent_mgr.chat_mgr.write_to_chat(chat, "%s Answered: %s"  % (self.get_name(), out))
+        self.agent_mgr.chat_mgr.write_to_chat(chat, "A: %s"  % (out))
         return out
 
     def save_to_file(self, file_path: str) -> None:

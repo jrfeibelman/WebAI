@@ -43,7 +43,7 @@ class Retriever:
         '''
         Gets the a list of concepts from a list of indices
         '''
-        print(f"Storage is here {self.storage.items()}")
+        # print(f"Storage is here {self.storage.items()}")
         res = []
         for index in indices_list:
             res.append(self.storage[index])
@@ -61,9 +61,9 @@ class Retriever:
         for concept in concepts:
             last_accessed = concept._last_accessed
             recency = last_accessed.calc_timedelta_diff(current_time)
-            print (f"recency for {concept} is {recency}")
+            # print (f"recency for {concept} is {recency}")
             recency_scores.append(recency.total_seconds())
-        print(f"recency scores are {recency_scores}")
+        # print(f"recency scores are {recency_scores}")
         # return [ for concept in concepts]
         return recency_scores
     
@@ -92,9 +92,9 @@ class Retriever:
 
         # normalize and sort concepts by score
         raw_score = [sum(score) for score in zip(recency_scores, importance_scores, relevance_scores)]
-        print(f"raw score for all retrieved is {raw_score}")
+        # print(f"raw score for all retrieved is {raw_score}")
         normalized_score = self._min_max_normalize_scores(raw_score) # map scores to [0, 1]
-        print(f"normalized score for all retrieved is {normalized_score}")
+        # print(f"normalized score for all retrieved is {normalized_score}")
         
         # sort the indices by score
         sorted_scores = list(sorted(zip(indices, normalized_score), key=lambda x: x[1], reverse=True)) # indices of the top k
@@ -105,9 +105,9 @@ class Retriever:
         creates a context string from the top k concepts
         '''
         context = ""
-        print(f"fetching the top {k} results to create a context string")
+        # print(f"fetching the top {k} results to create a context string")
         for i, a in enumerate(sorted_scores[:k]):
-            print(f"The {i}th result is {self.storage[a[0]]} at index {a[0]} and has score: {a[1]}")
+            # print(f"The {i}th result is {self.storage[a[0]]} at index {a[0]} and has score: {a[1]}")
             context += self.storage[a[0]].content
         
         return context
@@ -119,14 +119,14 @@ class Retriever:
         fetches up to max retrival contents (similarity to query), then weights importance and recency to further filter to k concepts
         '''
         distances, indices = self._top_k_similiary_search(self.index, query)
-        print("faiss distances are", distances)
-        print("indices are", indices)
+        # print("faiss distances are", distances)
+        # print("indices are", indices)
         
         concepts = self._retrieve_concepts_from_indices(indices)
         
         # create final score based off of relevancy, recency, and importance
         sorted_scores = self._calculate_combined_score(distances, indices, concepts)
-        print("sorted scores are", sorted_scores)
+        # print("sorted scores are", sorted_scores)
 
         # take the top k results and create a context string to be inserted into a prompt
         context = self._create_context(sorted_scores, k)
