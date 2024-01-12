@@ -50,21 +50,20 @@ class Retriever:
         # return [self.storage[index] for index in indices_list]
         return res
 
-    def _recency_score(self, concepts) -> List[float]:  # TODO: add the rececy
+    def _recency_score(self, concepts) -> List[float]:  # TODO: add weight decay for rency score
         '''
         Scores the concepts on how recent it is
         '''
         current_time = datetime.now()
         recency_scores = []
-        # print("sleeping for 2 seconds")
-        # sleep(2)
+
         for concept in concepts:
             last_accessed = concept._last_accessed
             recency = last_accessed.calc_timedelta_diff(current_time)
             print (f"recency for {concept} is {recency}")
             recency_scores.append(recency.total_seconds())
         print(f"recency scores are {recency_scores}")
-        # return [ for concept in concepts]
+
         return recency_scores
     
     def _importance_score(self, concepts):
@@ -75,7 +74,7 @@ class Retriever:
     
     def _min_max_normalize_scores(self, scores):
         '''
-        Normalizes scores to be between 0 and 1
+        Normalizes scores to be between 0 and 1 based off min max
         '''
         min_score = min(scores)
         max_score = max(scores)

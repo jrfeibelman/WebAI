@@ -53,9 +53,6 @@ class LongTermMemory:
 
         self.retriever = Retriever(self.embeddings_model, self.index, self.id_to_node)
 
-    # def set_index(self, index):
-    #     self.index = index
-
     def create_embeddings(self):
         '''
         Creates embeddings of all the content in long term memory and adds the index

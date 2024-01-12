@@ -224,11 +224,10 @@ class Agent(AbstractAgent):
         
         Args:
             question (str): Question to ask
-            
+            interrogation_history: History of the interrogation
         Returns:
             str: Response to question
         """
-        print("history is: ", interrogation_history)
         retrieved_context = self.l_mem.retriever.retrieve_context(question)
         persona = self.get_common_set_str()
         out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question, history=interrogation_history)
