@@ -210,7 +210,8 @@ class StoryEngine:
                         narrate <str> - manually narrate\n \
                         end - end interrogation")
                 else:
-                    response = agent.interrogate(interrogation_chat, x)
+                    response = agent.interrogate(chat=interrogation_chat, question=x)
+
                     info("Agent [%s] response: %s" % (agent_name, response))
 
     def dispatch_narration(self, event: Event, manual: bool = False) -> None:

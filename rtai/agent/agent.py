@@ -206,6 +206,8 @@ class Agent(AbstractAgent):
     
     def interrogate(self, chat: Chat, question: str) -> str:
         """ _summary_ Interrogate the agent with a question. None of the interrogation should change any of the agent state.
+
+        The agent should not remember the interrogation. The agent should not change its behavior based on the interrogation.
         
         Args:
             question (str): Question to ask
@@ -213,20 +215,18 @@ class Agent(AbstractAgent):
         Returns:
             str: Response to question
         """
-        self.agent_mgr.chat_mgr.write_to_chat(chat, "Said to %s: %s"  % (self.get_name(), question))
-        chat_history = self.agent_mgr.chat_mgr.get_chat_history(chat)
-        print("HISTORY:[\n%s\n]" % chat_history)
+        self.agent_mgr.chat_mgr.write_to_chat(chat, "Question: %s"  % (question))
+        chat_history = '\n'.join(self.agent_mgr.chat_mgr.get_chat_history(chat))
 
         # TODO: move to cognition? -  Neil
         # grab the context of the question
         retrieved_context = self.l_mem.retriever.retrieve_context(question)
         persona = self.get_common_set_str()
-        out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question)
+        out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question, history=chat_history)
         log_transcript("System", clock.get_time_str(), 'Interrogation(Question)', question)
         log_transcript(self.persona.get_name(), clock.get_time_str(), 'Interrogation(Answer)', out)
 
-        # TODO add to chat
-        self.agent_mgr.chat_mgr.write_to_chat(chat, "Said by %s: %s"  % (self.get_name(), out))
+        self.agent_mgr.chat_mgr.write_to_chat(chat, "%s Answered: %s"  % (self.get_name(), out))
         return out
 
     def save_to_file(self, file_path: str) -> None:
