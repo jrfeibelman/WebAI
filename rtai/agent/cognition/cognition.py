@@ -216,7 +216,7 @@ class Cognition:
         # Save daily requirements to long term memory
         date_str = clock.get_date_str()
         thought = f"This is {self.agent.persona.name}'s plan for {date_str}:"
-        for i in self.agent.s_mem.daily_plan:
+        for i in self.agent.s_mem.daily_schedule:
             thought += f" {i},"
         thought = thought[:-1] + "."
 
