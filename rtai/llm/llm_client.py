@@ -87,22 +87,22 @@ class LLMClient:
         mistral = LLMClient.model
         out1 = mistral + self.create_daily_tasks(persona)
         tasks = out1['tasks']
-        print(tasks)
+        # print(tasks)
         # estimate the duration
         out2 = mistral + self.estimate_duration(persona, tasks)
         duration = out2["duration"]
-        print(duration)
+        # print(duration)
         # estimate the start times
         out3 = mistral + self.estimate_start_times(persona, tasks)
         start_time = out3["start_time"]
-        print(start_time)
+        # print(start_time)
         # return a list of triples
         return list(zip(tasks, duration, start_time))
     
     def generate_interrogation(self, persona, context, question, history):
-        print("persona", persona)
-        print("retrieved context", context)
-        print("question", question)
+        # print("persona", persona)
+        # print("retrieved context", context)
+        # print("question", question)
         mistral2 = models.LlamaCpp(self.cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=2048)
         mistral2.echo = False
         out = mistral2 + self.create_interrogation(persona=persona, context=context, question=question, history=history)
