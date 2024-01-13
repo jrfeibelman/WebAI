@@ -1,5 +1,5 @@
 from typing import Tuple, Set, Dict, List, OrderedDict
-from numpy import uint64
+from numpy import uint64, float32
 
 from rtai.utils.datetime import datetime, timedelta
 from rtai.core.event import EventType, Event
@@ -9,6 +9,7 @@ from rtai.agent.behavior.chat import Chat
 from rtai.agent.persona import Persona
 from rtai.world.clock import clock
 from collections import OrderedDict
+from rtai.agent.retriever import Retriever
 import faiss
 from sentence_transformers import SentenceTransformer
 
@@ -50,6 +51,8 @@ class LongTermMemory:
         embeddings_dim = 768
         self.index = faiss.IndexFlatL2(embeddings_dim)
 
+        self.retriever = Retriever(self.embeddings_model, self.index, self.id_to_node)
+
     def create_embeddings(self):
         '''
         Creates embeddings of all the content in long term memory and adds the index
@@ -59,8 +62,14 @@ class LongTermMemory:
         embeddings = self.embeddings_model.encode(sentences)
 
         # faiss set index
-        faiss.normalize_L2(embeddings)
-        self.index.add(embeddings)
+        faiss.normalize_L2(embeddings) # generate embeddings on the entire storage
+        # self.index = None
+
+        # create a new index
+        index = faiss.IndexFlatL2(768)
+        index.add(embeddings)
+        self.index = index
+        self.retriever.update_index(self.index)
      
     def search_embeddings(self, query: str, k: int) -> Tuple[List[int], List[float]]:
         '''
@@ -71,15 +80,16 @@ class LongTermMemory:
         distances, indices = self.index.search(query_embedding, k) # get the top k serarch embeddings
         return distances, indices  # we probably want the raw content?
 
-    def add_concept(self, content: str, event_type: EventType, expiration: timedelta = None) -> ConceptNode:
-        node_id = len(self.id_to_node.keys()) + 1
+    def add_concept(self, content: str, event_type: EventType = None, expiration: timedelta = None) -> ConceptNode:
+        # print(content)
+        node_id = len(self.id_to_node.keys())
 
         if event_type == EventType.ChatEvent:
             # TODO if chat event, summarize the chat and add to long term memory
             pass
 
         # TODO calculate importance using LLM
-        importance = 10
+        importance: float32 = 1.0
         
         expiration = timedelta(days=15) # expiration function of importance
 
@@ -96,6 +106,8 @@ class LongTermMemory:
         elif event_type == EventType.ChatEvent:
             self.seq_chat.append(node)
 
+        # recalculate the embeddings everytime a new concept node is added
+        self.create_embeddings()
         return node
     
     def process_narration(self, narration: str) -> ConceptNode:

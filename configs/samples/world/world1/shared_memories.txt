@@ -1,16 +1,14 @@
-There is a hamlet named Riverbend.
-Riverbend is an idyllic rural town.
-The river Solripple runs through the village of Riverbend.
-The Solripple is a mighty river.
-Riverbend has a temperate climate.
-Riverbend has a main street.
-There is a guitar store on Main street Riverbend.
-There is a grocery store on Main street Riverbend.
-There is a school on Main street Riverbend.
-There is a library on Main street Riverbend.
-Riverbend has only one pub.
-There is a pub on Main street Riverbend called The Sundrop Saloon.
-Town hall meetings often take place at The Sundrop Saloon.
-Riverbend does not have a park
-The main crop grown on the farms near Riverbend is corn.
-Farms near Riverbend depend on water from the Solripple river.
+There is a hamlet named Willowbrook.
+In the picturesque village of Willowbrook, nestled amidst rural landscapes, flows the majestic Solstream River.
+Willowbrook enjoys a mild and temperate climate that enhances its charm.
+Along the heart of Willowbrook, there lies a quaint Main Street, where you'll discover a variety of establishments.
+The Solstream River flows adjacent to Willowbrook's Main Street.
+At the southern end of Main Street, there is Harmony Strings, a delightful guitar store that offers a melodic haven for music enthusiasts.
+On the northern end of Main Street, you'll find GreenGrocer, the local grocery store, catering to the culinary needs of the townsfolk.
+Just a few steps away stands Willowbrook School, where the eager minds of the community gather for education.
+Adjacent to the school, the Willowbrook Library provides a tranquil space for learning and leisure.
+Despite its modest size, Willowbrook boasts a lively hub of social activity—the Sundown Saloon.
+Residents of Willowbrook come to Sundown Saloon to drink, gamble, and square dance.
+This beloved pub, situated at the center of Main Street, plays host to town hall meetings, where neighbors come together to discuss important matters.
+Although Willowbrook may lack a traditional park, the rolling fields surrounding the village are adorned with golden cornfields.
+These farms rely on the abundant waters of the Solstream River, ensuring a bountiful harvest year after year.

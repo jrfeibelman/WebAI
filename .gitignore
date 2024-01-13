@@ -3,6 +3,7 @@ logs/
 memray*
 *.DS_Store*
 .vsls.json
+.vscode*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

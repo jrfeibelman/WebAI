@@ -59,7 +59,7 @@ MAX_DAYS = 'StopAfterDays'
 class StoryEngine:
     """ _summary_ Class to represent the story engine"""
 
-    def __init__(self, cfg: Config, debug_mode: bool=False, test_mode: bool=False):
+    def __init__(self, cfg: Config, debug_mode: bool=False, test_mode: bool=False, static_init: bool=False):
         """ _summary_ Constructor for the story engine
         
         Args:
@@ -77,7 +77,7 @@ class StoryEngine:
 
         self.debug_mode: bool = debug_mode
         self.test_mode: bool = test_mode
-
+        self.static_init: bool = static_init
         self.force_stop: bool = False
 
         # Setup World Clock
@@ -95,18 +95,23 @@ class StoryEngine:
         if not self.llm_client.initialize(cfg.expand(LLM_CLIENT_CONFIG)):
             error("Unable to initialize LLMClient. Exiting.")
             exit(1)
+
+        if static_init:
+            self.static_client: LLMTestClient = LLMTestClient()
+            print(type(self.static_client))
+            warn("Static Initialization mode enabled. LLMClient will leverage test data for initialization")
         
         # Setup World
         self.world: World = World(cfg.expand(WORLD_CONFIG), self.queue)
-        initial_shared_memories: List[str] = self.world.get_shared_memories()
+        initial_shared_memories: List[str] = self.world.get_shared_memories() # TODO: feed the intial shred memories into the LLMClient
 
         if not self.world.initialize():
             error("Unable to initialize world. Exiting.")
             exit(1)
 
         # Set up Agents
-        self.narrator: Narrator = Narrator(self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
         self.agent_mgr: AgentManager = AgentManager(self.queue, cfg.expand(AGENTS_CONFIG), client=self.llm_client, world=self.world)
+        self.narrator: Narrator = Narrator(self.agent_mgr, self.queue, cfg.expand(NARRATOR_CONFIG), client=self.llm_client)
         if not self.agent_mgr.register(self.narrator):
             error("Unable to register narrator with agent manager. Exiting.")
             exit(1)
@@ -114,6 +119,8 @@ class StoryEngine:
         if not self.agent_mgr.initialize():
             error("Unable to initialize agent manager. Exiting.")
             exit(1)
+
+        self.agent_mgr.load_initial_memories(initial_shared_memories)
 
         # Set up threaded timers (i.e. create a thought every x seconds)
         self.timer_mgr: TimerManager = TimerManager()
@@ -134,7 +141,7 @@ class StoryEngine:
         self.agent_mgr.dispatch_narration(narration)
 
         # Set initial state of agents
-        self.agent_mgr.update(first_day=True)
+        self.agent_mgr.update(first_day=True, test_llm_client=self.static_client if static_init else None)
 
         info("Initialized Story Engine")
 
@@ -191,7 +198,7 @@ class StoryEngine:
 
     def enter_interrogation(self, agent_name: str) -> None:
         agent = self.agent_mgr.agents[agent_name]
-        with agent.enter_interrogation():
+        with agent.enter_interrogation() as interrogation_chat:
             info("Agent [%s] is now under interrogation. Type 'end interrogate' to end." % agent_name)
             while True:
                 x = input(">>> ")
@@ -203,7 +210,8 @@ class StoryEngine:
                         narrate <str> - manually narrate\n \
                         end - end interrogation")
                 else:
-                    response = agent.interrogate(x)
+                    response = agent.interrogate(chat=interrogation_chat, question=x)
+
                     info("Agent [%s] response: %s" % (agent_name, response))
 
     def dispatch_narration(self, event: Event, manual: bool = False) -> None:

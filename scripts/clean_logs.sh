@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Specify the path to your log folder
-log_folder="logs"
+log_folder="${WEBAI_HOME}/logs"
 
 # Check if the log folder exists
 if [ -d "$log_folder" ]; then

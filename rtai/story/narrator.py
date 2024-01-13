@@ -9,11 +9,12 @@ from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, log_transcript
 from rtai.llm.llm_client import LLMClient
 from rtai.world.clock import clock
+from rtai.agent.agent_manager import AgentManager
 
 class Narrator(AbstractAgent):
     """ _summary_ Class to represent Narrator Agent"""
 
-    def __init__(self, event_queue: Queue, cfg: Config, client: LLMClient):
+    def __init__(self, agent_manager: AgentManager, event_queue: Queue, cfg: Config, client: LLMClient):
         """ _summary_ Constructor to create a new narrator agent
         
         Args:
@@ -21,7 +22,7 @@ class Narrator(AbstractAgent):
             cfg (Config): Config to use for narrator
             client (LLMClient): LLM Client to use for narrator
         """
-        super().__init__()
+        super().__init__(agent_manager)
         self.queue: Queue = event_queue
         self.llm_client: LLMClient = client
         self.cfg: Config = cfg

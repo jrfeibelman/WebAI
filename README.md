@@ -1,8 +1,20 @@
-# WebAI
+# Mythos AI:
 
-## RTAI:
+Imagine a world where you can bring your wildest imagination to life, where you are not just a passive reader but the mastermind behind the narrative. With our platform, you can create your own unique story simulations. Start with a base game, where the actions and objects are predefined, and then let your creativity run wild.
 
-### Setup:
+🌍 Customize the world: Craft imaginary realms, futuristic cities, or enchanted forests. The power to shape your story's setting is in your hands.
+
+👥 Personalize characters: Design heroes, villains, and everything in between. Define their personalities, motivations, and quirks to breathe life into your tale.
+
+📜 Shape the plot: From thrilling adventures to mysterious whodunits, you decide the story's direction. No two simulations will ever be the same.
+
+🎮 Interactive control: Dive into the simulation as a character, or watch from a birds-eye view. Real-time, hands-on control allows you to steer the story in any direction you desire.
+
+📖 Experience the narrative: Sit back and enjoy the overarching story that unfolds from your simulation, with surprises at every turn.
+
+Unlock your storytelling potential and create immersive, customizable worlds and narratives like never before. The Story Simulation Engine is your canvas, and the story is your masterpiece. Are you ready to rewrite the future of storytelling? 📚✨
+
+## Setup:
 
 - Note: All code should be run from the WebAI directory level
 
@@ -15,7 +27,7 @@
 
 5) `python3 rtai/main.py`
 
-### Architecture Notes
+## Architecture Notes
 
 ### llm
 For llm, there is an `LLMClient` that interfaces with the local llm model, hosted on a server. Currently, we use LM Studio which spins up a server for inference. 

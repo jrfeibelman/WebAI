@@ -116,9 +116,8 @@ class Cognition:
             # Schedule sleep --> Wakeup event
             self.agent.is_sleeping = True
             action_desc = "Sleep"
-            print(self.agent.s_mem.daily_schedule)
+            # print(self.agent.s_mem.daily_schedule)
             wake_up_hour_str = self.agent.s_mem.daily_schedule[0][2] # TODO wakeup hour by LLM or by other func?
-            print(wake_up_hour_str)
             action_dur = action_start.get_timedelta_from_time_str(wake_up_hour_str)
             self.agent.go_to_sleep()
         elif self.agent.s_mem.daily_schedule_idx >= len(self.agent.s_mem.daily_schedule):
@@ -148,7 +147,6 @@ class Cognition:
                                     action_description=action_desc)
             self.agent.agent_mgr.chat_mgr.create_chat(new_action)
             self.agent.conversing.initiate_chat(new_action, recipient)
-            print("JRF TEST - %s" % self.agent.get_name())
             e = Event.create_chat_event(self.agent, new_action, recipient)
 
             if len(self.agent.s_mem.chatting_with) != 0:
@@ -218,7 +216,7 @@ class Cognition:
         # Save daily requirements to long term memory
         date_str = clock.get_date_str()
         thought = f"This is {self.agent.persona.name}'s plan for {date_str}:"
-        for i in self.agent.s_mem.daily_plan:
+        for i in self.agent.s_mem.daily_schedule:
             thought += f" {i},"
         thought = thought[:-1] + "."
 
