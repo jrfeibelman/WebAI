@@ -1,12 +1,15 @@
 '''
 This module contains the LLMClient class, which is responsible for communicating with the LLM server.
 '''
-from typing import List, Tuple
+from typing import List, Tuple, TYPE_CHECKING
 from guidance import models, gen
 import guidance
 # from guidance.models.llama_cpp.llama_cpp import LlamaCpp
 
 from rtai.utils.config import Config
+
+if TYPE_CHECKING:
+    from rtai.agent.agent import Agent
 
 
 class LLMClient:
@@ -56,12 +59,15 @@ class LLMClient:
         return lm
 
     @guidance
-    def create_dialogue(self, persona1, persona2, location):
+    def create_dialogue(lm, self, agent1: 'Agent', agent2: 'Agent', context: str, location: str, topic: str):
         lm += f"""
-        Generate a short dialogue between {persona1.name} and {persona2.name} in {location}
+        Generate a short dialogue between {agent1.get_name()} and {agent2.get_name()} in {location} about {topic}
 
-        {persona1.name} context: {persona1.common_str} {persona1.relationships[persona2.name]}
-        {persona2.name} context: {persona2.common_str} {persona2.relationships[persona1.name]}
+        This is some contex for the dialogue: {context}
+
+
+        {agent1.get_name()} context: {agent1.get_common_set_str()}
+        {agent2.get_name()} context: {agent2.get_common_set_str()}
 
         Example of dialogue:
         Hank: Howdy, Claire, how's it going?
@@ -71,6 +77,15 @@ class LLMClient:
         {gen('dialogue', max_tokens=1000)}"""
         # lm = LLMClient.model + dialogue_prompt
         return lm
+
+    def generate_dialogue(self, agent1: 'Agent', agent2: 'Agent', location: str, topic: str):
+        retrieved_context1, retrieved_context2 = agent1.l_mem.retriever.retrieve_context(topic), agent2.l_mem.retriever.retrieve_context(topic)
+        context = f"{agent1.get_name()} Context: {retrieved_context1}\n{agent2.get_name()} Context: {retrieved_context2}"
+        mistral2 = models.LlamaCpp(self.cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=2048)
+        mistral2.echo = False
+        out = mistral2 + self.create_dialogue(agent1, agent2, context, location, topic)
+        resp = out["dialogue"]
+        return resp
 
     def generate_daily_plan(self, persona):
         return ""
