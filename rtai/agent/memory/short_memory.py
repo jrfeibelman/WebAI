@@ -7,7 +7,7 @@ from rtai.utils.logging import log_transcript, debug, warn
 from rtai.agent.persona import Persona
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 from rtai.utils.datetime import datetime, timedelta
 
 from rtai.llm.llm_client import LLMClient
@@ -176,7 +176,7 @@ class ShortTermMemory:
     def generate_daily_req(self) -> None:
         """_summary_ Generate the daily requirements for the agent.
         """
-        self.daily_req = generate_daily_plan(self.persona)
+        self.daily_req = self.llm_client.generate_daily_plan(self.persona)
         # self.daily_req = self.llm_client.generate_daily_req()
         debug("Agent [%s] generated daily requirements: [%s]" % (self.persona.name, self.daily_req))
 

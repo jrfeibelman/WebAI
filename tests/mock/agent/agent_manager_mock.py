@@ -9,7 +9,7 @@ from rtai.utils.config import Config
 
 from tests.mock.configs.config_mock import mock_config_base
 from tests.mock.llm.llm_client_mock import mock_llm_client
-from tests.mock.story.engine_mock import mock_worker_queue
+from tests.mock.engine.engine_mock import mock_worker_queue
 
 @fixture(scope="session")
 def mock_agent_manager(mock_config_base: Config, mock_llm_client: LLMClient, mock_worker_queue: Queue):

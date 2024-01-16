@@ -1,4 +1,4 @@
-from abc import abstractmethod, ABCMeta
+from abc import abstractmethod, ABC
 from typing import Dict, TypeAlias
 from rtai.utils.logging import warn
 
@@ -6,7 +6,7 @@ Index: TypeAlias = int
 Item: TypeAlias = object
 CacheDict: TypeAlias = Dict[Index, Item]
 
-class Cache(metaclass=ABCMeta):
+class Cache(ABC):
     """ _summary_ Abstract class to represent a cache of objects"""
 
     def __init__(self, cache_dict: Dict[Index, Item]=dict()):

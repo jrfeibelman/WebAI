@@ -80,3 +80,12 @@ To download local model.
 - *** There must be a max speed enforced on world clock based on WorldClockScaleMs and AgentTimerMillis.
     - Maybe add config to synchronize world clock with agent updating to speed up running simulation for test purposes
     - This way, first world clock updates, then agent updates. Will be faster bc on most iters agent update is very fast
+
+
+
+
+
+- need a way of assigning individual agents custom shared memories --> move config to be agent specific
+- make base persona
+- oracle agent is an observer without memory tasked to achieve an objective, monitor agents, evaluate, and pause all agents, and create new agents
+- need resource management module that tracks resources used by each agent and available on system as a whole 

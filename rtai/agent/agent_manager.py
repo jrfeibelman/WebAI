@@ -10,7 +10,7 @@ from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error
 from rtai.llm.llm_client import LLMClient
-from rtai.world.world import World
+from rtai.environment.world import World
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.behavior.chat_message import ChatMessage
 from rtai.agent.chat_manager import ChatManager

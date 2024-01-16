@@ -1,5 +1,5 @@
 
-from abc import abstractmethod, ABCMeta
+from abc import abstractmethod, ABC
 from contextlib import contextmanager
 from numpy import uint16
 from typing import TYPE_CHECKING
@@ -8,10 +8,10 @@ if TYPE_CHECKING:
     from rtai.agent.agent_manager import AgentManager
 
 from rtai.agent.behavior.chat import Chat
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 from rtai.utils.datetime import timedelta
 
-class AbstractAgent(metaclass=ABCMeta):
+class AbstractAgent(ABC):
     """_summary_ Abstract base class to represent an agent."""
 
     id: uint16 = uint16(0)

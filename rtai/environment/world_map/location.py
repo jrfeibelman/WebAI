@@ -1,7 +1,7 @@
 from numpy import uint32
 
-from rtai.world.world_map.arena import Arena
-from rtai.world.world_map.surroundings import Surrounding
+from rtai.environment.world_map.arena import Arena
+from rtai.environment.world_map.surroundings import Surrounding
 
 class Location:
     """

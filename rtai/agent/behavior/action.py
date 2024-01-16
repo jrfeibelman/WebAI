@@ -1,5 +1,5 @@
 from rtai.utils.datetime import datetime, timedelta
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 from rtai.utils.logging import debug
 from rtai.agent.behavior.abstract_behavior import AbstractBehavior
 

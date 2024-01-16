@@ -2,8 +2,8 @@ from pytest import fixture
 from typing import List, Tuple
 
 from rtai.utils.config import Config
-from rtai.world.world import World
-from rtai.world.world_map.arena import Arena
+from rtai.environment.world import World
+from rtai.environment.world_map.arena import Arena
 
 @fixture(scope="session")
 def mock_world(mock_config_base: Config):

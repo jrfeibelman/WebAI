@@ -8,7 +8,7 @@ from rtai.core.event import Event
 from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, log_transcript
 from rtai.llm.llm_client import LLMClient
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 from rtai.agent.agent_manager import AgentManager
 
 class Narrator(AbstractAgent):
@@ -31,6 +31,9 @@ class Narrator(AbstractAgent):
         info("Initialized narrator")
 
     @TimerManager.timer_callback
+    def generate_narration_callback(self) -> Event:
+        return self.generate_narration()
+
     def generate_narration(self) -> Event:
         """ _summary_ Method to generate narration from LLM
 
@@ -42,14 +45,14 @@ class Narrator(AbstractAgent):
         start_time = perf_counter()
 
         # TODO - call LLM to generate narration
-        prompt = "Joker"
-        completion = "" # self.llm_client.generate_from_prompt(system_prompt="You are a narrator", user_prompt=prompt)
+        prompt = ""
+        completion = "Test Narration Event" # self.llm_client.generate_from_prompt(system_prompt="You are a narrator", user_prompt=prompt)
 
         log_transcript('Narrator', clock.get_time_str(), 'Auto', completion)
 
         elapsed_time = perf_counter() - start_time
 
-        event = Event.create_narration_event(self, completion)
+        event = Event.create_oracle_event(self, completion)
 
         info("Narrator [%s] took [%s] ms for generate_narration()" % (self.get_name(), elapsed_time * 1000))
         
@@ -57,6 +60,7 @@ class Narrator(AbstractAgent):
         self.narration.append(event)
 
         self._counter += 1
+        print("HELLO? %s" % event)
         return event
 
     def manual_narration(self, narration: str) -> Event:
@@ -70,7 +74,7 @@ class Narrator(AbstractAgent):
 
         TODO : If manual narration triggered, restart generate_narration timer thread
         """
-        event = Event.create_narration_event(self, narration)
+        event = Event.create_oracle_event(self, narration)
         self.queue.put(event)
         self.narration.append(event)
         

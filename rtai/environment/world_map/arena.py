@@ -1,7 +1,7 @@
 from typing import List
 from numpy import zeros
 
-from rtai.world.world_map.surroundings import Surrounding
+from rtai.environment.world_map.surroundings import Surrounding
 
 class Arena:
     def __init__(self, surroundings: List[Surrounding]):

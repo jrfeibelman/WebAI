@@ -7,7 +7,7 @@ from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.persona import Persona
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 from collections import OrderedDict
 from rtai.agent.retriever import Retriever
 import faiss
@@ -101,7 +101,7 @@ class LongTermMemory:
         self.id_to_node[node_id] = node
         if event_type == EventType.ThoughtEvent:
             self.seq_thought.append(node)
-        elif event_type == EventType.ActionEvent:
+        elif event_type == EventType.TaskEvent:
             self.seq_action.append(node)
         elif event_type == EventType.ChatEvent:
             self.seq_chat.append(node)

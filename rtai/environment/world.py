@@ -1,7 +1,7 @@
 from typing import List
 from queue import Queue
 
-from rtai.world.world_map.world_map import WorldMap
+from rtai.environment.world_map.world_map import WorldMap
 from rtai.utils.config import Config
 
 LOAD_FROM_FILES = "LoadFromFiles"

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from numpy import uint16
 
 from rtai.utils.datetime import datetime
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 
 @dataclass
 class ChatMessage:

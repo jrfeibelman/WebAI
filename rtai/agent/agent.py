@@ -12,7 +12,7 @@ from rtai.agent.abstract_agent import AbstractAgent
 from rtai.core.event import Event, EventType
 from rtai.utils.logging import info, debug, warn, log_transcript
 from rtai.agent.persona import Persona
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 from rtai.agent.memory.short_memory import ShortTermMemory
 from rtai.agent.memory.long_memory import LongTermMemory
 from rtai.utils.datetime import datetime, timedelta
@@ -110,7 +110,7 @@ class Agent(AbstractAgent):
 
         if event.get_event_type() == EventType.ChatEvent:
             self.conversing.receive_chat_request(event)
-        elif event.get_event_type() == EventType.ActionEvent:
+        elif event.get_event_type() == EventType.TaskEvent:
             pass
         else:
             warn("Agent [%s] did not process event: %s" % (self.get_name(), event))

@@ -118,13 +118,13 @@ class clock:
     #     """
     #     Returns the hour of the time in 24-hour format
     #     """
-    #     return self.world_clock // 60
+    #     return self.sim_clock // 60
     
     # def get_minute(self) -> uint16:
     #     """
     #     Return the minute of the time
     #     """
-    #     return self.world_clock % 60
+    #     return self.sim_clock % 60
     
     # def get_meridiem(self) -> str:
     #     """

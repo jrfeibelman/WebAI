@@ -4,10 +4,10 @@ Logger:
   Level: DEBUG
   LogDirectory: ${WEBAI_HOME}/logs/
   LogName: rtai
-  # PipeToStdout: True
+  PipeToStdout: True
   UseCalleeStack: True
   TranscriptLogName: transcript
-StoryEngine:
+Engine:
   UseGui: False # Not implemented
   WorkerThreadTimerMs: 100 
   AgentTimerMillis: 500 # TODO replace with being determined by cycles instead of seconds. # This should be less than or equal to WorldClockScaleMs

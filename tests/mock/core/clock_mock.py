@@ -1,8 +1,8 @@
 from pytest import fixture
 
 from rtai.utils.config import Config
-from rtai.world.clock import clock
-from rtai.story.engine import CLOCK_CONFIG
+from rtai.core.clock import clock
+from rtai.engine.engine import CLOCK_CONFIG
 from tests.mock.configs.config_mock import mock_config_base
 
 @fixture(scope="session")

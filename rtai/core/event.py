@@ -8,12 +8,11 @@ from rtai.utils.datetime import datetime
 class EventType(Enum):
     """ _summary_ Enum to represent event types"""
     InvalidEvent=uint16(0)
-    ThoughtEvent=uint16(1)
-    ReverieEvent=uint16(2)
-    ActionEvent=uint16(3)
-    ChatEvent=uint16(4)
-    NarrationEvent=uint16(5)
-    EventTypeLength=uint16(6)
+    ThoughtEvent=uint16(1) # For observations and reflections
+    TaskEvent=uint16(2)
+    ChatEvent=uint16(3)
+    OracleEvent=uint16(4)
+    EventTypeLength=uint16(5)
 
 class Event:
     """ _summary_ Class to represent an event
@@ -62,20 +61,7 @@ class Event:
         return cls._create_event(EventType.ThoughtEvent, sender, msg)
     
     @classmethod
-    def create_reverie_event(cls, sender: AbstractAgent, msg: str) -> 'Event':
-        """ _summary_ Factory method to create a reverie event
-        
-        Args:
-            sender (AbstractAgent): Sender of event
-            msg (str): Message of event
-            
-        Returns:
-            Event: Event object
-        """
-        return cls._create_event(EventType.ReverieEvent, sender, msg)
-    
-    @classmethod
-    def create_action_event(cls, sender: AbstractAgent, msg: str) -> 'Event':
+    def create_task_event(cls, sender: AbstractAgent, msg: str) -> 'Event':
         """ _summary_ Factory method to create a action event
         
         Args:
@@ -85,7 +71,7 @@ class Event:
         Returns:
             Event: Event object
         """
-        return cls._create_event(EventType.ActionEvent, sender, msg)
+        return cls._create_event(EventType.TaskEvent, sender, msg)
     
     @classmethod
     def create_chat_event(cls, sender: AbstractAgent, msg: str, receiver: str) -> 'Event':
@@ -101,7 +87,7 @@ class Event:
         return cls._create_event(EventType.ChatEvent, sender, msg, receiver)
     
     @classmethod
-    def create_narration_event(cls, sender: AbstractAgent, msg: str) -> 'Event':
+    def create_oracle_event(cls, sender: AbstractAgent, msg: str) -> 'Event':
         """ _summary_ Factory method to create a narration event
         
         Args:
@@ -111,7 +97,7 @@ class Event:
         Returns:
             Event: Event object
         """
-        return cls._create_event(EventType.NarrationEvent, sender, msg)
+        return cls._create_event(EventType.OracleEvent, sender, msg)
     
     @classmethod
     def create_empty_event(cls) -> 'Event':

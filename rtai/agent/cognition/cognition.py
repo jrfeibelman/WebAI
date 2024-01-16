@@ -11,7 +11,7 @@ from rtai.agent.behavior.action import Action
 from rtai.agent.behavior.chat import Chat
 from rtai.agent.behavior.chat_message import ChatMessage
 from rtai.agent.behavior.abstract_behavior import AbstractBehavior
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 
 class Cognition:
     """
@@ -117,6 +117,7 @@ class Cognition:
             self.agent.is_sleeping = True
             action_desc = "Sleep"
             # print(self.agent.s_mem.daily_schedule)
+            print(self.agent.s_mem.daily_schedule)
             wake_up_hour_str = self.agent.s_mem.daily_schedule[0][2] # TODO wakeup hour by LLM or by other func?
             action_dur = action_start.get_timedelta_from_time_str(wake_up_hour_str)
             self.agent.go_to_sleep()
@@ -158,7 +159,7 @@ class Cognition:
                                     action_start_time=action_start,
                                     action_duration=action_dur,
                                     action_description=action_desc)
-            e = Event.create_action_event(self.agent, new_action)
+            e = Event.create_task_event(self.agent, new_action)
 
         # Dispatch event to worker queue
         self.agent.agent_mgr.dispatch_to_queue(e)
@@ -171,7 +172,7 @@ class Cognition:
                 completed_action.finished_conversation = convo
                 self.agent.l_mem.add_concept(completed_action, EventType.ChatEvent)
             else:
-                self.agent.l_mem.add_concept(completed_action, EventType.ActionEvent)
+                self.agent.l_mem.add_concept(completed_action, EventType.TaskEvent)
 
         log_transcript(self.agent.get_name(), action_start_str, 'Action', action_desc)
         

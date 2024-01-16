@@ -5,6 +5,7 @@ from numpy import uint8
 class Persona:
     """_summary_ Class to represent a the personality of an agent."""
 
+    # MAKE GENERAIC PERSONA AND ADD OBJECTIVE --> can be motivations for agent
     first_name: str
     last_name: str
     name: str

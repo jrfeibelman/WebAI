@@ -3,7 +3,7 @@ from numpy import uint64, uint8, float32
 from rtai.core.event import EventType
 
 from rtai.utils.datetime import datetime, timedelta
-from rtai.world.clock import clock
+from rtai.core.clock import clock
 
 class ConceptNode:
     node_id: int

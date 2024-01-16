@@ -1,8 +1,8 @@
 from numpy import uint32
 from typing import Dict, List, TypeAlias
 
-from rtai.world.world_map.arena import Arena
-from rtai.world.world_map.surroundings import Surrounding
+from rtai.environment.world_map.arena import Arena
+from rtai.environment.world_map.surroundings import Surrounding
 
 Sector: TypeAlias = uint32
 World: TypeAlias = uint32
@@ -20,6 +20,13 @@ class WorldMap:
                     - Arena
                         - Surroundings
                             - Agent / Game Object
+
+                            
+        Each arena is a n x m grid of tiles
+        Users can construct map by drag and drop of components to create a Sector world map
+            - If add Arenas (ie house/Room) then new map to be created
+        
+        
     """
     def __init__(self):
         self.worlds: Worlds = dict()

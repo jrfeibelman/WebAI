@@ -57,6 +57,13 @@ class LLMClient:
         # print(f"Type of lm is {type(lm)}, {type(persona)}, {type(context)}, {type(question)}")
         lm += f'''You are {persona}. Answer the question like you are {persona} in 2 lines max, given the history: {history} and context: {context}. Q: {question} A: \n{gen(stop='Q:', name="interrogation", max_tokens=1000)}'''
         return lm
+    
+
+    @guidance
+    def create_observation(lm, self, persona, context, current_action):
+        # print(f"Type of lm is {type(lm)}, {type(persona)}, {type(context)}, {type(question)}")
+        lm += f'''You are {persona}. You are currently performing the following action: {current_action}. Generate an observation about what you are doing and your current surroundings given the context: {context}. Q: {question} A: \n{gen(stop='"', name="observation", max_tokens=1000)}'''
+        return lm
 
     @guidance
     def create_dialogue(lm, self, agent1: 'Agent', agent2: 'Agent', context: str, location: str, topic: str):
@@ -72,7 +79,7 @@ class LLMClient:
         Example of dialogue:
         Hank: Howdy, Claire, how's it going?
         Claire: Good, what about you?
-
+  
         Here is the short dialogue:
         {gen('dialogue', max_tokens=1000)}"""
         # lm = LLMClient.model + dialogue_prompt

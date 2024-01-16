@@ -5,9 +5,11 @@ from os import path, makedirs, getcwd
 from dotenv import load_dotenv
 from sys import exit, stdout
 
-from rtai.story.engine import StoryEngine
+from rtai.engine.engine import Engine
 from rtai.utils.config import YamlLoader
-from rtai.utils.logging import setup_logging, info
+from rtai.utils.logging import setup_logging, info, error
+
+from mythos.engine.engine import StoryEngine
 
 LOGGER_CONFIG = "Logger"
 
@@ -52,4 +54,10 @@ if __name__ == "__main__":
 
     # Create Engine
     engine = StoryEngine(cfg, debug_mode=log_level == DEBUG, test_mode=test_mode, static_init=static_init)
+
+    # Initialize Engine
+    if not engine.initialize():
+        error("Unable to initialize engine. Exiting.")
+        exit(1)
+
     engine.start()
