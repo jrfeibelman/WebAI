@@ -12,7 +12,8 @@ from collections import OrderedDict
 from rtai.agent.retriever import Retriever
 import faiss
 from sentence_transformers import SentenceTransformer
-
+from rtai.llm.llm_client import generate_importance
+from rtai.utils.config import YamlLoader
 # storage class to manage concept insertion
 # class ConceptStorage(dict):
 #     def __init__(self, *args, **kwargs):
@@ -83,8 +84,7 @@ class LongTermMemory:
             # TODO if chat event, summarize the chat and add to long term memory
             pass
 
-        # TODO calculate importance using LLM
-        importance: float32 = 1.0
+        importance = generate_importance(content) # importance function of content
         
         expiration = timedelta(days=15) # expiration function of importance
 
