@@ -18,6 +18,10 @@ class Prompt(BaseModel):
 async def complete(prompt: Prompt):
     try:
         # Use the OpenAI API to generate a completion
+        response = openai.completions.create(
+            
+        )
+
         response = openai.Completion.create(
             engine="text-davinci-003",  # Adjust the engine based on your needs
             prompt=prompt.text,
