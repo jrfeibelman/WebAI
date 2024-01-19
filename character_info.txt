@@ -1,0 +1,15 @@
+first_name: Jason
+last_name: Derulo
+name: Jason Derulo
+occupation: musician
+backstory: Musician who likes to eat
+hobbies: Stuff
+traits: Bruh
+motivations: Helloo
+relationships: Too
+location: Area
+action: Stuff
+action_desc: asda
+action_duration: asd
+action_start: a
+action_location: asd

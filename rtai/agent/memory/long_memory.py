@@ -12,7 +12,8 @@ from collections import OrderedDict
 from rtai.agent.retriever import Retriever
 import faiss
 from sentence_transformers import SentenceTransformer
-
+from rtai.llm.llm_client import generate_importance
+from rtai.utils.config import YamlLoader
 # storage class to manage concept insertion
 # class ConceptStorage(dict):
 #     def __init__(self, *args, **kwargs):
@@ -36,21 +37,16 @@ class LongTermMemory:
         """
         self.persona = persona
 
-        self.id_to_node: OrderedDict[int, ConceptNode] = {} # Do we need ordered dict?
+        self.id_to_node: OrderedDict[int, ConceptNode] = {}
         
         self.seq_action: List[ConceptNode] = []
         self.seq_thought: List[ConceptNode] = []
         self.seq_chat: List[ConceptNode] = []
 
-        self.current_narration: str = "" # should this be here?
-
-        '''
-        Embeddings
-        '''
+        self.current_narration: str = ""
         self.embeddings_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         embeddings_dim = 768
         self.index = faiss.IndexFlatL2(embeddings_dim)
-
         self.retriever = Retriever(self.embeddings_model, self.index, self.id_to_node)
 
     def create_embeddings(self):
@@ -75,7 +71,7 @@ class LongTermMemory:
         '''
         searches the embeddings for the query and returns the distances and indices of the top k results
         '''
-        query_embedding = self.embeddings_model.encode([query]) # query needs to be a list
+        query_embedding = self.embeddings_model.encode([query]) # query needs to be a list as it is converted to a vector
         faiss.normalize_L2(query_embedding)
         distances, indices = self.index.search(query_embedding, k) # get the top k serarch embeddings
         return distances, indices  # we probably want the raw content?
@@ -88,14 +84,13 @@ class LongTermMemory:
             # TODO if chat event, summarize the chat and add to long term memory
             pass
 
-        # TODO calculate importance using LLM
-        importance: float32 = 1.0
+        importance = generate_importance(content) # importance function of content
         
         expiration = timedelta(days=15) # expiration function of importance
 
         node = ConceptNode(node_id=node_id, content=content, event_type=event_type, importance=importance, expiration=expiration)  # TODO: do the call
 
-        # TODO: decide when to update embeddings - convert agent concept to embedding and store
+        # TODO: decide when to update embedding index - convert agent concept to embedding and store
         
         # Fast Access dictionary caches
         self.id_to_node[node_id] = node

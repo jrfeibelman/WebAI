@@ -3,7 +3,6 @@ import faiss
 import numpy as np
 from rtai.utils.datetime import datetime
 from typing import List
-from time import sleep
 
 '''
 https://www.pinecone.io/learn/series/faiss/faiss-tutorial/
@@ -16,7 +15,7 @@ class Retriever:
         self.storage = storage
         self.max_retrieval = 1000 # the max number of concepts to retrieve
         self.max_context = 5 # the max number of concepts to use to create a context
-    
+        self.decay_rate = 0.01 # the decay rate for recency score
     def update_index(self, index):
         self.index = index
         
@@ -50,9 +49,9 @@ class Retriever:
         # return [self.storage[index] for index in indices_list]
         return res
 
-    def _recency_score(self, concepts) -> List[float]:  # TODO: add weight decay for rency score
+    def _recency_score(self, concepts) -> List[float]:
         '''
-        Scores the concepts on how recent it is
+        Scores the concept based on how recently it was accessed
         '''
         current_time = datetime.now()
         recency_scores = []
@@ -60,8 +59,12 @@ class Retriever:
         for concept in concepts:
             last_accessed = concept._last_accessed
             recency = last_accessed.calc_timedelta_diff(current_time)
-            # print (f"recency for {concept} is {recency}")
-            recency_scores.append(recency.total_seconds())
+            
+            num_hours_passed = recency.total_seconds() // 3600
+            recency_score = ((1.0 - self.decay_rate) ** num_hours_passed) * 10 # normalization expects it to be roughly between 0 and 10
+            print (f"recency score for {concept} is {recency_score}")
+            recency_scores.append(recency_score * 10)
+
         # print(f"recency scores are {recency_scores}")
         # return [ for concept in concepts]
         return recency_scores
@@ -91,9 +94,9 @@ class Retriever:
 
         # normalize and sort concepts by score
         raw_score = [sum(score) for score in zip(recency_scores, importance_scores, relevance_scores)]
-        # print(f"raw score for all retrieved is {raw_score}")
+        print(f"raw score for all retrieved is {raw_score}")
         normalized_score = self._min_max_normalize_scores(raw_score) # map scores to [0, 1]
-        # print(f"normalized score for all retrieved is {normalized_score}")
+        print(f"normalized score for all retrieved is {normalized_score}")
         
         # sort the indices by score
         sorted_scores = list(sorted(zip(indices, normalized_score), key=lambda x: x[1], reverse=True)) # indices of the top k
