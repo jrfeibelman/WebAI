@@ -43,28 +43,6 @@ class Cognition:
         self.observe()
         return []
 
-    def retrieve(self):
-        """ _summary_ Retrieve events and thoughts from long term memory.
-        
-        Retreive
-            From simularca:
-                This function takes the events that are perceived by the persona as input
-                and returns a set of related events and thoughts that the persona would 
-                need to consider as context when planning. 
-
-                INPUT: 
-                    perceived: a list of event <ConceptNode>s that represent any of the events
-                    `         that are happening around the persona. What is included in here
-                            are controlled by the att_bandwidth and retention 
-                            hyper-parameters.
-                OUTPUT: 
-                    retrieved: a dictionary of dictionary. The first layer specifies an event, 
-                            while the latter layer specifies the "curr_event", "events", 
-                            and "thoughts" that are relevant.
-        """
-        # TODO neil implement retrieve
-        pass
-
     def observe(self):
         """ _summary_ Observe the environment """
         # First get environment around user
@@ -83,7 +61,7 @@ class Cognition:
 
 
     def reflect(self):
-        self.retrieve()
+        # self.retrieve()
         pass
 
     def determine_action(self) -> AbstractBehavior:
