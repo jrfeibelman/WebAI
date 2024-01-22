@@ -1,0 +1,37 @@
+[08:55:00 AM] [Narrator] [Auto] 
+[08:55:00 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[08:55:00 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[08:55:00 AM] [Hank Thompson] [Thought(Plan)] Daily Schedule: [('Hank Thompson, 54, farmer, tends to crops, performs tractor rides, and cherishes country music in Riverbend village', '3', '9:00'), ('Morning: Hank farms', '5', '1:00'), ('Afternoon: Hank takes a tractor ride, listens to country music"\nHere is a brief description of a task 1, 2, and 3 that the given persona, Hank Thompson, does in a day in 10 or less words:\n\nTask 1: Hank Thompson, 54, farmer, tends to crops, performs tractor rides, and cherishes country music in Riverbend village\n\nTask 2: Morning: Hank farms\n\nTask 3: Afternoon: Hank takes a tractor ride, listens to country music', '6', '4:30')]
+[08:55:00 AM] [Hank Thompson] [Thought(Plan)] This is Hank Thompson's plan for 2024-01-01. --> This is Hank Thompson's plan for 2024-01-01.
+[08:55:00 AM] [Hank Thompson] [Action] Sleep
+[08:55:00 AM] [Claire Reynolds] [Thought(Plan)] Daily Schedule: [('Claire Reynolds studies ecosystems, practices sustainable living, and educates the public', '2', '9:00'), ('Claire Reynolds conducts field research, collaborates with team, and shares findings through public presentations and written reports"', '4', '1:00'), ('Claire Reynolds analyzes data, interprets results, and implements solutions for sustainable practices in communities"', '6', '5:00')]
+[08:55:00 AM] [Claire Reynolds] [Thought(Plan)] This is Claire Reynolds's plan for 2024-01-01. --> This is Claire Reynolds's plan for 2024-01-01.
+[08:55:00 AM] [Claire Reynolds] [Action] Sleep
+[08:55:45 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[08:55:45 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[08:56:30 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[08:56:30 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[08:57:15 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[08:57:15 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[08:58:00 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[08:58:00 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[08:58:45 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[08:58:45 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[08:59:30 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[08:59:30 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[09:00:15 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[09:00:15 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[09:00:15 AM] [Hank Thompson] [Action] Hank Thompson, 54, farmer, tends to crops, performs tractor rides, and cherishes country music in Riverbend village
+[09:00:30 AM] [Claire Reynolds] [Action] Claire Reynolds studies ecosystems, practices sustainable living, and educates the public
+[09:01:30 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[09:01:30 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[09:02:15 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[09:02:15 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[09:03:15 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[09:03:15 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[09:03:15 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[09:03:15 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[09:03:15 AM] [Claire Reynolds] [Thought(Observation)] Test Observation
+[09:03:15 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[09:03:15 AM] [Hank Thompson] [Thought(Observation)] Test Observation
+[09:03:15 AM] [Claire Reynolds] [Thought(Observation)] Test Observation

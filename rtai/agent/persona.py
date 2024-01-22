@@ -1,6 +1,7 @@
 from typing import List
 from dataclasses import dataclass, fields
 from numpy import uint8
+
 @dataclass
 class Persona:
     """_summary_ Class to represent a the personality of an agent."""

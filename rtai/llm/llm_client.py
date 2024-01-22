@@ -45,6 +45,8 @@ class LLMClient:
             lm += f'''Task {i+1} will take {persona} {gen(stop='"', regex="[0-9]", name="duration", temperature=0.7, max_tokens=10, list_append=True)} hours\n'''
         return lm
 
+
+
     @guidance
     def estimate_start_times(lm, self, persona, tasks):
         lm +=  f"Generate a start time for when {persona} will start each task: \n"
@@ -123,7 +125,13 @@ class LLMClient:
         out = mistral2 + self.create_interrogation(persona=persona, context=context, question=question, history=history)
         resp = out["interrogation"]
         return resp
-    
+
+    @guidance
+    def estimate_importance(lm, self, concept):
+        lm += f"On the scale of 0 to 9, where 0 is purely mundane (e.g., brushing teeth, making bed) and 9 is extremely poignant (e.g., a break up, college acceptance), rate the likely importance of the following piece of memory. Respond with a single integer."
+        lm += f'''The piece of memory is {concept} and the importance of the event is {gen(stop='"', regex="[0-9]", name="importance", temperature=0.7, max_tokens=10)}'''
+        return lm
+
     def generate_importance(self, concept):
         mistral3 = models.LlamaCpp(self.cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=2048)
         mistral3.echo = False
@@ -136,10 +144,3 @@ class LLMClient:
             importance = 5
         print(f"Importance of {concept} is {importance}")
         return importance
-
-    @guidance
-    def estimate_importance(lm, self, concept):
-        lm += f"On the scale of 0 to 9, where 0 is purely mundane (e.g., brushing teeth, making bed) and 9 is extremely poignant (e.g., a break up, college acceptance), rate the likely importance of the following piece of memory. Respond with a single integer."
-        lm += f'''The piece of memory is {concept} and the importance of the event is {gen(stop='"', regex="[0-9]", name="importance", temperature=0.7, max_tokens=10)}'''
-        return lm
-
