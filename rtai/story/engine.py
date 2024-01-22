@@ -13,7 +13,7 @@ from rtai.llm.llm_client import LLMClient
 from rtai.world.clock import clock
 from rtai.world.world import World
 
-from rtai.story.llm_debug import LLMTestClient
+from tests.mock.llm.llm_client_mock import LLMTestClient
 from rtai.llm.llm_client import LLMClient
 
 """
