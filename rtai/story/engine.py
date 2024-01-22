@@ -13,7 +13,7 @@ from rtai.llm.llm_client import LLMClient
 from rtai.world.clock import clock
 from rtai.world.world import World
 
-from tests.mock.llm.llm_client_mock import LLMTestClient
+from rtai.story.llm_debug import LLMTestClient
 from rtai.llm.llm_client import LLMClient
 
 """
@@ -97,7 +97,7 @@ class StoryEngine:
             exit(1)
 
         if static_init:
-            self.static_client: LLMTestClient = LLMTestClient()
+            self.static_client: LLMClient = LLMTestClient()
             print(type(self.static_client))
             warn("Static Initialization mode enabled. LLMClient will leverage test data for initialization")
         
@@ -141,6 +141,7 @@ class StoryEngine:
         self.agent_mgr.dispatch_narration(narration)
 
         # Set initial state of agents
+        # first update generates the plan of the day
         self.agent_mgr.update(first_day=True, test_llm_client=self.static_client if static_init else None)
 
         info("Initialized Story Engine")

@@ -94,9 +94,9 @@ class Retriever:
 
         # normalize and sort concepts by score
         raw_score = [sum(score) for score in zip(recency_scores, importance_scores, relevance_scores)]
-        print(f"raw score for all retrieved is {raw_score}")
+        # print(f"raw score for all retrieved is {raw_score}")
         normalized_score = self._min_max_normalize_scores(raw_score) # map scores to [0, 1]
-        print(f"normalized score for all retrieved is {normalized_score}")
+        # print(f"normalized score for all retrieved is {normalized_score}")
         
         # sort the indices by score
         sorted_scores = list(sorted(zip(indices, normalized_score), key=lambda x: x[1], reverse=True)) # indices of the top k

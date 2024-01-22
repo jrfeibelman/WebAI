@@ -96,6 +96,7 @@ class ShortTermMemory:
         self.daily_reflection_time = 60 * 3
         self.daily_reflection_size = 5
         self.thought_count = 5
+        self.reflection_thresh = 0  # threshold for triggering reflection; if the sum of importance of the last n events is greater than this threshold, trigger reflection
 
         self.daily_plan = ''
         self.daily_req = []
@@ -108,7 +109,9 @@ class ShortTermMemory:
         self.current_action = Action(None, None, None, None)
         self.chatting_with = ''
         self.current_chat = Chat(None, None, None, None, None)
-
+    '''
+    TODO: add lock to prevent multiple actions from being added at the same time?
+    '''
     def add_new_chat(self, 
                     action_address: str, 
                     action_start_time: datetime,
@@ -176,7 +179,7 @@ class ShortTermMemory:
     def generate_daily_req(self) -> None:
         """_summary_ Generate the daily requirements for the agent.
         """
-        self.daily_req = generate_daily_plan(self.persona)
+        self.daily_req = self.generate_daily_plan(self.persona)
         # self.daily_req = self.llm_client.generate_daily_req()
         debug("Agent [%s] generated daily requirements: [%s]" % (self.persona.name, self.daily_req))
 

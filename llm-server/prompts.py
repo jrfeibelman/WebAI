@@ -16,7 +16,11 @@ def generate_dialogue_about_topic(lm, dialogue_topic, location):
     Claire: Good, what about you?
 
     Here is the short dialogue:
-    {gen('dialogue', max_tokens=1000)}"""
+    Isabella: {gen(name='dialogue1', max_tokens=100)}
+    Claire: {gen(name='dialogue2', max_tokens=100)}
+    Isabella: {gen(name='dialogue3', max_tokens=100)}
+    Claire: {gen(name='dialogue4', max_tokens=100)}
+    """
     return lm
 
 # def generate_dialogue(lm, persona1, persona2, location):
