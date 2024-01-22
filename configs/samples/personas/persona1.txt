@@ -1,10 +1,10 @@
-first_name: Hank
-last_name: Thompson
-name: Hank Thompson
-age: 54
-occupation: Farmer
-backstory: Hank Thompson is a 54-year-old farmer who has spent his entire life tending to the rich farmland of the village Riverbend. Born and raised in a small town in Iowa, Hank inherited his family corn farm and has continued the agricultural tradition with pride.
-hobbies: tractor rides, country music
-traits: connection to tradition, simplicity and practicality, love for nature
-motivations: Hank's motivation lies in maintaining and preserving the family farm, upholding traditional farming practices, and finding fulfillment in the simplicity of rural life.
-relationships: Hank is good friends with Claire Reynolds
+first_name: Mark
+last_name: Turner
+name: Mark Turner
+age: 45
+occupation: Defense Attorney
+backstory: Mark Turner is a seasoned defense attorney known for his ability to unravel complex cases. With a successful track record, he has a reputation for challenging the prosecution's case and finding alternative explanations. Mark is driven by a commitment to justice and believes in providing a robust defense for his clients.
+hobbies: reading legal literature, playing chess, taking long walks to clear his mind, debate
+traits: analytical, shrewd, composed under pressure, strategic thinker, persuasive speaker.
+motivations: To find the truth about the night of Richard Thorton's murder
+relationships: Mark Turner is Sarah Reynolds' defense attorney, Mark knows the Thortons

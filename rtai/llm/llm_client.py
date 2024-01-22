@@ -45,8 +45,6 @@ class LLMClient:
             lm += f'''Task {i+1} will take {persona} {gen(stop='"', regex="[0-9]", name="duration", temperature=0.7, max_tokens=10, list_append=True)} hours\n'''
         return lm
 
-
-
     @guidance
     def estimate_start_times(lm, self, persona, tasks):
         lm +=  f"Generate a start time for when {persona} will start each task: \n"
@@ -133,7 +131,7 @@ class LLMClient:
         return lm
 
     def generate_importance(self, concept):
-        mistral3 = models.LlamaCpp(self.cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=2048)
+        mistral3 = models.LlamaCpp(self.cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=2048) # TODO: change this to be configurable
         mistral3.echo = False
         out = mistral3 + self.estimate_importance(concept)
         resp = out["importance"]

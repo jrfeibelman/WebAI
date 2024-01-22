@@ -61,7 +61,15 @@ class Cognition:
 
 
     def reflect(self):
+        if self.agent.s_mem.reflection_thresh > self.agent.max_reflection_thresh:
+            self.agent.reflect()
         # self.retrieve()
+        '''
+        1. if importance score is above some threhshold, then generate focal points on the batched concepts
+        2. generate focal points
+        2. retrieve based on focal points
+        3. run thoughts and insights
+        '''
         pass
 
     def determine_action(self) -> AbstractBehavior:

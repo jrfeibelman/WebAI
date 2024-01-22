@@ -44,11 +44,13 @@ class LongTermMemory:
         self.seq_thought: List[ConceptNode] = []
         self.seq_chat: List[ConceptNode] = []
 
-        self.current_narration: str = ""
         self.embeddings_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         embeddings_dim = 768
         self.index = faiss.IndexFlatL2(embeddings_dim)
         self.retriever = Retriever(self.embeddings_model, self.index, self.id_to_node)
+
+        self.current_narration: str = ""
+        
 
     def create_embeddings(self):
         '''
@@ -84,10 +86,11 @@ class LongTermMemory:
         if event_type == EventType.ChatEvent:
             # TODO if chat event, summarize the chat and add to long term memory
             pass
-
-        # TODO calculate importance using LLM
-        importance: float32 = 1.0
-        # importance = self.llm_client.generate_importance(content) # importance function of content
+        '''
+        Removing the importance LLM call right now for easy debugging
+        '''
+        # importance = generate_importance(content) # importance function of content
+        importance = 7
         
         expiration = timedelta(days=15) # expiration function of importance
 
