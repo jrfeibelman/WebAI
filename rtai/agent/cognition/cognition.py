@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from rtai.agent.agent import Agent
 
 from rtai.core.event import Event, EventType
-from rtai.utils.logging import log_transcript
+from rtai.utils.logging import log_transcript, info
 from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.utils.datetime import datetime, timedelta
 from rtai.agent.behavior.action import Action
@@ -190,6 +190,8 @@ class Cognition:
         Returns:
             ConceptNode: The plan for the day.
         """
+
+        wake_up_hour = ""
 
         if first_day:
             # Generate the very first daily plan

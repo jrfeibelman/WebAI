@@ -4,7 +4,7 @@ Logger:
   Level: DEBUG
   LogDirectory: ${WEBAI_HOME}/logs/
   LogName: rtai
-  # PipeToStdout: True
+  PipeToStdout: True
   UseCalleeStack: True
   TranscriptLogName: transcript
 StoryEngine:
@@ -23,7 +23,7 @@ Agents:
     - ${WEBAI_HOME}/configs/samples/personas/persona2.txt
 World:
   LoadFromFiles: ${WEBAI_HOME}/configs/samples/world/world1/
-  LoadSharedMemories: ${WEBAI_HOME}/configs/samples/world/world1/shared_memories.txt
+  # LoadSharedMemories: ${WEBAI_HOME}/configs/samples/world/world1/shared_memories.txt
 Clock:
   StartDate: '2024-01-01'
   StartTime: '08:55:00 AM'

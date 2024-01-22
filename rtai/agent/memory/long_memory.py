@@ -12,7 +12,8 @@ from collections import OrderedDict
 from rtai.agent.retriever import Retriever
 import faiss
 from sentence_transformers import SentenceTransformer
-
+from rtai.llm.llm_client import LLMClient
+from rtai.utils.config import YamlLoader
 # storage class to manage concept insertion
 # class ConceptStorage(dict):
 #     def __init__(self, *args, **kwargs):
@@ -28,13 +29,14 @@ from sentence_transformers import SentenceTransformer
 class LongTermMemory:
     """_summary_ Class to represent the long term memory of an agent."""
 
-    def __init__(self, persona: Persona):
+    def __init__(self, persona: Persona, llm_client: LLMClient):
         """_summary_ Constructor for an agent's long term memory.
 
         Args:
             persona (Persona): persona of the agent
         """
         self.persona = persona
+        self.llm_client = llm_client
 
         self.id_to_node: OrderedDict[int, ConceptNode] = {} # Do we need ordered dict?
         
@@ -90,6 +92,7 @@ class LongTermMemory:
 
         # TODO calculate importance using LLM
         importance: float32 = 1.0
+        # importance = self.llm_client.generate_importance(content) # importance function of content
         
         expiration = timedelta(days=15) # expiration function of importance
 
