@@ -45,8 +45,6 @@ class LLMClient:
             lm += f'''Task {i+1} will take {persona} {gen(stop='"', regex="[0-9]", name="duration", temperature=0.7, max_tokens=10, list_append=True)} hours\n'''
         return lm
 
-
-
     @guidance
     def estimate_start_times(lm, self, persona, tasks):
         lm +=  f"Generate a start time for when {persona} will start each task: \n"
@@ -126,6 +124,10 @@ class LLMClient:
         resp = out["interrogation"]
         return resp
 
+# @guidance
+# def generate_dialogue(lm, ):
+
+
 @guidance
 def estimate_importance(lm, concept):
     lm += f"On the scale of 0 to 9, where 0 is purely mundane (e.g., brushing teeth, making bed) and 9 is extremely poignant (e.g., a break up, college acceptance), rate the likely importance of the following piece of memory. Respond with a single integer."
@@ -133,7 +135,7 @@ def estimate_importance(lm, concept):
     return lm
 
 def generate_importance(concept):
-    mistral3 = models.LlamaCpp("/Users/nyeung/Projects/llama.cpp/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf", n_gpu_layers=-1, n_ctx=2048)
+    mistral3 = models.LlamaCpp("/Users/nyeung/Projects/llama.cpp/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf", n_gpu_layers=-1, n_ctx=2048) # TODO: change this to be configurable
     mistral3.echo = False
     out = mistral3 + estimate_importance(concept)
     resp = out["importance"]

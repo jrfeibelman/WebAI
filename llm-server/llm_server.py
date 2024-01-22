@@ -19,5 +19,6 @@ def generate(request: Request):
     lm = mistral + request.prompt # story telling prompt
     dialogue_topic, location = request.args["dialogue_topic"], request.args["location"]
     out = lm + generate_dialogue_about_topic(dialogue_topic, location)
-    output = out["dialogue"]
-    return output
+    out1, out2, out3, out4 = out["dialogue1"], out["dialogue2"], out["dialogue3"], out["dialogue4"]
+    lm.reset()
+    return out1 + out2 + out3 + out4
