@@ -11,7 +11,9 @@ from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
 from rtai.llm.llm_client import LLMClient
 from rtai.world.clock import clock
+
 from rtai.world.world import World
+from rtai.world.static_world import StaticWorld
 
 from tests.mock.llm.llm_client_mock import LLMTestClient
 from rtai.llm.llm_client import LLMClient
@@ -102,7 +104,7 @@ class StoryEngine:
             warn("Static Initialization mode enabled. LLMClient will leverage test data for initialization")
         
         # Setup World
-        self.world: World = World(cfg.expand(WORLD_CONFIG), self.queue)
+        self.world: World = StaticWorld(cfg.expand(WORLD_CONFIG), self.queue) # TODO go back to using real world
         initial_shared_memories: List[str] = self.world.get_shared_memories() # TODO: feed the intial shred memories into the LLMClient
 
         if not self.world.initialize():

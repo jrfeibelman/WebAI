@@ -196,6 +196,9 @@ class Cognition:
 
         # log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Plan)', 'Daily Requirements: %s' % self.agent.s_mem.daily_req)
 
+        if replan:
+            return None
+
         # Create hourly schedule for the persona - list of todo items where each has a duration that adds up to a full day
         self.agent.s_mem.generate_hourly_schedule(self.agent.persona, wake_up_hour)
 

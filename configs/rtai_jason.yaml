@@ -23,6 +23,7 @@ Agents:
     - ${WEBAI_HOME}/configs/samples/personas/persona2.txt
 World:
   LoadFromFiles: ${WEBAI_HOME}/configs/samples/world/world1/
+  StaticWorldFile: ${WEBAI_HOME}/configs/samples/world/world1/static_world.txt
   # LoadSharedMemories: ${WEBAI_HOME}/configs/samples/world/world1/shared_memories.txt
 Clock:
   StartDate: '2024-01-01'

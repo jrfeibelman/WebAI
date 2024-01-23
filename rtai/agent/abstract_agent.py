@@ -25,7 +25,7 @@ class AbstractAgent(metaclass=ABCMeta):
     # TODO add funcs for prompt generation and calling LLM
         
     @contextmanager
-    def enter_interrogation(self, is_whisper: bool) -> Chat:
+    def enter_interrogation(self) -> Chat:
         self._under_interrogation = True
 
         chat = Chat(description=f"Interrogation of {self.get_name()}", creator_id=self.get_id(), address="", start_time=clock.snapshot(), duration=timedelta(seconds=0))
