@@ -13,7 +13,8 @@ class EventType(Enum):
     ActionEvent=uint16(3)
     ChatEvent=uint16(4)
     NarrationEvent=uint16(5)
-    EventTypeLength=uint16(6)
+    WhisperEvent=uint16(6)
+    EventTypeLength=uint16(7)
 
 class Event:
     """ _summary_ Class to represent an event

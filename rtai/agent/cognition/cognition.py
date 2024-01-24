@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from rtai.agent.agent import Agent
 
 from rtai.core.event import Event, EventType
-from rtai.utils.logging import log_transcript
+from rtai.utils.logging import log_transcript, info
 from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.utils.datetime import datetime, timedelta
 from rtai.agent.behavior.action import Action
@@ -43,28 +43,6 @@ class Cognition:
         self.observe()
         return []
 
-    def retrieve(self):
-        """ _summary_ Retrieve events and thoughts from long term memory.
-        
-        Retreive
-            From simularca:
-                This function takes the events that are perceived by the persona as input
-                and returns a set of related events and thoughts that the persona would 
-                need to consider as context when planning. 
-
-                INPUT: 
-                    perceived: a list of event <ConceptNode>s that represent any of the events
-                    `         that are happening around the persona. What is included in here
-                            are controlled by the att_bandwidth and retention 
-                            hyper-parameters.
-                OUTPUT: 
-                    retrieved: a dictionary of dictionary. The first layer specifies an event, 
-                            while the latter layer specifies the "curr_event", "events", 
-                            and "thoughts" that are relevant.
-        """
-        # TODO neil implement retrieve
-        pass
-
     def observe(self):
         """ _summary_ Observe the environment """
         # First get environment around user
@@ -83,7 +61,15 @@ class Cognition:
 
 
     def reflect(self):
-        self.retrieve()
+        if self.agent.s_mem.reflection_thresh > self.agent.max_reflection_thresh:
+            self.agent.reflect()
+        # self.retrieve()
+        '''
+        1. if importance score is above some threhshold, then generate focal points on the batched concepts
+        2. generate focal points
+        2. retrieve based on focal points
+        3. run thoughts and insights
+        '''
         pass
 
     def determine_action(self) -> AbstractBehavior:
@@ -191,6 +177,8 @@ class Cognition:
             ConceptNode: The plan for the day.
         """
 
+        wake_up_hour = ""
+
         if first_day:
             # Generate the very first daily plan
             self.agent.s_mem.generate_first_daily_plan(wake_up_hour)
@@ -207,6 +195,9 @@ class Cognition:
         # self.agent.s_mem.generate_daily_req()
 
         # log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Plan)', 'Daily Requirements: %s' % self.agent.s_mem.daily_req)
+
+        if replan:
+            return None
 
         # Create hourly schedule for the persona - list of todo items where each has a duration that adds up to a full day
         self.agent.s_mem.generate_hourly_schedule(self.agent.persona, wake_up_hour)

@@ -12,7 +12,8 @@ from collections import OrderedDict
 from rtai.agent.retriever import Retriever
 import faiss
 from sentence_transformers import SentenceTransformer
-
+from rtai.llm.llm_client import LLMClient
+from rtai.utils.config import YamlLoader
 # storage class to manage concept insertion
 # class ConceptStorage(dict):
 #     def __init__(self, *args, **kwargs):
@@ -28,30 +29,28 @@ from sentence_transformers import SentenceTransformer
 class LongTermMemory:
     """_summary_ Class to represent the long term memory of an agent."""
 
-    def __init__(self, persona: Persona):
+    def __init__(self, persona: Persona, llm_client: LLMClient):
         """_summary_ Constructor for an agent's long term memory.
 
         Args:
             persona (Persona): persona of the agent
         """
         self.persona = persona
+        self.llm_client = llm_client
 
-        self.id_to_node: OrderedDict[int, ConceptNode] = {} # Do we need ordered dict?
+        self.id_to_node: OrderedDict[int, ConceptNode] = {}
         
         self.seq_action: List[ConceptNode] = []
         self.seq_thought: List[ConceptNode] = []
         self.seq_chat: List[ConceptNode] = []
 
-        self.current_narration: str = "" # should this be here?
-
-        '''
-        Embeddings
-        '''
         self.embeddings_model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
         embeddings_dim = 768
         self.index = faiss.IndexFlatL2(embeddings_dim)
-
         self.retriever = Retriever(self.embeddings_model, self.index, self.id_to_node)
+
+        self.current_narration: str = ""
+        
 
     def create_embeddings(self):
         '''
@@ -75,7 +74,7 @@ class LongTermMemory:
         '''
         searches the embeddings for the query and returns the distances and indices of the top k results
         '''
-        query_embedding = self.embeddings_model.encode([query]) # query needs to be a list
+        query_embedding = self.embeddings_model.encode([query]) # query needs to be a list as it is converted to a vector
         faiss.normalize_L2(query_embedding)
         distances, indices = self.index.search(query_embedding, k) # get the top k serarch embeddings
         return distances, indices  # we probably want the raw content?
@@ -87,15 +86,17 @@ class LongTermMemory:
         if event_type == EventType.ChatEvent:
             # TODO if chat event, summarize the chat and add to long term memory
             pass
-
-        # TODO calculate importance using LLM
-        importance: float32 = 1.0
+        '''
+        Removing the importance LLM call right now for easy debugging
+        '''
+        # importance = generate_importance(content) # importance function of content
+        importance = 7
         
         expiration = timedelta(days=15) # expiration function of importance
 
         node = ConceptNode(node_id=node_id, content=content, event_type=event_type, importance=importance, expiration=expiration)  # TODO: do the call
 
-        # TODO: decide when to update embeddings - convert agent concept to embedding and store
+        # TODO: decide when to update embedding index - convert agent concept to embedding and store
         
         # Fast Access dictionary caches
         self.id_to_node[node_id] = node
