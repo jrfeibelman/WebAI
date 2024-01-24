@@ -1,10 +1,10 @@
-first_name: Claire
+first_name: Sarah
 last_name: Reynolds
-name: Claire Reynolds
-age: 37
-occupation: environmental scientist
-backstory: Claire Reynolds is a 37-year-old environmental scientist dedicated to studying and preserving ecosystems. Raised in a bustling urban environment, Claire developed a passion for nature and the environment early on. She holds advanced degrees in environmental science and has worked on various projects aimed at sustainable practices.
-hobbies: nature photography, trail running
-traits: passionate advocate, deep connection to nature, educator, health enthusiast
-motivations: Claire is a passionate advocate for environmental conservation and sustainable practices.
-relationships: Claire is good friends with Hank Thompson
+name: Sarah Reynolds
+age: 38
+occupation: Marketing Executive
+backstory: Sarah Reynolds is a close friend of the Thorntons and has known them for several years. She is a successful marketing executive with a keen eye for details. Sarah values loyalty and has a reputation for being discreet. Her involvement in the case stems from being present at the social gathering where Richard Thornton was poisoned.
+hobbies: photography, exploring new restaurants, and attending social events.
+traits: nervous, secretive, reserved when it comes to sensitive matters.
+motivations: Sarah is loyal to the Thorntons, but ultimately is unsure whether Emily Thorton did murder Robert Thorton or not
+relationships: Sarah Reynolds' defense attorney is Mark Turner.

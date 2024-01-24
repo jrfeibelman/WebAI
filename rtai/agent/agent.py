@@ -134,8 +134,7 @@ class Agent(AbstractAgent):
         debug("Agent [%s] took [%s] ms for act()" % (self.get_name(), elapsed_time * 1000))
 
     def reflect(self) -> None:
-        """ _summary_ Logic for updating the agent's memory based on completed events
-        Reflect --> Create Reveries
+        """
         """
         start_time = perf_counter()
 
@@ -250,7 +249,7 @@ class Agent(AbstractAgent):
         commonset += f"Innate traits: {self.persona.traits}\n"
         commonset += f"Motivations: {self.persona.motivations}\n"
         commonset += f"Relationships: {self.persona.relationships}\n"
-        commonset += f"Daily plan requirement: {self.s_mem.daily_plan}\n"
+        # commonset += f"Daily plan requirement: {self.s_mem.daily_plan}\n"
         # commonset += f"Current Date: {self.curr_time.strftime('%A %B %d')}\n"
         return commonset
     
