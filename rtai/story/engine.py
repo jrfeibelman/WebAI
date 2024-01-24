@@ -11,7 +11,9 @@ from rtai.utils.timer_manager import TimerManager
 from rtai.utils.logging import info, debug, error, warn
 from rtai.llm.llm_client import LLMClient
 from rtai.world.clock import clock
+
 from rtai.world.world import World
+from rtai.world.static_world import StaticWorld
 
 from tests.mock.llm.llm_client_mock import LLMTestClient
 from rtai.llm.llm_client import LLMClient
@@ -102,7 +104,7 @@ class StoryEngine:
             warn("Static Initialization mode enabled. LLMClient will leverage test data for initialization")
         
         # Setup World
-        self.world: World = World(cfg.expand(WORLD_CONFIG), self.queue)
+        self.world: World = StaticWorld(cfg.expand(WORLD_CONFIG), self.queue) # TODO go back to using real world
         initial_shared_memories: List[str] = self.world.get_shared_memories() # TODO: feed the intial shred memories into the LLMClient
 
         if not self.world.initialize():
@@ -183,12 +185,23 @@ class StoryEngine:
 
                 agent_name = x.split("interrogate ")[1]
                 if agent_name not in self.agent_mgr.agents:
-                    error("Tried to interrogate unknown agent: %s" % a)
+                    error("Tried to interrogate unknown agent: %s" % agent_name)
                     continue
 
                 self.enter_interrogation(agent_name)
                 info("Finished interrogating Agent [%s]" % agent_name)
+            elif "whisper" in x:
+                if not self.timer_mgr.is_paused:
+                    error("Failed to whisper agent - timers must be paused first.")
+                    continue
 
+                agent_name = x.split("whisper ")[1]
+                if agent_name not in self.agent_mgr.agents:
+                    error("Tried to whisper to unknown agent: %s" % agent_name)
+                    continue
+
+                self.enter_whisper(agent_name)
+                info("Finished whisper to Agent [%s]" % agent_name)
             elif x == "h" or x == "help":
                 print("Commands:\n \
                     help - print this help message\n \
@@ -200,7 +213,7 @@ class StoryEngine:
     def enter_interrogation(self, agent_name: str) -> None:
         agent = self.agent_mgr.agents[agent_name]
         with agent.enter_interrogation() as interrogation_chat:
-            info("Agent [%s] is now under interrogation. Type 'end interrogate' to end." % agent_name)
+            info("Agent [%s] is now under interrogation mode. Type 'end' to finish." % agent_name)
             while True:
                 x = input(">>> ")
                 if x == "end":
@@ -208,12 +221,28 @@ class StoryEngine:
                 elif x == "h" or x == "help":
                     print("Commands:\n \
                         help - print this help message\n \
-                        narrate <str> - manually narrate\n \
+                        <str> - ask a question to the agent\n \
                         end - end interrogation")
                 else:
                     response = agent.interrogate(chat=interrogation_chat, question=x)
 
                     info("Agent [%s] response: %s" % (agent_name, response))
+
+    def enter_whisper(self, agent_name: str) -> None:
+        agent = self.agent_mgr.agents[agent_name]
+        with agent.enter_whisper():
+            info("Agent [%s] is now under whisper mode. Type 'end' to finish." % agent_name)
+            while True:
+                x = input(">>> ")
+                if x == "end":
+                    return
+                elif x == "h" or x == "help":
+                    print("Commands:\n \
+                        help - print this help message\n \
+                        <str> - whisper message to the agent\n \
+                        end - end interrogation")
+                else:
+                    agent.whisper(message=x)
 
     def dispatch_narration(self, event: Event, manual: bool = False) -> None:
         """ _summary_ Dispatches a narration event

@@ -12,7 +12,7 @@ from collections import OrderedDict
 from rtai.agent.retriever import Retriever
 import faiss
 from sentence_transformers import SentenceTransformer
-from rtai.llm.llm_client import generate_importance
+from rtai.llm.llm_client import LLMClient
 from rtai.utils.config import YamlLoader
 # storage class to manage concept insertion
 # class ConceptStorage(dict):
@@ -29,13 +29,15 @@ from rtai.utils.config import YamlLoader
 class LongTermMemory:
     """_summary_ Class to represent the long term memory of an agent."""
 
-    def __init__(self, persona: Persona):
+    def __init__(self, persona: Persona, llm_client: LLMClient):
         """_summary_ Constructor for an agent's long term memory.
 
         Args:
             persona (Persona): persona of the agent
         """
         self.persona = persona
+        self.llm_client = llm_client
+
         self.id_to_node: OrderedDict[int, ConceptNode] = {}
         
         self.seq_action: List[ConceptNode] = []

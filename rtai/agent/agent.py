@@ -3,6 +3,7 @@ from time import perf_counter
 from typing import List, TYPE_CHECKING
 from queue import Queue
 from numpy import uint16
+from contextlib import contextmanager
 
 if TYPE_CHECKING:
     from rtai.agent.agent_manager import AgentManager
@@ -62,9 +63,9 @@ class Agent(AbstractAgent):
             info("Generating Agent [%s] from LLM" % (self.get_name()))
 
         self.s_mem: ShortTermMemory = ShortTermMemory(self.id, self.persona, self.llm_client)
-        self.l_mem: LongTermMemory = LongTermMemory(self.persona)
-        self.cognition: Cognition = Cognition(self)
-        self.conversing: Conversing = Conversing(self)
+        self.l_mem: LongTermMemory = LongTermMemory(self.persona, self.llm_client)
+        self.cognition = Cognition(self)
+        self.conversing = Conversing(self)
 
         # String representation of persona for LLM calls
         self.common_set: str = self.get_common_set_str()
@@ -195,7 +196,7 @@ class Agent(AbstractAgent):
         
         Args:
             question (str): Question to ask
-            interrogation_history: History of the interrogation
+            chat: Chat of the interrogation
         Returns:
             str: Response to question
         """
@@ -212,6 +213,26 @@ class Agent(AbstractAgent):
 
         self.agent_mgr.chat_mgr.write_to_chat(chat, "A: %s"  % (out))
         return out
+    
+    @contextmanager
+    def enter_whisper(self) -> Chat:
+        try:
+            yield
+        finally:
+            self.cognition.plan(replan=True) # TODO implement replan functionality
+
+    def whisper(self, message: str) -> None:
+        """ _summary_ Whisper to the agent with a question. None of the whisper should change the agent's state.
+        
+        Args:
+            question (str): Question to ask
+            interrogation_history: History of the interrogation
+        Returns:
+            str: Response to question
+        """
+        log_transcript("System", clock.get_time_str(), 'Whsiper(Message)', message)
+        self.l_mem.add_concept(message, event_type=EventType.WhisperEvent)
+
 
     def save_to_file(self, file_path: str) -> None:
         """ _summary_ Save the agent's state to a file

@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from rtai.agent.agent import Agent
 
 from rtai.core.event import Event, EventType
-from rtai.utils.logging import log_transcript
+from rtai.utils.logging import log_transcript, info
 from rtai.agent.cognition.concept_node import ConceptNode
 from rtai.utils.datetime import datetime, timedelta
 from rtai.agent.behavior.action import Action
@@ -177,6 +177,8 @@ class Cognition:
             ConceptNode: The plan for the day.
         """
 
+        wake_up_hour = ""
+
         if first_day:
             # Generate the very first daily plan
             self.agent.s_mem.generate_first_daily_plan(wake_up_hour)
@@ -193,6 +195,9 @@ class Cognition:
         # self.agent.s_mem.generate_daily_req()
 
         # log_transcript(self.agent.get_name(), clock.get_time_str(), 'Thought(Plan)', 'Daily Requirements: %s' % self.agent.s_mem.daily_req)
+
+        if replan:
+            return None
 
         # Create hourly schedule for the persona - list of todo items where each has a duration that adds up to a full day
         self.agent.s_mem.generate_hourly_schedule(self.agent.persona, wake_up_hour)

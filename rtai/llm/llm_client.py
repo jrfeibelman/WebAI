@@ -124,25 +124,21 @@ class LLMClient:
         resp = out["interrogation"]
         return resp
 
-# @guidance
-# def generate_dialogue(lm, ):
+    @guidance
+    def estimate_importance(lm, self, concept):
+        lm += f"On the scale of 0 to 9, where 0 is purely mundane (e.g., brushing teeth, making bed) and 9 is extremely poignant (e.g., a break up, college acceptance), rate the likely importance of the following piece of memory. Respond with a single integer."
+        lm += f'''The piece of memory is {concept} and the importance of the event is {gen(stop='"', regex="[0-9]", name="importance", temperature=0.7, max_tokens=10)}'''
+        return lm
 
-
-@guidance
-def estimate_importance(lm, concept):
-    lm += f"On the scale of 0 to 9, where 0 is purely mundane (e.g., brushing teeth, making bed) and 9 is extremely poignant (e.g., a break up, college acceptance), rate the likely importance of the following piece of memory. Respond with a single integer."
-    lm += f'''The piece of memory is {concept} and the importance of the event is {gen(stop='"', regex="[0-9]", name="importance", temperature=0.7, max_tokens=10)}'''
-    return lm
-
-def generate_importance(concept):
-    mistral3 = models.LlamaCpp("/Users/nyeung/Projects/llama.cpp/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf", n_gpu_layers=-1, n_ctx=2048) # TODO: change this to be configurable
-    mistral3.echo = False
-    out = mistral3 + estimate_importance(concept)
-    resp = out["importance"]
-    try:
-        importance = int(resp)
-    except:
-        print("Error: failed to parse importance as integer so labeling concept as importance 5.")
-        importance = 5
-    print(f"Importance of {concept} is {importance}")
-    return importance
+    def generate_importance(self, concept):
+        mistral3 = models.LlamaCpp(self.cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=2048) # TODO: change this to be configurable
+        mistral3.echo = False
+        out = mistral3 + self.estimate_importance(concept)
+        resp = out["importance"]
+        try:
+            importance = int(resp)
+        except:
+            print("Error: failed to parse importance as integer so labeling concept as importance 5.")
+            importance = 5
+        print(f"Importance of {concept} is {importance}")
+        return importance
