@@ -205,7 +205,10 @@ class Agent(AbstractAgent):
 
         retrieved_context = self.l_mem.retriever.retrieve_context(question)
         persona = self.get_common_set_str()
-        out = self.llm_client.generate_interrogation(persona=persona, context=str(retrieved_context), question=question, history=chat_history)
+
+        print(f"Params:\nPersona: {persona}\nContext: {str(retrieved_context)}\nQuestion: {question}\nHistory: {chat_history}")
+
+        out = self.llm_client.generate_interrogation(agent_name=self.get_name(), persona=persona, context=str(retrieved_context), question=question, history=chat_history)
         
         # logging
         log_transcript("System", clock.get_time_str(), 'Interrogation(Question)', question)

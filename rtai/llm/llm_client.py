@@ -53,9 +53,9 @@ class LLMClient:
         return lm
 
     @guidance
-    def create_interrogation(lm, self, persona, context, question, history):
+    def create_interrogation(lm, self, agent_name, persona, context, question, history):
         # print(f"Type of lm is {type(lm)}, {type(persona)}, {type(context)}, {type(question)}")
-        lm += f'''You are {persona}. Answer the question like you are {persona} in 2 lines max, given the history: {history} and context: {context}. Q: {question} A: \n{gen(stop='Q:', name="interrogation", max_tokens=1000)}'''
+        lm += f'''You are {agent_name}, who is described as {persona}. YOU MUST ONLY ANSWER THE QUESTION AS {agent_name} responding to questions from a complete stranger. Answer the question like you are {agent_name} in 2 lines max, given the conversation history: {history} and context of your personal memories: {context}. Q: {question} (YOU MUST RESPONSD AS {agent_name}) A: \n{gen(stop='Q:', name="interrogation", max_tokens=1000)}'''
         return lm
 
     @guidance
@@ -114,13 +114,13 @@ class LLMClient:
         # return a list of triples
         return list(zip(tasks, duration, start_time))
     
-    def generate_interrogation(self, persona, context, question, history):
+    def generate_interrogation(self, agent_name, persona, context, question, history):
         # print("persona", persona)
         # print("retrieved context", context)
         # print("question", question)
         mistral2 = models.LlamaCpp(self.cfg.get_value("local_model_path", ""), n_gpu_layers=-1, n_ctx=2048)
         mistral2.echo = False
-        out = mistral2 + self.create_interrogation(persona=persona, context=context, question=question, history=history)
+        out = mistral2 + self.create_interrogation(agent_name=agent_name, persona=persona, context=context, question=question, history=history)
         resp = out["interrogation"]
         return resp
 

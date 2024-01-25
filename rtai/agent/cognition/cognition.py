@@ -40,7 +40,7 @@ class Cognition:
         Create Thoughts (SKIP FOR NOW)
             - Analyze surroundings: perceives events around the persona and saves events to the memory ?
         """
-        self.observe()
+        # self.observe() TODO uncomment
         return []
 
     def observe(self):

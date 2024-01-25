@@ -54,8 +54,9 @@ class LLMTestClient(LLMClient):
         else:
             return [
                 ("Wake up and shower", "0.25", "9:00"),
-                ("Have a chat with Hank Thompson", "2.25", "9:15"),
-                ("Conduct fieldwork on ecosystem", "8", "11:30"),
+                ("Have a chat with Emily Thorton", "2.25", "9:15"),
+                ("Investigate Sarah Reynolds", "2", "11:30"),
+                ("Analyze findings about case", "6", "13:30"),
                 ("Have dinner", "1", "19:30"),
                 ("Watch TV", "4", "20:30"),
                 ("Sleep", "9", "00:30")

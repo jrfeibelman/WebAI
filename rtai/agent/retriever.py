@@ -110,7 +110,7 @@ class Retriever:
         # print(f"fetching the top {k} results to create a context string")
         for i, a in enumerate(sorted_scores[:k]):
             # print(f"The {i}th result is {self.storage[a[0]]} at index {a[0]} and has score: {a[1]}")
-            context += self.storage[a[0]].content
+            context += self.storage[a[0]].content + "\n"
         
         return context
     
