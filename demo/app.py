@@ -92,46 +92,93 @@ def main():
     folder_path = "test_dialogues/"
     # memory_before_path = "memory_before.json"
     # memory_before = json.loads(open(memory_before_path).read())
-    mark_facts = [
-    "Richard had business rivals who might have had motives to harm him.",
-    "There is a potential alibi for Emily during the time of the poisoning, involving a witness not yet presented in court.",
-    "Inconsistencies exist in the initial police investigation, including gaps in the timeline and overlooked potential suspects.",
-    "Richard was involved in a secret business deal that might have contributed to his strained relationships.",
-    "Mark possesses an anonymous letter received by the Thorntons, hinting at threats from an unknown source."
-    ]
+    # mark_facts = [
+    # "Richard had business rivals who might have had motives to harm him.",
+    # "There is a potential alibi for Emily during the time of the poisoning, involving a witness not yet presented in court.",
+    # "Inconsistencies exist in the initial police investigation, including gaps in the timeline and overlooked potential suspects.",
+    # "Richard was involved in a secret business deal that might have contributed to his strained relationships.",
+    # "Mark possesses an anonymous letter received by the Thorntons, hinting at threats from an unknown source."
+    # ]
     # mark_memory_after = json.loads(open('mark_facts_after.json').read())
-    mark_memory_after = read_json('mark_facts_after.json')
+    # mark_memory_after = read_json('mark_facts_after.json')
 
+    to_visualize = read_json('actually_done.json')
+    print(to_visualize.keys())
+    # print(to_visualize.keys())
     ###### --------------MEMORY BEFORE--------------######
+    mark_initial_memory = to_visualize['mark_inital_memory']
+    print(mark_initial_memory)
     with st.expander("Mark's Memory Before 🧠"):
-        for i, fact in enumerate(mark_facts):
+        for i, fact in enumerate(mark_initial_memory):
             st.markdown(f"{i}: {fact}")
+        # st.write(mark_initial_memory)
         # st.markdown(":green[NEW MEMORY: There is a potential alibi for Emily during the time of the poisoning, involving a witness not yet presented in court.]")
     
     #### --------------DIALOGUES--------------######
-    visualize_chat_dataframes(folder_path)
+    # visualize_chat_dataframes(folder_path)
+    dialogue1 = to_visualize['mark_emily_dialogue']
+    dialogue2 = to_visualize['mark_emily_dialogue_2']
+    reflection = '\n'.join(to_visualize['mark_reflection'])
+    act = to_visualize['mark_next_steps']
+    mark_memory_after = to_visualize['mark_new_memory']
+
+    with st.expander("Mark's Dialogue with Sarah 🗣"):
+        speaker_images = {
+            'Mark': 'images/lawyer.png',  # TODO: change this to be configurable
+            'Sarah': 'images/biz_women.png',
+            'Sarah Reynolds': 'images/biz_women.png',
+            'Emily Thorton': 'images/biz_women.png',
+            'Mark Turner': 'images/lawyer.png'
+        }
+        for line in dialogue1:
+            speaker = line["speaker"]
+            utterance = line["utterance"]
+            if speaker in speaker_images:
+                st.image(speaker_images[speaker], width=100)
+            st.markdown(
+                f'<div style="background-color: #F0F0F0; padding: 10px; margin: 10px; border-radius: 10px; display: inline-block; margin-left: 60px;">'
+                f'<b>Agent:</b> {speaker}<br>'
+                f'<b>Utterance:</b> {utterance}'
+                '</div>', unsafe_allow_html=True
+            )
+        st.divider()
+        st.subheader('Reflection')
+        st.image(speaker_images[speaker], width=100)
+        st.markdown(
+        f'<div style="background-color: #add8e6; padding: 10px; margin: 10px; border-radius: 10px; display: inline-block; margin-left: 60px;">'
+        f'<b>Agent:</b> Mark (Reflecting 🤔...)<br>'
+        f'<b>Reflection: </b> <em> {reflection} </em>'
+        f'<b>{act} </b>'
+        '</div>', unsafe_allow_html=True
+        )
+    # with st.expander("Mark's Dialogue with Emily 🗣"):
+    #     speaker_images = {
+    #         'Mark': 'images/lawyer.png',  # TODO: change this to be configurable
+    #         'Sarah': 'images/biz_women.png',
+    #         'Sarah Reynolds': 'images/biz_women.png',
+    #         'Emily Thorton': 'images/biz_women.png',
+    #         'Mark Turner': 'images/lawyer.png'
+    #     }
+    #     for line in dialogue2:
+    #         speaker = line["speaker"]
+    #         utterance = line["utterance"]
+    #         if speaker in speaker_images:
+    #             st.image(speaker_images[speaker], width=100)
+    #         st.markdown(
+    #             f'<div style="background-color: #F0F0F0; padding: 10px; margin: 10px; border-radius: 10px; display: inline-block; margin-left: 60px;">'
+    #             f'<b>Agent:</b> {speaker}<br>'
+    #             f'<b>Utterance:</b> {utterance}'
+    #             '</div>', unsafe_allow_html=True
+    #         )
     
     #### --------------MEMORY AFTER--------------######
     with st.expander("Memory After 🧠"):
-        for i, fact in enumerate(mark_memory_after):
-            if i > 4:
-                fact_string = f":green[NEW MEMORY: {fact}]"
+        for i, fact in enumerate(mark_memory_after[:3]+mark_memory_after[6:]):
+            if i > 2:
+                fact_string = f":green[{i}: NEW MEMORY: {fact}]"
             else:
                 fact_string = f"{i}: {fact}"
             st.markdown(fact_string)
     
-    #### --------------RESULTING STORY--------------######
-    # TODO: handle the escape chars
-    with st.expander("Story 📖"):
-        raw_string2 = '''As the sun dipped below the horizon, Mark Turner's mind remained wide awake, illuminated by the eerie glow of the moonlight. Sifting through intricate threads of evidence, he embarked on a journey for the truth. Raw intelligence danced in his eyes, as he sat before the fireplace engulfed in the dimly-lit room.
-    "Just a whisper of doubt lingered in the air, arising from Sarah Reynolds' hesitant testimony. ""I saw a man in a red tie leave the room,"" she had confided, but Mark could sense her unease. He wondered if she was holding back\n"
-    "Mark's gaze automatically swung to his reflection in the polished glass facade, zeroing in on the deep creases that tugged at the corners of his eyes. ""We'll get to the bottom of this, Sarah,"" he assured her earlier that day, but uncertainty lurked in the shadows."\n
-    "Across the bustling courtroom, Starchy-haired Emily Thorton patiently awaited her fate, her pastel gown a stark contrast to the smoky room. Her eyes, dancing with a mixture of nervous anticipation and stubborn resolve, told a compelling story of a woman falsely accused."\n
-    "Her tale of a marital strife gone awry now inextricably linked to Sarah's fragmented account. Three dots connected: one unearthed secret, two shrouded truths, and a wealth of deception."\n
-    "Mark knew Emily couldn't possibly have orchestrated Richard's untimely demise, but who orchestrated the web of lies? The burning question gnawed at him, desperate for an answer."\n
-    "As Mark continued to sift through the intricate threads of the case, he couldn't shake the feeling that something was amiss. He needed another piece of the puzzle, a revelation that would clear the murky waters and shed light on the mystery that the moonlit night could not quite reveal.'''
-        raw_string2 = render_html(raw_string2)
-        st.markdown(unsafe_allow_html=True, body=raw_string2)
-
 if __name__ == "__main__":
     main()

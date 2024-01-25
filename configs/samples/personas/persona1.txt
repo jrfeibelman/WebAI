@@ -3,8 +3,8 @@ last_name: Turner
 name: Mark Turner
 age: 45
 occupation: Defense Attorney
-backstory: Mark Turner is a seasoned defense attorney known for his ability to unravel complex cases. With a successful track record, he has a reputation for challenging the prosecution's case and finding alternative explanations. Mark is driven by a commitment to justice and believes in providing a robust defense for his clients.
+backstory: Mark Turner is a defense attorney from the South
 hobbies: reading legal literature, playing chess, taking long walks to clear his mind, debate
-traits: analytical, shrewd, composed under pressure, strategic thinker, persuasive speaker.
+traits: analytical
 motivations: To find the truth about the night of Richard Thorton's murder
 relationships: Mark Turner is Sarah Reynolds' defense attorney, Mark knows the Thortons
